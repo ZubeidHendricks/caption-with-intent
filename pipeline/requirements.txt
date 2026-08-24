@@ -1,0 +1,8 @@
+# Core pipeline. Deliberately minimal — the acoustic and alignment stages are
+# numpy + stdlib only, so they stay fast, deterministic and testable.
+numpy>=1.24
+
+# Optional, for the recorded-film path (ASR + diarization). Needs Python >=3.10
+# and downloads multi-GB models, so it is not installed by default and not
+# exercised by the test suite.
+#   pip install whisperx

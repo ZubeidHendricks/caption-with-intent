@@ -1,0 +1,414 @@
+{
+  "cwi": "1.0",
+  "meta": {
+    "title": "HeyGen render",
+    "generator": "cwi-pipeline/adapters/heygen 0.1.0",
+    "aspectRatio": "16:9"
+  },
+  "characters": [
+    {
+      "id": "narrator",
+      "name": "Narrator",
+      "tier": "main",
+      "rank": 0
+    }
+  ],
+  "cues": [
+    {
+      "id": "c0000300",
+      "start": 0.3,
+      "end": 2.43,
+      "speaker": "narrator",
+      "kind": "dialogue",
+      "onCamera": true,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "This",
+              "start": 0.3,
+              "end": 0.48,
+              "db": 8.48,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "is",
+              "start": 0.48,
+              "end": 0.65,
+              "db": -0.04,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "not",
+              "start": 0.65,
+              "end": 0.88,
+              "db": 3.0,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "a",
+              "start": 1.34,
+              "end": 1.62,
+              "db": 3.5,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "local",
+              "start": 1.69,
+              "end": 1.81,
+              "db": -0.84,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "demo.",
+              "start": 1.96,
+              "end": 2.13,
+              "db": -0.15,
+              "f0": 114.8,
+              "centroid": 682.4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c0003000",
+      "start": 3.0,
+      "end": 8.12,
+      "speaker": "narrator",
+      "kind": "dialogue",
+      "onCamera": true,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "Cloud",
+              "start": 3.0,
+              "end": 3.29,
+              "db": 7.44,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "Run",
+              "start": 3.29,
+              "end": 3.59,
+              "db": 4.69,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "in",
+              "start": 3.59,
+              "end": 3.95,
+              "db": 6.95,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "u",
+              "start": 3.95,
+              "end": 4.19,
+              "db": 5.58,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "s",
+              "start": 4.63,
+              "end": 4.89,
+              "db": 0.37,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "central",
+              "start": 4.89,
+              "end": 5.24,
+              "db": -2.49,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "one,",
+              "start": 5.66,
+              "end": 5.93,
+              "db": 5.3,
+              "f0": 114.8,
+              "centroid": 682.4
+            }
+          ]
+        },
+        {
+          "tokens": [
+            {
+              "text": "Vertex",
+              "start": 5.93,
+              "end": 6.26,
+              "db": 1.65,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "A",
+              "start": 6.26,
+              "end": 6.5,
+              "db": 2.59,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "I",
+              "start": 6.5,
+              "end": 6.77,
+              "db": -0.35,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "serving",
+              "start": 7.09,
+              "end": 7.46,
+              "db": 1.52,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "Gemini,",
+              "start": 7.46,
+              "end": 7.82,
+              "db": 0.57,
+              "f0": 114.8,
+              "centroid": 682.4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c0008580",
+      "start": 8.58,
+      "end": 13.18,
+      "speaker": "narrator",
+      "kind": "dialogue",
+      "onCamera": true,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "Firestore",
+              "start": 8.58,
+              "end": 8.94,
+              "db": 7.24,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "holding",
+              "start": 8.94,
+              "end": 9.18,
+              "db": 5.1,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "the",
+              "start": 9.18,
+              "end": 9.38,
+              "db": 3.46,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "tenant",
+              "start": 9.38,
+              "end": 9.61,
+              "db": 0.73,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "record.",
+              "start": 9.68,
+              "end": 9.94,
+              "db": -1.23,
+              "f0": 114.8,
+              "centroid": 682.4
+            }
+          ]
+        },
+        {
+          "tokens": [
+            {
+              "text": "The",
+              "start": 10.01,
+              "end": 10.09,
+              "db": -5.78,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "U",
+              "start": 10.84,
+              "end": 11.06,
+              "db": 5.36,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "R",
+              "start": 11.06,
+              "end": 11.26,
+              "db": 7.63,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "L",
+              "start": 11.26,
+              "end": 11.53,
+              "db": 2.77,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "is",
+              "start": 11.83,
+              "end": 11.96,
+              "db": -0.49,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "in",
+              "start": 12.07,
+              "end": 12.31,
+              "db": 7.83,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "the",
+              "start": 12.31,
+              "end": 12.52,
+              "db": 1.3,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "submission;",
+              "start": 12.52,
+              "end": 12.93,
+              "db": 3.63,
+              "f0": 114.8,
+              "centroid": 682.4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c0013220",
+      "start": 13.22,
+      "end": 15.81,
+      "speaker": "narrator",
+      "kind": "dialogue",
+      "onCamera": true,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "you",
+              "start": 13.22,
+              "end": 13.46,
+              "db": 4.29,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "can",
+              "start": 13.46,
+              "end": 13.66,
+              "db": 1.76,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "ask",
+              "start": 13.66,
+              "end": 13.84,
+              "db": -0.09,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "it",
+              "start": 13.94,
+              "end": 14.09,
+              "db": -0.8,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "the",
+              "start": 14.09,
+              "end": 14.35,
+              "db": 6.28,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "same",
+              "start": 14.35,
+              "end": 14.56,
+              "db": 3.52,
+              "f0": 114.8,
+              "centroid": 682.4
+            }
+          ]
+        },
+        {
+          "tokens": [
+            {
+              "text": "questions",
+              "start": 14.56,
+              "end": 14.83,
+              "db": 0.0,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "I",
+              "start": 14.83,
+              "end": 15.05,
+              "db": -5.26,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "just",
+              "start": 15.05,
+              "end": 15.23,
+              "db": 3.74,
+              "f0": 114.8,
+              "centroid": 682.4
+            },
+            {
+              "text": "did.",
+              "start": 15.36,
+              "end": 15.51,
+              "db": 0.26,
+              "f0": 114.8,
+              "centroid": 682.4
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

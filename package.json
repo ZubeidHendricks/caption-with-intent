@@ -1,0 +1,25 @@
+{
+  "name": "caption-with-intent",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Open toolchain for the Caption with Intention design system: interchange format, reference spec implementation, renderers, and an AI analyzer.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w cwi-core && npm run build -w cwi-web && npm run build -w cwi-cli && npm run build -w cwi-mcp",
+    "dev": "npm run dev -w cwi-demo",
+    "cwi": "node packages/cwi-cli/dist/cli.js",
+    "mcp": "node packages/cwi-mcp/dist/server.js",
+    "test": "npm run build && npm run test:node && npm run test:py",
+    "test:node": "node --test packages/cwi-core/test/spec.test.js packages/cwi-cli/test/tools.test.js packages/cwi-mcp/test/server.test.js",
+    "test:py": "cd pipeline && ../.venv/bin/python -m unittest discover -s test -t .",
+    "setup:py": "python3 -m venv .venv && ./.venv/bin/pip install -q -r pipeline/requirements.txt",
+    "release:stamp": "node scripts/release/stamp.mjs",
+    "release:check": "npm run build && node scripts/release/check.mjs",
+    "release:dry": "npm run release:check && npm publish --workspaces --dry-run --access public",
+    "version:set": "npm version --workspaces --include-workspace-root --no-git-tag-version"
+  },
+  "license": "MIT"
+}

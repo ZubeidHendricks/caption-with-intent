@@ -1,0 +1,13 @@
+{
+  "name": "cwi-demo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "sample": "node scripts/make-sample.mjs",
+    "dev": "npm run sample && vite",
+    "build": "npm run sample && vite build"
+  },
+  "dependencies": { "cwi-core": "0.1.0", "cwi-web": "0.1.0" },
+  "devDependencies": { "vite": "^5.4.0" }
+}

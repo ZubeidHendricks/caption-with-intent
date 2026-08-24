@@ -1,0 +1,74 @@
+{
+  "name": "cwi-cli",
+  "version": "0.1.0",
+  "description": "Command line toolchain for Caption with Intention: scaffold apps, analyze media, assign colours, validate accessibility, preview, and export.",
+  "type": "module",
+  "bin": {
+    "cwi": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "pipeline",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build",
+    "prepack": "node scripts/bundle-pipeline.mjs"
+  },
+  "dependencies": {
+    "cwi-core": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  },
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/ops.d.ts",
+      "default": "./dist/ops.js"
+    },
+    "./preview": {
+      "types": "./dist/preview.d.ts",
+      "default": "./dist/preview.js"
+    },
+    "./scaffold": {
+      "types": "./dist/scaffold.d.ts",
+      "default": "./dist/scaffold.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "author": "Zubeid Hendricks",
+  "homepage": "https://github.com/ZubeidHendricks/caption-with-intent#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZubeidHendricks/caption-with-intent.git",
+    "directory": "packages/cwi-cli"
+  },
+  "bugs": {
+    "url": "https://github.com/ZubeidHendricks/caption-with-intent/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "captions",
+    "subtitles",
+    "accessibility",
+    "a11y",
+    "deaf",
+    "hard-of-hearing",
+    "caption-with-intention",
+    "cwi",
+    "variable-fonts",
+    "webvtt",
+    "cli",
+    "ffmpeg",
+    "transcription"
+  ]
+}

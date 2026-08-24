@@ -1,0 +1,63 @@
+# Implementation notes against CWI V1.0
+
+Every value the Caption with Intention design system fixes is used verbatim. This file records the places where the spec is silent or ambiguous and this implementation had to decide, so the decisions are auditable and overridable. All of them are exposed as `CwiOptions`.
+
+## Values taken verbatim from the spec
+
+| Quantity | Value | Spec |
+|---|---|---|
+| Main character colours | 6 swatches | 2.1.1 |
+| Supporting colours | 12 swatches | 2.1.2 |
+| Minor characters | wheel-centre pastels, S 30% / B 90%, 24 hues | 2.1.4 |
+| Off-camera | italic/oblique | 2.1.5 |
+| Read-ahead text | white, 90% opacity | 2.2.1 |
+| Colour flip | on the word's first phoneme | 2.2.2 |
+| Word-onset pop | +15% scale | 2.2.3 |
+| Typeface | Roboto Flex | 2.3.1 |
+| Type size unit | % of frame height | 2.3.4 |
+| Baseline size | 5% | 2.3.5 |
+| Size range | 3% – 12% | 2.3.6 |
+| Neutral pitch band | 160–200 Hz → `wght` 400 | 2.3.8 |
+| Voice range cited | 80–250 Hz | 2.3.8 |
+| Caption box | 90% black | 2.4.1 |
+| Max lines per frame | 2 | 2.4.2 |
+| Work area | lower 20%, margins 5 / 2.5 / 5 / 7.5% | 2.4.3 |
+| Sound effects | white, in `[ ]`, animated | 2.4.4 |
+| Music | white, flanked by ♪, **not** animated | 2.4.5 |
+| Editorial exception | animation-only for B&W/period titles | 3.1 |
+
+## Decisions the spec left open
+
+**Volume → dB range.** The spec maps 3–12% of frame height onto a volume axis but never states the dB span, nor what the 5% baseline is anchored to. We anchor `db` to *the speaker's own normal speaking level* (a modal estimator over their per-word levels, `pipeline/acoustics.py:dialogue_reference`), and default to −18 dB reaching the floor and +12 dB reaching the ceiling. Per-speaker anchoring keeps a quiet scene and a loud scene both readable and stops a soft-spoken actor being permanently captioned at 3%.
+
+**Pitch → weight curve.** The spec fixes the 160–200 Hz plateau at 400 and gives a direction, not a function. We interpolate in log-frequency (the perceptually correct domain) from 80 Hz → `wght` 900 down to 400 Hz → `wght` 100, with the specified plateau between. The upper bound is extended past the spec's cited 250 Hz because children's and many women's voices exceed it.
+
+**Harmonics → width.** The spec's own chart is ambiguous here: its axis runs 1000 → 100 against widths 150 → 25, which reads opposite to its prose ("a voice rich in *lower* harmonics feels fuller and warmer, corresponding to a wider typeface"). **We follow the prose**, mapping spectral centroid 500 Hz → `wdth` 151 and 3500 Hz → `wdth` 25, log-interpolated. Flagged for upstream clarification.
+
+**Word spacing — absent entirely.** The spec fixes size, weight and width per word but says nothing about the gap between words, and a variable font's natural space advance is calibrated for regular weight. At `wght` 900 / `wdth` 122 — which the system asks for whenever a low, resonant voice speaks — adjacent words visibly weld together, and obliqued off-camera text is worse because the lean carries the last glyph into the space. `wordGap()` in `cwi-core` scales the gap with weight and width, plus 15% when slanted. This is a real omission in V1.0, not a rendering detail.
+
+**Layout must not reflow.** Nothing in the spec addresses the interaction between per-word sizing and the +15% pop. Naively animating `font-size` reflows the whole line on every word. The renderer lays each line out **once** at each word's volume-derived size — so the white read-ahead text already occupies final geometry — and animates the pop with `transform` only.
+
+**Pop duration.** Not specified. Default 180 ms, ease-out-back. Respects `prefers-reduced-motion`.
+
+**Reading rate.** Not constrained by CWI, though conventional caption standards do constrain it. The validator warns above ~240 wpm.
+
+**Cue segmentation and line breaking.** Not specified. We split on speaker change, pauses > 0.7 s and duration > 6 s, and balance the two lines. Conventional practice; all configurable.
+
+**Are weight and width per word, or per voice?** The single most consequential ambiguity in V1.0, and the one that most changes what the system looks like on screen.
+
+Section 2.3 maps volume to size, pitch to weight and harmonics to width, and it is natural to read all three as per-word. Section 2.3.8 does not say that. It talks about *"voices"* — "voices vary greatly in pitch and harmonic structure" — and every worked example contrasts one character against another rather than one word against the next. Volume is unambiguously dynamic ("louder voices and sounds are represented with larger, taller type", and the *Glengarry Glen Ross* example sizes words differently inside one line). Weight and width read as descriptions of *whose voice this is*.
+
+Real audio settles it. Per-word f0 on a short function word ("is", "in", "the") or a spelled letter ("U", "R", "L") comes from a handful of voiced frames and is mostly estimator noise. Mapped onto a 500-unit weight span, one evenly-read sentence from a *single synthetic voice* lurched between `wght` 400 and 845 word to word — measured, not hypothesised. The intonation layer was conveying estimator variance rather than delivery.
+
+So `acoustics.stabilize()` defaults to `mode="voice"`: weight and width identify the character and hold steady across their dialogue, while size still moves per word with volume. `mode="word"` keeps per-word prosody, blended toward the speaker's median by measurement confidence and clamped to ±12%; use it on clean dialogue stems when you want prosody visible. `mode="raw"` is diagnostics only.
+
+**Ordinary prosody is not deliberate volume.** Related, and also measured: word-level loudness in normal speech spans roughly 15 dB from stress alone. Mapped linearly onto the spec's 3–12% range, an evenly-read line pulses distractingly. `sizeFromDb` therefore applies a soft knee — level changes within ±6 dB of the speaker's reference compress into ±0.6% of frame height, and only larger excursions expand toward the floor and ceiling. This keeps the size axis carrying what the spec describes it carrying, a character shouting or whispering, rather than the amplitude dip on an unstressed syllable.
+
+**Cue segmentation, line breaking, and word onsets.** All absent from V1.0. `segment.py` breaks on speaker change, pause, and duration or character budget, preferring sentence then clause boundaries, and refuses to strand an article or preposition at the end of a cue or line — a synthesizer will happily pause between "the" and its noun, and a purely pause-driven segmenter reproduces that as a caption break. Stub cues of one or two words are absorbed into a neighbour. Cue tails are clamped so they never overlap the next cue.
+
+**Spectral centroid needs corpus calibration.** The analyzer measures centroid over *voiced* frames only, deliberately excluding unvoiced consonants so they cannot drag the estimate. That runs well below a full-band speech centroid — a real low male voice measured 695 Hz — so `centroidRange` defaults to `[450, 2000]` rather than the full-band figures a naive reading would suggest. This is calibrated against a single real voice and should be re-tuned on a proper corpus.
+
+**Colour-vision safety — a gap, not an ambiguity.** See `ARCHITECTURE.md` §4. The V1.0 palette has pairs that collapse under all three dichromacies, and the spec sets no contrast floor. `assignColors()` adds a CVD-safety constraint on top of the spec's rules, using only the spec's own swatches.
+
+**Colour stability across a series.** Not addressed. A character's colour should be identical in every episode. Pin `characters[].color` in a show-level manifest and reuse it rather than re-running assignment per episode.

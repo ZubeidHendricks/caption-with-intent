@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://captionwithintent.dev/schema/cwi-manifest-1.0.json",
+  "title": "Caption with Intention manifest",
+  "description": "Interchange format for captions authored to the Caption with Intention design system V1.0 (2025.1). Carries per-word timing, speaker attribution, and either measured acoustics or resolved typography.",
+  "type": "object",
+  "required": ["cwi", "characters", "cues"],
+  "additionalProperties": false,
+  "properties": {
+    "cwi": { "const": "1.0" },
+    "meta": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "title": { "type": "string" },
+        "aspectRatio": { "type": "string", "examples": ["16:9", "1.85:1", "2.39:1", "1.43:1"] },
+        "frameRate": { "type": "number", "exclusiveMinimum": 0 },
+        "language": { "type": "string", "description": "BCP 47 tag" },
+        "generator": { "type": "string" }
+      }
+    },
+    "options": {
+      "type": "object",
+      "description": "Overrides for the spec constants. Omit to use CWI V1.0 defaults.",
+      "additionalProperties": true
+    },
+    "characters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "tier"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "name": { "type": "string" },
+          "tier": { "enum": ["main", "supporting", "minor"], "description": "Spec 2.1.1-2.1.4" },
+          "role": { "enum": ["hero", "villain", "neutral"], "description": "Drives the spec's hero/villain hue-opposition rule" },
+          "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+          "rank": { "type": "integer", "minimum": 0, "description": "Prominence within tier, 0 = most prominent" }
+        }
+      }
+    },
+    "cues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["start", "end", "kind", "lines"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "start": { "type": "number", "minimum": 0 },
+          "end": { "type": "number", "minimum": 0 },
+          "speaker": { "type": "string", "description": "Character id. Required for kind=dialogue." },
+          "kind": { "enum": ["dialogue", "sfx", "music"] },
+          "onCamera": { "type": "boolean", "description": "false renders obliqued (spec 2.1.5)" },
+          "breakout": { "type": "boolean", "description": "Sudden loud speech may leave the caption box (spec 2.4.1)" },
+          "lines": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "description": "Spec 2.4.2 permits at most two lines per frame.",
+            "items": {
+              "type": "object",
+              "required": ["tokens"],
+              "additionalProperties": false,
+              "properties": {
+                "tokens": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/token" } }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "token": {
+      "type": "object",
+      "required": ["text", "start", "end"],
+      "additionalProperties": false,
+      "description": "One word. Carry acoustics (db/f0/centroid) and let the renderer resolve typography, or carry resolved typography (size/wght/wdth) directly, or both — resolved values win.",
+      "properties": {
+        "text": { "type": "string" },
+        "start": { "type": "number", "minimum": 0, "description": "Onset of the word's FIRST phoneme — the colour flips here (spec 2.2.2)." },
+        "end": { "type": "number", "minimum": 0 },
+        "db": { "type": "number", "description": "Level relative to this speaker's normal speaking voice. 0 = normal." },
+        "f0": { "type": "number", "minimum": 0, "description": "Median fundamental frequency over the word, Hz." },
+        "centroid": { "type": "number", "minimum": 0, "description": "Median spectral centroid over the word, Hz." },
+        "size": { "type": "number", "description": "Resolved type size, % of frame height. Spec range 3-12, baseline 5." },
+        "wght": { "type": "number", "minimum": 100, "maximum": 1000, "description": "Roboto Flex wght axis." },
+        "wdth": { "type": "number", "minimum": 25, "maximum": 151, "description": "Roboto Flex wdth axis." },
+        "syllables": {
+          "type": "array",
+          "description": "Optional syllable subdivision (spec 2.2.4).",
+          "items": {
+            "type": "object",
+            "required": ["text", "start", "end"],
+            "additionalProperties": false,
+            "properties": {
+              "text": { "type": "string" },
+              "start": { "type": "number" },
+              "end": { "type": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,676 @@
+{
+  "cwi": "1.0",
+  "meta": {
+    "title": "Freight Yard (synthetic demo scene)",
+    "aspectRatio": "16:9",
+    "frameRate": 24,
+    "language": "en-US",
+    "generator": "cwi make-sample 0.1.0 — synthetic acoustics, original dialogue"
+  },
+  "characters": [
+    {
+      "id": "vale",
+      "name": "Detective Vale",
+      "tier": "main",
+      "role": "hero",
+      "rank": 0,
+      "color": "#17E517"
+    },
+    {
+      "id": "kroft",
+      "name": "Kroft",
+      "tier": "main",
+      "role": "villain",
+      "rank": 1,
+      "color": "#E517E5"
+    },
+    {
+      "id": "ana",
+      "name": "Ana",
+      "tier": "main",
+      "rank": 2,
+      "color": "#E51717"
+    },
+    {
+      "id": "dispatch",
+      "name": "Dispatch",
+      "tier": "supporting",
+      "rank": 0,
+      "color": "#47C2EB"
+    },
+    {
+      "id": "bystander",
+      "name": "Bystander",
+      "tier": "minor",
+      "rank": 0,
+      "color": "#E6A1A1"
+    }
+  ],
+  "cues": [
+    {
+      "id": "n60",
+      "start": 0.6,
+      "end": 3.3,
+      "kind": "music",
+      "onCamera": true,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "♪",
+              "start": 0.6,
+              "end": 1.08,
+              "db": -3
+            },
+            {
+              "text": "low",
+              "start": 1.08,
+              "end": 1.56,
+              "db": -3
+            },
+            {
+              "text": "strings,",
+              "start": 1.56,
+              "end": 2.04,
+              "db": -3
+            },
+            {
+              "text": "unresolved",
+              "start": 2.04,
+              "end": 2.52,
+              "db": -3
+            },
+            {
+              "text": "♪",
+              "start": 2.52,
+              "end": 3,
+              "db": -3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c00375",
+      "start": 3.75,
+      "end": 6.445,
+      "speaker": "vale",
+      "kind": "dialogue",
+      "onCamera": true,
+      "breakout": false,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "You",
+              "start": 3.75,
+              "end": 3.982,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "said",
+              "start": 4.027,
+              "end": 4.282,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "the",
+              "start": 4.327,
+              "end": 4.56,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "freight",
+              "start": 4.605,
+              "end": 4.927,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "yard",
+              "start": 4.972,
+              "end": 5.227,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "was",
+              "start": 5.272,
+              "end": 5.505,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "empty.",
+              "start": 5.55,
+              "end": 5.85,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c00689",
+      "start": 6.895,
+      "end": 9.155,
+      "speaker": "ana",
+      "kind": "dialogue",
+      "onCamera": true,
+      "breakout": false,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "It",
+              "start": 6.895,
+              "end": 7.105,
+              "db": 0,
+              "f0": 215,
+              "centroid": 2300
+            },
+            {
+              "text": "was",
+              "start": 7.15,
+              "end": 7.382,
+              "db": 0,
+              "f0": 215,
+              "centroid": 2300
+            },
+            {
+              "text": "empty",
+              "start": 7.427,
+              "end": 7.705,
+              "db": 0,
+              "f0": 269,
+              "centroid": 2300
+            },
+            {
+              "text": "an",
+              "start": 7.75,
+              "end": 7.96,
+              "db": 0,
+              "f0": 215,
+              "centroid": 2300
+            },
+            {
+              "text": "hour",
+              "start": 8.005,
+              "end": 8.26,
+              "db": 0,
+              "f0": 215,
+              "centroid": 2300
+            },
+            {
+              "text": "ago.",
+              "start": 8.305,
+              "end": 8.56,
+              "db": 0,
+              "f0": 215,
+              "centroid": 2300
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c00961",
+      "start": 9.605,
+      "end": 12.435,
+      "speaker": "kroft",
+      "kind": "dialogue",
+      "onCamera": false,
+      "breakout": false,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "Nothing",
+              "start": 9.605,
+              "end": 9.928,
+              "db": 0,
+              "f0": 74,
+              "centroid": 780
+            },
+            {
+              "text": "out",
+              "start": 9.973,
+              "end": 10.205,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            },
+            {
+              "text": "here",
+              "start": 10.25,
+              "end": 10.505,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            },
+            {
+              "text": "is",
+              "start": 10.55,
+              "end": 10.76,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            },
+            {
+              "text": "ever",
+              "start": 10.805,
+              "end": 11.06,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            },
+            {
+              "text": "empty,",
+              "start": 11.105,
+              "end": 11.405,
+              "db": 0,
+              "f0": 74,
+              "centroid": 780
+            },
+            {
+              "text": "Detective.",
+              "start": 11.45,
+              "end": 11.84,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n1264",
+      "start": 12.635,
+      "end": 14.335,
+      "kind": "sfx",
+      "onCamera": true,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "[metal",
+              "start": 12.635,
+              "end": 13.102,
+              "db": 6
+            },
+            {
+              "text": "door",
+              "start": 13.102,
+              "end": 13.568,
+              "db": 6
+            },
+            {
+              "text": "sliding]",
+              "start": 13.568,
+              "end": 14.035,
+              "db": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c01449",
+      "start": 14.485,
+      "end": 16.674,
+      "speaker": "vale",
+      "kind": "dialogue",
+      "onCamera": true,
+      "breakout": true,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "Show",
+              "start": 14.485,
+              "end": 14.74,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "me",
+              "start": 14.785,
+              "end": 14.995,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "your",
+              "start": 15.04,
+              "end": 15.295,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "hands!",
+              "start": 15.34,
+              "end": 15.715,
+              "db": 9,
+              "f0": 129,
+              "centroid": 1438
+            },
+            {
+              "text": "Now!",
+              "start": 15.76,
+              "end": 16.079,
+              "db": 9,
+              "f0": 129,
+              "centroid": 1438
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c01717",
+      "start": 17.174,
+      "end": 20.169,
+      "speaker": "kroft",
+      "kind": "dialogue",
+      "onCamera": true,
+      "breakout": false,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "You",
+              "start": 17.174,
+              "end": 17.406,
+              "db": -9,
+              "f0": 84,
+              "centroid": 663
+            },
+            {
+              "text": "really",
+              "start": 17.451,
+              "end": 17.751,
+              "db": -9,
+              "f0": 84,
+              "centroid": 663
+            },
+            {
+              "text": "should",
+              "start": 17.796,
+              "end": 18.096,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            },
+            {
+              "text": "have",
+              "start": 18.141,
+              "end": 18.396,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            },
+            {
+              "text": "stayed",
+              "start": 18.441,
+              "end": 18.741,
+              "db": -9,
+              "f0": 84,
+              "centroid": 663
+            },
+            {
+              "text": "in",
+              "start": 18.786,
+              "end": 18.996,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            },
+            {
+              "text": "the",
+              "start": 19.041,
+              "end": 19.274,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            },
+            {
+              "text": "car.",
+              "start": 19.319,
+              "end": 19.574,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c02037",
+      "start": 20.369,
+      "end": 22.235,
+      "speaker": "ana",
+      "kind": "dialogue",
+      "onCamera": true,
+      "breakout": true,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "Vale",
+              "start": 20.369,
+              "end": 20.624,
+              "db": 0,
+              "f0": 215,
+              "centroid": 2300
+            },
+            {
+              "text": "—",
+              "start": 20.669,
+              "end": 20.856,
+              "db": 0,
+              "f0": 215,
+              "centroid": 2300
+            },
+            {
+              "text": "behind",
+              "start": 20.901,
+              "end": 21.276,
+              "db": 9,
+              "f0": 234,
+              "centroid": 2645
+            },
+            {
+              "text": "you!",
+              "start": 21.321,
+              "end": 21.64,
+              "db": 9,
+              "f0": 234,
+              "centroid": 2645
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c02269",
+      "start": 22.685,
+      "end": 25.725,
+      "speaker": "dispatch",
+      "kind": "dialogue",
+      "onCamera": false,
+      "breakout": false,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "All",
+              "start": 22.685,
+              "end": 22.918,
+              "db": 0,
+              "f0": 178,
+              "centroid": 1900
+            },
+            {
+              "text": "units,",
+              "start": 22.963,
+              "end": 23.263,
+              "db": 0,
+              "f0": 178,
+              "centroid": 1900
+            },
+            {
+              "text": "shots",
+              "start": 23.308,
+              "end": 23.585,
+              "db": 0,
+              "f0": 178,
+              "centroid": 1900
+            },
+            {
+              "text": "reported",
+              "start": 23.63,
+              "end": 23.975,
+              "db": 0,
+              "f0": 178,
+              "centroid": 1900
+            },
+            {
+              "text": "at",
+              "start": 24.02,
+              "end": 24.23,
+              "db": 0,
+              "f0": 178,
+              "centroid": 1900
+            },
+            {
+              "text": "the",
+              "start": 24.275,
+              "end": 24.508,
+              "db": 0,
+              "f0": 178,
+              "centroid": 1900
+            },
+            {
+              "text": "east",
+              "start": 24.553,
+              "end": 24.808,
+              "db": 0,
+              "f0": 178,
+              "centroid": 1900
+            },
+            {
+              "text": "gate.",
+              "start": 24.853,
+              "end": 25.13,
+              "db": 0,
+              "f0": 178,
+              "centroid": 1900
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c02633",
+      "start": 26.325,
+      "end": 28.143,
+      "speaker": "bystander",
+      "kind": "dialogue",
+      "onCamera": true,
+      "breakout": false,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "I",
+              "start": 26.325,
+              "end": 26.513,
+              "db": 0,
+              "f0": 240,
+              "centroid": 2800
+            },
+            {
+              "text": "didn’t",
+              "start": 26.558,
+              "end": 26.858,
+              "db": -15,
+              "f0": 204,
+              "centroid": 2380
+            },
+            {
+              "text": "see",
+              "start": 26.903,
+              "end": 27.135,
+              "db": 0,
+              "f0": 240,
+              "centroid": 2800
+            },
+            {
+              "text": "anything.",
+              "start": 27.18,
+              "end": 27.548,
+              "db": -15,
+              "f0": 204,
+              "centroid": 2380
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c02859",
+      "start": 28.593,
+      "end": 30.245,
+      "speaker": "vale",
+      "kind": "dialogue",
+      "onCamera": true,
+      "breakout": false,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "Then",
+              "start": 28.593,
+              "end": 28.848,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "start",
+              "start": 28.893,
+              "end": 29.17,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "remembering.",
+              "start": 29.215,
+              "end": 29.65,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

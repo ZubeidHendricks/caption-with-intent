@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Caption with Intention — reference renderer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,slnt,wdth,wght@8..144,-10..0,25..151,100..1000&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0c0e; --panel: #141619; --line: #24272c;
+    --ink: #e8eaed; --dim: #8b9198; --accent: #E5E517;
+    --err: #ff6b6b; --warn: #ffb454; --ok: #6bd68a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.5 'IBM Plex Mono', ui-monospace, monospace;
+    display: grid; grid-template-columns: minmax(0,1fr) 340px; min-height: 100vh;
+  }
+  @media (max-width: 900px) { body { grid-template-columns: 1fr; } }
+  main { padding: 24px; min-width: 0; }
+  header { margin-bottom: 18px; }
+  h1 { font-size: 15px; margin: 0 0 4px; letter-spacing: .02em; font-weight: 500; }
+  .sub { color: var(--dim); font-size: 12px; }
+
+  #stage {
+    position: relative; width: 100%; aspect-ratio: 16/9;
+    /* Stand-in scene backdrop. A pure-black stage would hide the 90% black
+       caption box entirely, which is exactly the thing we need to look at. */
+    background:
+      radial-gradient(120% 90% at 22% 18%, #2a3a44 0%, #16222a 42%, #0a1116 78%),
+      linear-gradient(200deg, #1d2c34 0%, #0b1216 60%);
+    border: 1px solid var(--line); border-radius: 4px; overflow: hidden;
+  }
+  #stage video { width: 100%; height: 100%; display: block; object-fit: contain; }
+  #capture { position: absolute; inset: 0; }
+
+  .transport { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
+  button {
+    background: var(--panel); color: var(--ink); border: 1px solid var(--line);
+    border-radius: 3px; padding: 6px 12px; font: inherit; font-size: 12px; cursor: pointer;
+  }
+  button:hover { border-color: #3a3f46; }
+  button[data-on="true"] { background: var(--accent); color: #111; border-color: var(--accent); }
+  input[type=range] { flex: 1; accent-color: var(--accent); }
+  .time { color: var(--dim); font-size: 12px; min-width: 92px; }
+
+  aside {
+    background: var(--panel); border-left: 1px solid var(--line);
+    padding: 20px 18px; overflow-y: auto; max-height: 100vh;
+  }
+  aside h2 {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .09em;
+    color: var(--dim); margin: 22px 0 9px; font-weight: 500;
+  }
+  aside h2:first-child { margin-top: 0; }
+  .row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-size: 12px; }
+  .row label { flex: 1; color: var(--dim); }
+  .row output { color: var(--ink); min-width: 42px; text-align: right; }
+  .seg { display: flex; gap: 4px; flex-wrap: wrap; }
+  .seg button { padding: 4px 8px; font-size: 11px; }
+
+  .cast { display: flex; flex-direction: column; gap: 5px; }
+  .cast div { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .sw { width: 26px; height: 13px; border-radius: 2px; flex: none; }
+  .tier { color: var(--dim); font-size: 10px; margin-left: auto; }
+
+  #issues { display: flex; flex-direction: column; gap: 6px; font-size: 11px; line-height: 1.45; }
+  .issue { padding: 6px 8px; border-radius: 3px; border-left: 2px solid; background: #1a1d21; }
+  .issue.error   { border-color: var(--err); }
+  .issue.warning { border-color: var(--warn); }
+  .issue.info    { border-color: var(--dim); }
+  .issue code { color: var(--dim); font-size: 10px; display: block; }
+  .clean { color: var(--ok); font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Caption with Intention — reference web renderer</h1>
+    <div class="sub">Design system V1.0 (2025.1) · <span id="stat"></span></div>
+    <div class="seg" style="margin-top:10px">
+      <button data-src="sample" data-on="true">Synthetic scene</button>
+      <button data-src="heygen">HeyGen render</button>
+      <button data-src="control">Control Room (4 speakers)</button>
+    </div>
+  </header>
+
+  <div id="stage">
+    <video id="vid" playsinline muted preload="auto" loop></video>
+    <div id="capture"></div>
+  </div>
+
+  <div class="transport">
+    <button id="play">Play</button>
+    <input id="scrub" type="range" min="0" max="32" step="0.01" value="0" />
+    <span class="time" id="time">0.00 / 0.00</span>
+  </div>
+</main>
+
+<aside>
+  <h2>Colour-vision simulation</h2>
+  <div class="seg" id="cvd">
+    <button data-cvd="none" data-on="true">Normal</button>
+    <button data-cvd="prot">Protan</button>
+    <button data-cvd="deut">Deutan</button>
+    <button data-cvd="trit">Tritan</button>
+  </div>
+  <div class="sub" style="margin-top:8px;font-size:11px">Spec 2.1 distinguishes speakers by hue alone. Switch to Deutan and watch attribution degrade.</div>
+
+  <h2>Editorial</h2>
+  <div class="seg">
+    <button id="mono">Monochrome (spec 3.1)</button>
+    <button id="cvdsafe" data-on="true">CVD-safe assign</button>
+  </div>
+
+  <h2>Spec parameters</h2>
+  <div class="row"><label for="base">Baseline size %</label><input id="base" type="range" min="3" max="8" step="0.1" value="5"><output id="baseO">5.0</output></div>
+  <div class="row"><label for="pop">Pop scale</label><input id="pop" type="range" min="0" max="0.4" step="0.01" value="0.15"><output id="popO">0.15</output></div>
+  <div class="row"><label for="box">Box opacity</label><input id="box" type="range" min="0" max="1" step="0.05" value="0.9"><output id="boxO">0.90</output></div>
+  <div class="row"><label for="ra">Read-ahead α</label><input id="ra" type="range" min="0.2" max="1" step="0.05" value="0.9"><output id="raO">0.90</output></div>
+
+  <h2>Cast</h2>
+  <div class="cast" id="cast"></div>
+
+  <h2>Validation</h2>
+  <div id="issues"></div>
+</aside>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <filter id="f-prot" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="
+    0.152286 1.052583 -0.204868 0 0
+    0.114503 0.786281  0.099216 0 0
+   -0.003882 -0.048116 1.051998 0 0
+    0 0 0 1 0"/></filter>
+  <filter id="f-deut" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="
+    0.367322 0.860646 -0.227968 0 0
+    0.280085 0.672501  0.047413 0 0
+   -0.011820 0.042940  0.968881 0 0
+    0 0 0 1 0"/></filter>
+  <filter id="f-trit" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="
+    1.255528 -0.076749 -0.178779 0 0
+   -0.078411  0.930809  0.147602 0 0
+    0.004733  0.691367  0.303900 0 0
+    0 0 0 1 0"/></filter>
+</defs></svg>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
