@@ -1,0 +1,14 @@
+{
+  "id": "cvd-audit",
+  "area": "colour",
+  "spec": null,
+  "normative": false,
+  "title": "The V1.0 palette is not colour-vision safe (finding, not a rule)",
+  "why": "CWI V1.0 distinguishes speakers by hue alone and sets no contrast floor or colour-vision fallback. Under deuteranopia several main pairs collapse. This vector documents the finding so implementations discover it deliberately; it is informative because the spec does not address it.",
+  "fn": "paletteAudit",
+  "expect": {
+    "normalVisionCollisions": 0,
+    "deuteranopiaCollisionsAtLeast": 3,
+    "contrastFailuresAtLeast": 1
+  }
+}

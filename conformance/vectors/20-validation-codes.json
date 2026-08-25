@@ -1,0 +1,164 @@
+{
+  "id": "validation-codes",
+  "area": "validation",
+  "spec": "2.1, 2.4.2",
+  "normative": true,
+  "title": "Structural errors a conformant validator must catch",
+  "why": "These are the failures that silently produce inaccessible captions. Dialogue with no speaker defeats attribution entirely; more than two lines violates 2.4.2 and overruns the work area.",
+  "fn": "validate",
+  "cases": [
+    {
+      "name": "dialogue with no speaker",
+      "manifest": {
+        "cwi": "1.0",
+        "characters": [
+          {
+            "id": "a",
+            "tier": "main",
+            "color": "#17E5E5"
+          }
+        ],
+        "cues": [
+          {
+            "start": 0,
+            "end": 2,
+            "kind": "dialogue",
+            "lines": [
+              {
+                "tokens": [
+                  {
+                    "text": "hi",
+                    "start": 0,
+                    "end": 0.4
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expectCode": "no-speaker",
+      "expectSeverity": "error"
+    },
+    {
+      "name": "cue references an unknown character",
+      "manifest": {
+        "cwi": "1.0",
+        "characters": [
+          {
+            "id": "a",
+            "tier": "main",
+            "color": "#17E5E5"
+          }
+        ],
+        "cues": [
+          {
+            "start": 0,
+            "end": 2,
+            "kind": "dialogue",
+            "speaker": "ghost",
+            "lines": [
+              {
+                "tokens": [
+                  {
+                    "text": "hi",
+                    "start": 0,
+                    "end": 0.4
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expectCode": "unknown-speaker",
+      "expectSeverity": "error"
+    },
+    {
+      "name": "three lines on one frame",
+      "manifest": {
+        "cwi": "1.0",
+        "characters": [
+          {
+            "id": "a",
+            "tier": "main",
+            "color": "#17E5E5"
+          }
+        ],
+        "cues": [
+          {
+            "start": 0,
+            "end": 2,
+            "kind": "dialogue",
+            "speaker": "a",
+            "lines": [
+              {
+                "tokens": [
+                  {
+                    "text": "x",
+                    "start": 0,
+                    "end": 0.3
+                  }
+                ]
+              },
+              {
+                "tokens": [
+                  {
+                    "text": "x",
+                    "start": 0,
+                    "end": 0.3
+                  }
+                ]
+              },
+              {
+                "tokens": [
+                  {
+                    "text": "x",
+                    "start": 0,
+                    "end": 0.3
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expectCode": "too-many-lines",
+      "expectSeverity": "error"
+    },
+    {
+      "name": "cue ends before it starts",
+      "manifest": {
+        "cwi": "1.0",
+        "characters": [
+          {
+            "id": "a",
+            "tier": "main",
+            "color": "#17E5E5"
+          }
+        ],
+        "cues": [
+          {
+            "start": 5,
+            "end": 2,
+            "kind": "dialogue",
+            "speaker": "a",
+            "lines": [
+              {
+                "tokens": [
+                  {
+                    "text": "x",
+                    "start": 5,
+                    "end": 5.3
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expectCode": "bad-timing",
+      "expectSeverity": "error"
+    }
+  ]
+}

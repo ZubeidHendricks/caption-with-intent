@@ -363,3 +363,55 @@ test('CWI_PYTHON overrides discovery', () => {
     else process.env.CWI_PYTHON = prev;
   }
 });
+
+// --- conformance ----------------------------------------------------------
+
+import { conform, findVectors } from '../dist/conform.js';
+
+test('the reference implementation is conformant', async () => {
+  const r = await conform();
+  assert.equal(r.normativeFailures.length, 0,
+    r.normativeFailures.map((f) => `${f.vector} ${f.case}: ${f.detail}`).join('\n'));
+  assert.ok(r.total > 100, `only ${r.total} checks ran — vectors may not have loaded`);
+  assert.ok(r.ok);
+});
+
+test('every vector declares whether it is normative and why it matters', async () => {
+  const { readdirSync, readFileSync } = await import('node:fs');
+  const { join } = await import('node:path');
+  const dir = findVectors();
+  const files = readdirSync(dir).filter((f) => f.endsWith('.json'));
+  assert.ok(files.length >= 10, `only ${files.length} vectors`);
+  for (const f of files) {
+    const v = JSON.parse(readFileSync(join(dir, f), 'utf8'));
+    assert.equal(typeof v.normative, 'boolean', `${f} must declare normative`);
+    assert.ok(v.why && v.why.length > 40, `${f} must explain what breaks for a viewer`);
+    assert.ok(v.id && v.area && v.title && v.fn, `${f} is missing metadata`);
+    // A normative claim without a section reference is just an opinion.
+    if (v.normative) assert.ok(v.spec, `${f} claims normative but cites no spec section`);
+  }
+});
+
+test('the suite catches every mutant', async (t) => {
+  // A conformance suite only ever run against a correct implementation proves
+  // nothing. Each mutant carries one realistic bug; if any passes, the suite
+  // has a hole.
+  let mutants;
+  try {
+    mutants = await import('../../../conformance/mutants/mutants.mjs');
+  } catch {
+    return t.skip('mutants not present (packaged install)');
+  }
+  const missed = [];
+  for (const [name, impl] of Object.entries(mutants)) {
+    const r = await conform(impl);
+    if (r.ok) missed.push(name);
+  }
+  assert.deepEqual(missed, [], `mutants not caught: ${missed.join(', ')}`);
+});
+
+test('an implementation missing an entry point fails loudly', async () => {
+  const r = await conform({ MAIN_COLORS: [] });
+  assert.equal(r.ok, false);
+  assert.ok(r.normativeFailures.some((f) => /exports no/.test(f.detail ?? '')));
+});

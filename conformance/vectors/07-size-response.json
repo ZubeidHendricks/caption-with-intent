@@ -1,0 +1,56 @@
+{
+  "id": "size-response",
+  "area": "typography",
+  "spec": null,
+  "normative": false,
+  "title": "dB span and knee (implementation-defined)",
+  "why": "The spec maps volume onto 3-12% but never states the dB span, nor what the baseline is anchored to. This implementation anchors 0 dB to the speaker's own normal level and compresses +/-6 dB around it, so ordinary prosody (which swings ~15 dB from stress alone) does not consume the range reserved for shouting and whispering.",
+  "fn": "resolveToken",
+  "cases": [
+    {
+      "input": {
+        "db": 3
+      },
+      "expect": {
+        "size": 5.3
+      },
+      "tolerance": 0.05
+    },
+    {
+      "input": {
+        "db": 6
+      },
+      "expect": {
+        "size": 5.6
+      },
+      "tolerance": 0.05
+    },
+    {
+      "input": {
+        "db": 12
+      },
+      "expect": {
+        "size": 12
+      },
+      "tolerance": 0.05
+    },
+    {
+      "input": {
+        "db": -6
+      },
+      "expect": {
+        "size": 4.4
+      },
+      "tolerance": 0.05
+    },
+    {
+      "input": {
+        "db": -18
+      },
+      "expect": {
+        "size": 3
+      },
+      "tolerance": 0.05
+    }
+  ]
+}

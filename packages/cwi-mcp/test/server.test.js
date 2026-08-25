@@ -91,7 +91,7 @@ test('advertises the full toolset with descriptions', async () => {
   const EXPECTED = [
     'cwi_validate', 'cwi_assign_colors', 'cwi_stats', 'cwi_palette_audit',
     'cwi_resolve_typography', 'cwi_export', 'cwi_analyze', 'cwi_build_scene',
-    'cwi_render', 'cwi_deliver', 'cwi_init_app', 'cwi_preview', 'cwi_preview_stop',
+    'cwi_render', 'cwi_deliver', 'cwi_conform', 'cwi_init_app', 'cwi_preview', 'cwi_preview_stop',
   ];
   // Exact, not a subset: a tool added without being documented is a tool
   // nobody discovers, and the README claims a specific count.
@@ -144,6 +144,13 @@ test('a missing file returns a tool error, not a transport error', async () => {
   const r = await call('cwi_validate', { manifest: '/definitely/not/here.cwi.json' });
   assert.equal(r.isError, true);
   assert.match(r.content[0].text, /No such manifest/);
+});
+
+test('conform reports the reference implementation as conformant', async () => {
+  const r = payload(await call('cwi_conform', {}));
+  assert.equal(r.ok, true);
+  assert.equal(r.normativeFailures.length, 0);
+  assert.ok(r.total > 100);
 });
 
 test('preview starts, serves, and stops', async () => {

@@ -10,6 +10,7 @@ Read `RESEARCH.md` for what the system is, `ARCHITECTURE.md` for how to automate
 
 ```
 spec/cwi-manifest.schema.json   the .cwi interchange format
+conformance/                    language-agnostic vectors + mutants that test them
 packages/cwi-core               spec math: palettes, acoustics→type, assignment, validation (0 deps)
 packages/cwi-web                DOM + variable-font renderer, drives off any <video>
 packages/cwi-cli                the `cwi` command + shared operations layer
@@ -131,6 +132,7 @@ cwi assign <manifest>               assign character colours (CVD-safe)
 cwi validate <manifest>             structural + accessibility audit
 cwi stats <manifest>                per-character screen time
 cwi export <manifest> --format vtt  emit a delivery format (vtt | ass)
+cwi conform [--impl f]              run the conformance suite
 cwi palette                         audit the spec's own palette
 cwi type --db 6 --f0 110            what typography an acoustic reading yields
 ```
@@ -147,10 +149,10 @@ to a person. `.mcp.json` in the repo root registers it; or:
 claude mcp add cwi -- node "$PWD/packages/cwi-mcp/dist/server.js"
 ```
 
-Thirteen tools: `cwi_validate`, `cwi_assign_colors`, `cwi_stats`,
+Fourteen tools: `cwi_validate`, `cwi_assign_colors`, `cwi_stats`,
 `cwi_palette_audit`, `cwi_resolve_typography`, `cwi_export`, `cwi_analyze`,
-`cwi_build_scene`, `cwi_render`, `cwi_deliver`, `cwi_init_app`, `cwi_preview`,
-`cwi_preview_stop`.
+`cwi_build_scene`, `cwi_render`, `cwi_deliver`, `cwi_conform`, `cwi_init_app`,
+`cwi_preview`, `cwi_preview_stop`.
 Each returns a one-line summary plus structured JSON, and lossy exports report
 what they dropped rather than pretending to be complete.
 
@@ -231,6 +233,33 @@ npm run sample -w cwi-demo     # rebuilds sample.cwi.json
 
 `scene.mp4` and `control-room.mp4` are small enough to be committed, so the
 demo runs from a clean clone.
+
+## Conformance
+
+The thesis of this repo is that **the format is the product** — a platform
+should write its own renderer against semantics that are pinned down. That is
+only credible if an implementation can prove it got them right.
+
+```bash
+cwi conform                        # the reference implementation
+cwi conform --impl ./mine.js       # yours
+```
+
+`conformance/` holds the vectors as plain JSON, so an implementation in Rust,
+Swift or a shader language can consume them without running any JavaScript.
+
+Each vector declares whether it is **normative** — the value is fixed by the
+published spec and cited by section, so disagreeing is being wrong — or
+**informative**, meaning the spec is silent and this is merely *our* choice, so
+an implementation may differ and still conform. Generating expectations from a
+reference implementation and calling them normative would prove only that it
+agrees with itself; where this suite says normative, the number is in the PDF.
+
+The suite is itself tested. `conformance/mutants/` holds implementations each
+carrying one realistic bug — an inverted pitch-to-weight curve, a validator
+blind to unattributed dialogue, two characters sharing a colour — and the test
+suite asserts every one is caught. A conformance suite only ever run against a
+correct implementation proves nothing.
 
 ## Publishing
 

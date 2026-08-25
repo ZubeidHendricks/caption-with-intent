@@ -47,6 +47,10 @@
     "./deliver": {
       "types": "./dist/deliver.d.ts",
       "default": "./dist/deliver.js"
+    },
+    "./conform": {
+      "types": "./dist/conform.d.ts",
+      "default": "./dist/conform.js"
     }
   },
   "author": "Zubeid Hendricks",

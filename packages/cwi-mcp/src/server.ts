@@ -24,6 +24,7 @@ import {
 import { startPreview, type PreviewHandle } from 'cwi-cli/preview';
 import { render, PRESETS } from 'cwi-cli/render';
 import { deliver, TARGETS } from 'cwi-cli/deliver';
+import { conform } from 'cwi-cli/conform';
 import { init } from 'cwi-cli/scaffold';
 
 const server = new McpServer({ name: 'caption-with-intention', version: '0.1.0' });
@@ -272,6 +273,27 @@ server.registerTool('cwi_deliver', {
   const r = await deliver(a);
   return result(
     `Packaged for ${TARGETS[r.target].label} in ${r.outDir}: video + ${r.sidecar ? 'sidecar captions' : 'no sidecar'} + DELIVERY.txt.`,
+    r,
+  );
+}));
+
+server.registerTool('cwi_conform', {
+  title: 'Run the conformance suite',
+  description:
+    'Run the Caption with Intention conformance vectors against an implementation. Normative ' +
+    'failures mean the implementation contradicts the published spec and are cited by section; ' +
+    'informative differences mean the spec is silent there and differing is allowed. Use this ' +
+    'when checking whether a renderer or port is correct, or to find out exactly which part of ' +
+    'the spec a behaviour comes from. Omit `impl` to check the reference implementation.',
+  inputSchema: {
+    impl: z.string().optional().describe('Path to a JS module exporting resolveToken, assignColors and validate'),
+  },
+}, wrap(async ({ impl }: { impl?: string }) => {
+  const r = await conform(impl);
+  return result(
+    r.ok
+      ? `Conformant — ${r.passed}/${r.total} checks passed${r.informativeFailures.length ? `, ${r.informativeFailures.length} informative difference(s)` : ''}.`
+      : `NOT conformant — ${r.normativeFailures.length} normative failure(s) of ${r.total} checks.`,
     r,
   );
 }));

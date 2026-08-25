@@ -1,0 +1,66 @@
+{
+  "id": "weight-direction",
+  "area": "typography",
+  "spec": "2.3.7, 2.3.9, 2.3.10",
+  "normative": true,
+  "title": "Lower voices render heavier, higher voices lighter",
+  "why": "2.3.7 and 2.3.10 are explicit: lower voices get heavier, expanded type; higher voices lighter, condensed. Inverting this makes a bass read as a treble.",
+  "fn": "resolveToken",
+  "property": "monotonic-nonincreasing",
+  "cases": [
+    {
+      "input": {
+        "f0": 80
+      },
+      "field": "wght"
+    },
+    {
+      "input": {
+        "f0": 100
+      },
+      "field": "wght"
+    },
+    {
+      "input": {
+        "f0": 120
+      },
+      "field": "wght"
+    },
+    {
+      "input": {
+        "f0": 140
+      },
+      "field": "wght"
+    },
+    {
+      "input": {
+        "f0": 160
+      },
+      "field": "wght"
+    },
+    {
+      "input": {
+        "f0": 200
+      },
+      "field": "wght"
+    },
+    {
+      "input": {
+        "f0": 240
+      },
+      "field": "wght"
+    },
+    {
+      "input": {
+        "f0": 300
+      },
+      "field": "wght"
+    },
+    {
+      "input": {
+        "f0": 400
+      },
+      "field": "wght"
+    }
+  ]
+}

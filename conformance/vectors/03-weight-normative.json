@@ -1,0 +1,55 @@
+{
+  "id": "weight-normative",
+  "area": "typography",
+  "spec": "2.3.8",
+  "normative": true,
+  "title": "The neutral pitch band is Roboto Regular 400",
+  "why": "2.3.8 fixes 160-200 Hz to a neutral weight of 400. Every other weight is read relative to it, so an implementation that shifts this shifts the meaning of every caption.",
+  "fn": "resolveToken",
+  "cases": [
+    {
+      "input": {
+        "f0": 160
+      },
+      "expect": {
+        "wght": 400
+      },
+      "tolerance": 0
+    },
+    {
+      "input": {
+        "f0": 180
+      },
+      "expect": {
+        "wght": 400
+      },
+      "tolerance": 0
+    },
+    {
+      "input": {
+        "f0": 200
+      },
+      "expect": {
+        "wght": 400
+      },
+      "tolerance": 0
+    },
+    {
+      "input": {
+        "f0": 0
+      },
+      "expect": {
+        "wght": 400
+      },
+      "tolerance": 0,
+      "note": "Unvoiced or unmeasured must fall back to neutral."
+    },
+    {
+      "input": {},
+      "expect": {
+        "wght": 400
+      },
+      "tolerance": 0
+    }
+  ]
+}

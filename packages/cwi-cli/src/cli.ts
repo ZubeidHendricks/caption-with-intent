@@ -9,6 +9,7 @@ import {
 import { startPreview } from './preview.js';
 import { render, PRESETS, ALPHA_FORMATS } from './render.js';
 import { deliver, TARGETS } from './deliver.js';
+import { conform } from './conform.js';
 import { init } from './scaffold.js';
 import { parse, str, num, bool, type Args } from './args.js';
 
@@ -43,6 +44,7 @@ ${bold('Working on a manifest')}
   cwi export <manifest> --format vtt  emit a delivery format (vtt | ass)
 
 ${bold('Reference')}
+  cwi conform [--impl f]              run the conformance suite
   cwi palette                         audit the spec's own palette
   cwi type --db 6 --f0 110            what typography an acoustic reading yields
 
@@ -71,6 +73,29 @@ function out(a: Args, data: unknown, human: () => void): void {
 // --------------------------------------------------------------------------
 
 const commands: Record<string, (a: Args) => Promise<void> | void> = {
+  async conform(a) {
+    const r = await conform(str(a, 'impl'));
+    out(a, r, () => {
+      console.log(`conformance — ${dim(r.implementation)}\n`);
+      for (const [area, x] of Object.entries(r.byArea)) {
+        const tint = x.passed === x.total ? grn : yel;
+        console.log(`  ${area.padEnd(12)} ${tint(`${x.passed}/${x.total}`)}`);
+      }
+      if (r.normativeFailures.length) {
+        console.log(`\n${red('normative failures')} ${dim('— these are fixed by the published spec')}`);
+        for (const f of r.normativeFailures) console.log(`  ${red('✗')} ${f.vector} · ${f.case}\n      ${dim(f.detail ?? '')}`);
+      }
+      if (r.informativeFailures.length) {
+        console.log(`\n${yel('informative differences')} ${dim('— the spec is silent here; differing is allowed')}`);
+        for (const f of r.informativeFailures) console.log(`  ${yel('•')} ${f.vector} · ${f.case}\n      ${dim(f.detail ?? '')}`);
+      }
+      console.log(r.ok
+        ? `\n${grn(`${r.passed}/${r.total} — conformant`)}`
+        : `\n${red(`${r.normativeFailures.length} normative failure(s)`)} of ${r.total} checks`);
+    });
+    if (!r.ok) process.exitCode = 1;
+  },
+
   async doctor(a) {
     const r = await doctor();
     out(a, r, () => {
