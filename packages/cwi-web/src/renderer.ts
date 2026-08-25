@@ -20,7 +20,25 @@ interface TokenView {
   el: HTMLElement;
   token: Token;
   spoken: boolean;
-  popped: boolean;
+  /** Last applied pop scale, so we only touch style when it actually changes. */
+  scale: number;
+}
+
+/**
+ * Pop shape: rise to the peak at 45% of the duration, then settle.
+ *
+ * Mirrors the previous CSS keyframes (0% → 45% peak → 100%) with a slight
+ * overshoot on the rise, so the motion reads as a flick toward the live word
+ * rather than a symmetrical throb.
+ */
+function popCurve(p: number): number {
+  const PEAK = 0.45;
+  if (p <= PEAK) {
+    const x = p / PEAK;
+    return 1 - Math.pow(1 - x, 3);            // ease-out cubic
+  }
+  const x = (p - PEAK) / (1 - PEAK);
+  return 1 - (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);  // ease-in-out cubic
 }
 
 interface CueView {
@@ -55,6 +73,7 @@ export class CwiRenderer {
   private frame: { width: number; height: number };
   private ro: ResizeObserver | null = null;
   private lastTime = -1;
+  private reducedMotion = false;
 
   constructor(container: HTMLElement, options: RendererOptions = {}) {
     this.opts = withDefaults(options);
@@ -76,6 +95,10 @@ export class CwiRenderer {
       container.appendChild(host);
     }
     this.el = host;
+    // Honour the viewer's motion preference. Offscreen rendering has no such
+    // preference, so a burned-in master always carries the motion.
+    this.reducedMotion = typeof matchMedia === 'function'
+      && matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.applyLayoutVars();
   }
 
@@ -147,26 +170,43 @@ export class CwiRenderer {
     });
 
     // Per-token state.
+    void rewound;
     for (const view of this.active.values()) {
       for (const tv of view.tokens) {
         const spoken = t >= tv.token.start;
         if (spoken !== tv.spoken) {
           tv.spoken = spoken;
           tv.el.classList.toggle('cwi-tok--spoken', spoken);
-          if (spoken && !rewound) this.pop(tv);
-          if (!spoken) { tv.popped = false; tv.el.classList.remove('cwi-tok--pop'); }
         }
+        this.applyPop(tv, t);
       }
     }
   }
 
-  /** Spec 2.2.3 — 15% scale-up on word onset, guiding the eye to the live word. */
-  private pop(tv: TokenView): void {
-    if (tv.popped) return;
-    tv.popped = true;
-    tv.el.classList.remove('cwi-tok--pop');
-    void tv.el.offsetWidth; // restart the animation
-    tv.el.classList.add('cwi-tok--pop');
+  /**
+   * Spec 2.2.3 — 15% scale-up on word onset, guiding the eye to the live word.
+   *
+   * Computed from the seek time rather than run as a CSS animation. A CSS
+   * animation plays on wall-clock, which means it is wrong in every case where
+   * the clock is not simply running forward at 1x: scrubbing backwards, pausing
+   * mid-pop, and — the one that matters most — offscreen frame-by-frame
+   * rendering, where every captured frame would show the pop at whatever phase
+   * the render loop happened to catch. Deriving it from `t` makes the renderer
+   * a pure function of time, so a preview and a burned-in master agree frame
+   * for frame.
+   */
+  private applyPop(tv: TokenView, t: number): void {
+    const o = this.opts;
+    const age = t - tv.token.start;
+    let scale = 1;
+    if (!this.reducedMotion && age >= 0 && age < o.popDurationSec && o.popScale > 0) {
+      scale = 1 + o.popScale * popCurve(age / o.popDurationSec);
+    }
+    // Writing the same value every frame still dirties style; skip when equal.
+    if (Math.abs(scale - tv.scale) > 0.0005) {
+      tv.scale = scale;
+      tv.el.style.transform = scale === 1 ? '' : `scale(${scale.toFixed(4)})`;
+    }
   }
 
   private buildCue(cue: Cue): CueView {
@@ -228,7 +268,7 @@ export class CwiRenderer {
           sp.style.width = `${gapPx}px`;
           lineEl.appendChild(sp);
         }
-        if (cue.kind !== 'music') tokens.push({ el, token, spoken: false, popped: false });
+        if (cue.kind !== 'music') tokens.push({ el, token, spoken: false, scale: 1 });
       });
       root.appendChild(lineEl);
     }

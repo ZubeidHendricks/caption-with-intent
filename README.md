@@ -61,6 +61,40 @@ npx cwi init my-captions     # scaffold a runnable Vite app
 cd my-captions && npm install && npm run dev
 ```
 
+### Ship it
+
+No caption decoder anywhere can render CWI — not WebVTT, SRT, CEA-608/708 or
+IMSC1/TTML2, and no platform's caption engine including YouTube's. Spec 3.2 says
+so and prescribes burned-in open captions until decoders catch up. So delivery
+means burning the captions into the picture:
+
+```bash
+cwi deliver captions.cwi.json --video scene.mp4 --target youtube --out ./upload
+```
+
+That produces a directory with three things:
+
+```
+upload/video.mp4       captions burned in, encoded for the target
+upload/captions.vtt    the conventional sidecar — ship this too
+upload/DELIVERY.txt    what to do with them
+```
+
+**Both files matter.** Closed captioning is legally mandated (FCC/CVAA in the
+US, the European Accessibility Act since June 2025) and spec 3.4 is explicit
+that CWI is *additive* — "in addition to the regulated and mandated use of the
+Closed Captions system". The sidecar is also what makes dialogue searchable and
+translatable. Ship only the burned video and you have an illegal file; ship only
+the sidecar and you have lost the design.
+
+Targets: `youtube`, `web`, `cinema` (a DCP source master — see
+`cwi targets`). Encoding presets are listed by `cwi presets`.
+
+The captions are captured offscreen from the same renderer the preview uses, so
+a burned-in master and the preview agree frame for frame. Rendering needs
+ffmpeg and a headless browser (`npm i playwright-core`), and it is slow — it
+captures every frame where a caption is on screen.
+
 ### Or just look at a manifest
 
 ```bash
@@ -77,6 +111,10 @@ not a copy of it.
 ```
 cwi init [dir]                      scaffold a runnable app
 cwi preview <manifest> [--video f]  open a player for any manifest
+cwi deliver <manifest> --target youtube
+                                    burned video + sidecar, ready to upload
+cwi render <manifest> --video f     just burn captions into the video
+cwi targets / cwi presets           delivery targets and encoding presets
 cwi analyze <media> --vtt f         media + captions -> manifest
 cwi scene <spec.json> --out f       multi-speaker scene from provider renders
 cwi assign <manifest>               assign character colours (CVD-safe)

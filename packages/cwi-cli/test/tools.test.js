@@ -262,3 +262,64 @@ test('preview closes cleanly', async () => {
   await h.close();
   await assert.rejects(() => fetch(h.url));
 });
+
+// --- render / deliver -----------------------------------------------------
+
+import { activeWindows, PRESETS, render } from '../dist/render.js';
+import { TARGETS, deliver } from '../dist/deliver.js';
+
+test('activeWindows merges overlapping and touching cues', () => {
+  assert.deepEqual(activeWindows([{ start: 0, end: 2 }, { start: 1.5, end: 3 }]), [[0, 3]]);
+  assert.deepEqual(activeWindows([{ start: 0, end: 1 }, { start: 5, end: 6 }]), [[0, 1], [5, 6]]);
+  assert.deepEqual(activeWindows([]), []);
+});
+
+test('activeWindows sorts before merging', () => {
+  // Cues are not guaranteed ordered; an unsorted merge silently drops coverage
+  // and the render would skip frames that should show captions.
+  assert.deepEqual(activeWindows([{ start: 5, end: 6 }, { start: 0, end: 5.5 }]), [[0, 6]]);
+});
+
+test('every preset is complete', () => {
+  for (const [id, p] of Object.entries(PRESETS)) {
+    assert.ok(p.label, `${id} label`);
+    assert.ok(p.note && p.note.length > 20, `${id} needs a note explaining when to use it`);
+    assert.ok(p.pixFmt, `${id} pixFmt`);
+    assert.ok(Array.isArray(p.extra), `${id} extra`);
+  }
+});
+
+test('every delivery target names a real preset and writes instructions', () => {
+  for (const [id, t] of Object.entries(TARGETS)) {
+    assert.ok(PRESETS[t.preset], `${id} references unknown preset ${t.preset}`);
+    assert.match(t.videoName, /\.\w+$/, `${id} videoName needs an extension`);
+    const lines = t.instructions({ video: t.videoName, sidecar: 'captions.vtt' });
+    assert.ok(lines.length > 3, `${id} instructions are too thin`);
+    assert.ok(lines.join(' ').includes(t.videoName), `${id} instructions should name the video`);
+  }
+});
+
+test('render rejects an unknown preset', async () => {
+  const { p } = fixture();
+  await assert.rejects(() => render({ manifest: p, out: '/tmp/x.mp4', preset: 'nope' }),
+    (e) => e instanceof CwiError && /Unknown preset/.test(e.message));
+});
+
+test('render rejects odd frame dimensions before doing any work', async () => {
+  const { p } = fixture();
+  // yuv420p needs even dimensions; ffmpeg's own error for this is opaque.
+  await assert.rejects(() => render({ manifest: p, out: '/tmp/x.mp4', width: 1281, height: 720 }),
+    (e) => e instanceof CwiError && /odd dimension/.test(e.message));
+});
+
+test('render rejects a missing source video', async () => {
+  const { p } = fixture();
+  await assert.rejects(() => render({ manifest: p, out: '/tmp/x.mp4', video: '/nope/missing.mp4' }),
+    (e) => e instanceof CwiError && /No such video/.test(e.message));
+});
+
+test('deliver rejects an unknown target', async () => {
+  const { p } = fixture();
+  await assert.rejects(() => deliver({ manifest: p, target: 'tiktok', outDir: '/tmp/x' }),
+    (e) => e instanceof CwiError && /Unknown target/.test(e.message));
+});

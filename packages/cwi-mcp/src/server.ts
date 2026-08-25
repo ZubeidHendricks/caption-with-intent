@@ -22,6 +22,8 @@ import {
   auditPalette, exportCaptions, resolveTypography, analyzeMedia, buildScene,
 } from 'cwi-cli';
 import { startPreview, type PreviewHandle } from 'cwi-cli/preview';
+import { render, PRESETS } from 'cwi-cli/render';
+import { deliver, TARGETS } from 'cwi-cli/deliver';
 import { init } from 'cwi-cli/scaffold';
 
 const server = new McpServer({ name: 'caption-with-intention', version: '0.1.0' });
@@ -223,6 +225,55 @@ server.registerTool('cwi_init_app', {
 }, wrap((a: { dir: string; name?: string; force?: boolean }) => {
   const r = init(a);
   return result(`Scaffolded ${r.files.length} files into ${r.dir}.`, r);
+}));
+
+server.registerTool('cwi_render', {
+  title: 'Burn captions into a video',
+  description:
+    'Render a manifest onto a video as permanent open captions. This is currently the ONLY ' +
+    'faithful delivery path: no deployed caption decoder can carry Caption with Intention — not ' +
+    "WebVTT, SRT, CEA-608/708 or IMSC1/TTML2, and no platform's caption renderer including " +
+    "YouTube's. Spec 3.2 says so and prescribes burned-in open captions until decoders catch up. " +
+    'Needs ffmpeg and a headless browser (playwright-core). Slow: it captures every frame where a ' +
+    'caption is on screen. Prefer cwi_deliver, which also emits the legally-required sidecar.',
+  inputSchema: {
+    manifest: z.string(),
+    video: z.string().optional().describe('Source video; omitted renders captions on black'),
+    out: z.string().describe('Output .mp4'),
+    preset: z.enum(['web', 'youtube', 'cinema', 'prores']).optional().default('web'),
+    from: z.number().optional().describe('Start offset in seconds'),
+    duration: z.number().optional().describe('Render only this many seconds — good for a look test'),
+  },
+}, wrap(async (a: Parameters<typeof render>[0]) => {
+  const r = await render(a);
+  return result(
+    `Rendered ${r.out} — ${r.width}x${r.height} @ ${r.fps}fps, ${r.seconds.toFixed(1)}s ` +
+    `(${r.captured} frames captured, ${r.skipped} blank). ${PRESETS[r.preset].note}`,
+    r,
+  );
+}));
+
+server.registerTool('cwi_deliver', {
+  title: 'Package a title for a delivery target',
+  description:
+    'Produce everything a target needs: the video with captions burned in, PLUS a conventional ' +
+    'sidecar caption file, PLUS written upload instructions. Both artifacts matter — closed ' +
+    'captioning is legally mandated (FCC/CVAA, and the European Accessibility Act since June ' +
+    '2025) and spec 3.4 states CWI is additive, "in addition to" regulated closed captions, not a ' +
+    'replacement. Shipping only the burned video is a compliance failure; shipping only the ' +
+    'sidecar loses the design entirely.',
+  inputSchema: {
+    manifest: z.string(),
+    video: z.string().optional(),
+    target: z.enum(['youtube', 'web', 'cinema']).default('youtube'),
+    outDir: z.string().describe('Directory to write the package into'),
+  },
+}, wrap(async (a: Parameters<typeof deliver>[0]) => {
+  const r = await deliver(a);
+  return result(
+    `Packaged for ${TARGETS[r.target].label} in ${r.outDir}: video + ${r.sidecar ? 'sidecar captions' : 'no sidecar'} + DELIVERY.txt.`,
+    r,
+  );
 }));
 
 // --- Preview lifecycle ----------------------------------------------------

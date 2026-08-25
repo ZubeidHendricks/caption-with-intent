@@ -115,6 +115,13 @@ export async function startPreview(opts: PreviewOptions): Promise<PreviewHandle>
       res.writeHead(200, { 'Content-Type': MIME['.html'], 'Cache-Control': 'no-cache' }).end(html);
       return;
     }
+    // Bare caption surface for offscreen capture: no chrome, no video, no
+    // background — just the captions, at exactly the frame size, on alpha.
+    if (p === '/render') {
+      res.writeHead(200, { 'Content-Type': MIME['.html'], 'Cache-Control': 'no-cache' })
+        .end(renderHtml(Number(url.searchParams.get('w')) || 1920, Number(url.searchParams.get('h')) || 1080));
+      return;
+    }
     if (p === '/manifest.cwi.json') return sendFile(req, res, manifestPath);
     if (p === '/media') {
       if (!videoPath) { res.writeHead(404).end('no video'); return; }
@@ -287,5 +294,45 @@ const tokens = manifest.cues.reduce((n,c) => n + c.lines.reduce((k,l) => k + l.t
 $('stat').textContent = (manifest.meta?.title ? manifest.meta.title + ' · ' : '') +
   manifest.characters.length + ' characters · ' + manifest.cues.length + ' cues · ' +
   tokens + ' tokens · ' + errs + ' errors, ' + warns + ' warnings';
+</script></body></html>`;
+}
+
+/**
+ * The capture surface used by `cwi render`.
+ *
+ * Deliberately the same renderer the preview uses — a burned-in master and the
+ * on-screen preview come from one implementation, so they cannot drift. The
+ * page exposes `__cwiSeek` and `__cwiReady` for the capture loop to drive.
+ */
+function renderHtml(w: number, h: number): string {
+  return `<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,slnt,wdth,wght@8..144,-10..0,25..151,100..1000&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0;background:transparent}
+  #frame{position:relative;width:${w}px;height:${h}px;overflow:hidden}
+</style></head>
+<body><div id="frame"></div>
+<script type="importmap">
+{"imports":{"cwi-core":"/_cwi/core/index.js","cwi-web":"/_cwi/web/index.js"}}
+</script>
+<script type="module">
+import { CwiRenderer } from 'cwi-web';
+const manifest = await fetch('/manifest.cwi.json').then(r => r.json());
+const frame = document.getElementById('frame');
+const renderer = new CwiRenderer(frame, { frame: { width: ${w}, height: ${h} } });
+renderer.load(manifest);
+renderer.seek(0);
+
+// Fonts must be resolved before the first capture, or early frames render in a
+// fallback face and the whole intonation layer is silently wrong.
+await document.fonts.load("400 100px 'Roboto Flex'");
+await document.fonts.load("900 100px 'Roboto Flex'");
+await document.fonts.ready;
+
+window.__cwiSeek = (t) => { renderer.seek(t); };
+window.__cwiReady = true;
 </script></body></html>`;
 }

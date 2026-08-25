@@ -31,17 +31,11 @@ export const CWI_CSS = `
   color: rgba(255,255,255,var(--cwi-read-ahead, .9));
 }
 .cwi-tok--spoken { color: var(--cwi-speaker, #fff); }
-.cwi-tok--pop { animation: cwi-pop var(--cwi-pop-dur, .18s) cubic-bezier(.34,1.56,.64,1); }
 .cwi-sp { display: inline-block; vertical-align: baseline; white-space: pre; }
-@keyframes cwi-pop {
-  0%   { transform: scale(1); }
-  45%  { transform: scale(var(--cwi-pop-scale, 1.15)); }
-  100% { transform: scale(1); }
-}
 .cwi-root--offcam .cwi-tok { font-variation-settings: var(--cwi-axes), 'slnt' var(--cwi-slnt, -10); }
-@media (prefers-reduced-motion: reduce) {
-  .cwi-tok--pop { animation: none; }
-}
+/* The pop is a transform written per frame from the seek time, not a CSS
+   animation — see applyPop(). prefers-reduced-motion is honoured there, because
+   the renderer must also be able to ignore it when rendering offscreen. */
 `;
 
 let injected = false;

@@ -7,6 +7,8 @@ import {
   type ExportFormat,
 } from './ops.js';
 import { startPreview } from './preview.js';
+import { render, PRESETS } from './render.js';
+import { deliver, TARGETS } from './deliver.js';
 import { init } from './scaffold.js';
 import { parse, str, num, bool, type Args } from './args.js';
 
@@ -19,6 +21,12 @@ const USAGE = `${bold('cwi')} — Caption with Intention toolchain
 ${bold('Getting started')}
   cwi init [dir]                      scaffold a runnable app
   cwi preview <manifest> [--video f]  open a player for any manifest
+
+${bold('Delivering')}
+  cwi deliver <manifest> --video f --target youtube
+                                       burned video + mandated sidecar, ready to upload
+  cwi render <manifest> --video f      just burn captions into the video
+  cwi targets / cwi presets            list delivery targets and encoding presets
 
 ${bold('Producing captions')}
   cwi analyze <media> --vtt f          media + captions  -> manifest
@@ -184,6 +192,76 @@ const commands: Record<string, (a: Args) => Promise<void> | void> = {
     out(a, { out: r.out, video: r.video }, () => {
       console.log(r.log);
       console.log(`\n${dim('next')}  cwi assign ${r.out} && cwi preview ${r.out} --video ${r.video}`);
+    });
+  },
+
+  async render(a) {
+    const manifest = need(a, 'manifest');
+    const outPath = str(a, 'out') ?? manifest.replace(/\.cwi\.json$|\.json$/, '') + '.burned.mp4';
+    const quiet = bool(a, 'quiet') || bool(a, 'json');
+    let lastPct = -1;
+    const r = await render({
+      manifest, video: str(a, 'video'), out: outPath,
+      preset: str(a, 'preset'), fps: num(a, 'fps'),
+      width: num(a, 'width'), height: num(a, 'height'),
+      from: num(a, 'from'), duration: num(a, 'duration'),
+      onProgress: quiet ? undefined : (done, total) => {
+        const pct = Math.floor((done / total) * 100);
+        if (pct === lastPct) return;
+        lastPct = pct;
+        const bar = '█'.repeat(Math.round(pct / 3)).padEnd(33, '·');
+        process.stderr.write(`\r  ${bar} ${String(pct).padStart(3)}%  ${done}/${total} frames`);
+      },
+    });
+    if (!quiet) process.stderr.write('\n');
+    out(a, r, () => {
+      console.log(`${grn('wrote')} ${r.out}`);
+      console.log(dim(`  ${r.width}x${r.height} @ ${r.fps}fps · ${r.seconds.toFixed(1)}s · preset "${r.preset}"`));
+      console.log(dim(`  ${r.captured} frames captured, ${r.skipped} blank (no caption on screen)`));
+      console.log(dim(`  ${PRESETS[r.preset].note}`));
+    });
+  },
+
+  async deliver(a) {
+    const manifest = need(a, 'manifest');
+    const target = str(a, 'target') ?? 'youtube';
+    const quiet = bool(a, 'quiet') || bool(a, 'json');
+    let lastPct = -1;
+    const r = await deliver({
+      manifest, video: str(a, 'video'), target,
+      outDir: str(a, 'out') ?? `deliver-${target}`,
+      onProgress: quiet ? undefined : (done, total) => {
+        const pct = Math.floor((done / total) * 100);
+        if (pct === lastPct) return;
+        lastPct = pct;
+        process.stderr.write(`\r  rendering ${String(pct).padStart(3)}%  ${done}/${total} frames`);
+      },
+    });
+    if (!quiet) process.stderr.write('\n');
+    out(a, r, () => {
+      console.log(`${grn('packaged')} ${r.outDir}`);
+      console.log(dim(`  ${TARGETS[target].label} · ${r.seconds.toFixed(1)}s · ${r.frames} frames`));
+      console.log(`  ${basename(r.video)}`);
+      if (r.sidecar) console.log(`  ${basename(r.sidecar)}   ${dim('the mandated closed caption track — ship it too')}`);
+      console.log(`  ${basename(r.readme)}   ${dim('upload instructions')}`);
+    });
+  },
+
+  targets(a) {
+    out(a, Object.entries(TARGETS).map(([k, v]) => ({ id: k, label: v.label, preset: v.preset, sidecar: v.sidecar })), () => {
+      for (const [k, v] of Object.entries(TARGETS)) {
+        console.log(`  ${cyan(k.padEnd(9))} ${v.label}  ${dim(`(${v.preset} + ${v.sidecar} sidecar)`)}`);
+      }
+    });
+  },
+
+  presets(a) {
+    const rows = Object.entries(PRESETS).map(([k, v]) => ({ id: k, ...v }));
+    out(a, rows, () => {
+      for (const [k, v] of Object.entries(PRESETS)) {
+        console.log(`  ${cyan(k.padEnd(9))} ${v.label}`);
+        console.log(`  ${' '.repeat(9)} ${dim(v.note)}`);
+      }
     });
   },
 
