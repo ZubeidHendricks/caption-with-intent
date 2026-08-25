@@ -18,8 +18,8 @@
  */
 import { spawn } from 'node:child_process';
 import { execFile } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, mkdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { CwiError, readManifest } from './ops.js';
 import { startPreview, type PreviewHandle } from './preview.js';
@@ -75,6 +75,59 @@ export const PRESETS: Record<string, Preset> = {
   },
 };
 
+/**
+ * Alpha overlay formats.
+ *
+ * This is the integration path that matters. Premiere holds ~35-42% of creator
+ * share, Final Cut ~25%, Resolve ~15-18%, and CapCut dominates short-form with
+ * no plugin API at all — so building a plugin reaches, at best, a third of
+ * people and cannot reach CapCut users on any terms. An overlay track with an
+ * alpha channel imports into every one of them, keeps full variable-font
+ * fidelity, and stays editable: the editor can slide it, trim it, or switch it
+ * off, which burned-in pixels never allow.
+ */
+export interface AlphaFormat {
+  label: string;
+  ext: string;
+  args: string[];
+  worksIn: string[];
+  note: string;
+}
+
+export const ALPHA_FORMATS: Record<string, AlphaFormat> = {
+  prores4444: {
+    label: 'ProRes 4444 with alpha',
+    ext: '.mov',
+    args: ['-c:v', 'prores_ks', '-profile:v', '4444', '-pix_fmt', 'yuva444p10le', '-alpha_bits', '16'],
+    worksIn: ['Premiere Pro', 'Final Cut Pro', 'DaVinci Resolve', 'After Effects'],
+    note: 'The professional default. Large files, but every desktop NLE reads it natively.',
+    // Editors composite this correctly on import. Compositing by hand with
+    // ffmpeg after a seek needs a PTS reset, or the overlay silently drops:
+    //   [1:v]setpts=PTS-STARTPTS[o];[0:v][o]overlay=0:0
+  },
+  webm: {
+    label: 'VP9 WebM with alpha',
+    ext: '.webm',
+    args: ['-c:v', 'libvpx-vp9', '-pix_fmt', 'yuva420p', '-b:v', '0', '-crf', '24', '-auto-alt-ref', '0'],
+    worksIn: ['browsers', 'web players', 'some mobile editors'],
+    note: 'Small. For web overlay compositing rather than desktop editing.',
+  },
+  qtrle: {
+    label: 'QuickTime Animation (RLE) with alpha',
+    ext: '.mov',
+    args: ['-c:v', 'qtrle', '-pix_fmt', 'argb'],
+    worksIn: ['Premiere Pro', 'Final Cut Pro', 'DaVinci Resolve', 'CapCut desktop'],
+    note: 'Lossless and very widely readable, including by editors that reject ProRes.',
+  },
+  png: {
+    label: 'PNG sequence',
+    ext: '.png',
+    args: [],
+    worksIn: ['everything, including CapCut and mobile editors'],
+    note: 'The universal fallback. Writes numbered frames into a directory.',
+  },
+};
+
 export interface RenderOptions {
   manifest: string;
   video?: string;
@@ -86,6 +139,11 @@ export interface RenderOptions {
   /** Render only this many seconds — for checking a look before committing. */
   duration?: number;
   from?: number;
+  /**
+   * Emit a transparent caption overlay instead of burning onto the video.
+   * Import the result as a track above the picture in any editor.
+   */
+  alpha?: keyof typeof ALPHA_FORMATS | string;
   onProgress?: (done: number, total: number) => void;
 }
 
@@ -99,6 +157,9 @@ export interface RenderResult {
   fps: number;
   seconds: number;
   preset: string;
+  /** Set when an alpha overlay was produced rather than a burned-in video. */
+  alpha?: string;
+  worksIn?: string[];
 }
 
 interface Probe { width: number; height: number; fps: number; duration: number; hasAudio: boolean }
@@ -208,7 +269,14 @@ export async function render(opts: RenderOptions): Promise<RenderResult> {
     const windows = activeWindows(manifest.cues);
     const isActive = (t: number) => windows.some(([a, b]) => t >= a && t <= b);
 
-    const ff = spawnFfmpeg({ videoPath, out: resolve(opts.out), width, height, fps, preset, from, seconds, hasAudio: !!src?.hasAudio });
+    const alphaFmt = opts.alpha ? ALPHA_FORMATS[String(opts.alpha)] : undefined;
+    if (opts.alpha && !alphaFmt) {
+      throw new CwiError(`Unknown alpha format "${opts.alpha}".`,
+        `Available: ${Object.keys(ALPHA_FORMATS).join(', ')}`);
+    }
+    const ff = alphaFmt
+      ? spawnAlpha({ out: resolve(opts.out), fps, fmt: alphaFmt })
+      : spawnFfmpeg({ videoPath, out: resolve(opts.out), width, height, fps, preset, from, seconds, hasAudio: !!src?.hasAudio });
 
     let blank: Buffer | undefined;
     let captured = 0;
@@ -240,7 +308,11 @@ export async function render(opts: RenderOptions): Promise<RenderResult> {
     ff.stdin.end();
     await ff.done;
 
-    return { out: resolve(opts.out), frames: total, captured, skipped, width, height, fps, seconds, preset: presetName };
+    return {
+      out: resolve(opts.out), frames: total, captured, skipped, width, height, fps, seconds,
+      preset: presetName,
+      ...(alphaFmt ? { alpha: String(opts.alpha), worksIn: alphaFmt.worksIn } : {}),
+    };
   } finally {
     await browser?.close().catch(() => {});
     await preview?.close().catch(() => {});
@@ -289,6 +361,35 @@ function spawnFfmpeg(a: {
     });
   });
   // A broken pipe here means ffmpeg already died; its stderr is the real error.
+  proc.stdin.on('error', () => {});
+  return { stdin: proc.stdin, done };
+}
+
+/**
+ * Mux the captured PNG stream straight to an alpha overlay, with no source
+ * video involved. Nothing is composited, so nothing is lost: the overlay is
+ * exactly what the renderer drew, and the editor composites it themselves.
+ */
+function spawnAlpha(a: { out: string; fps: number; fmt: AlphaFormat }) {
+  const isSequence = a.fmt.ext === '.png';
+  const args = ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(a.fps), '-i', '-'];
+
+  if (isSequence) {
+    // A numbered sequence in a directory; -start_number 0 keeps frame N at t=N/fps.
+    mkdirSync(a.out, { recursive: true });
+    args.push('-start_number', '0', join(a.out, 'caption_%06d.png'));
+  } else {
+    args.push(...a.fmt.args, a.out);
+  }
+
+  const proc = spawn('ffmpeg', args, { stdio: ['pipe', 'ignore', 'pipe'] });
+  let stderr = '';
+  proc.stderr.on('data', (d) => { stderr += d.toString(); });
+  const done = new Promise<void>((res, rej) => {
+    proc.on('error', (e) => rej(new CwiError(`ffmpeg failed to start: ${e.message}`, 'Is ffmpeg on PATH?')));
+    proc.on('close', (code) => code === 0 ? res()
+      : rej(new CwiError(`ffmpeg exited ${code}:\n${stderr.trim().split('\n').slice(-6).join('\n')}`)));
+  });
   proc.stdin.on('error', () => {});
   return { stdin: proc.stdin, done };
 }

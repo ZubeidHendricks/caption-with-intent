@@ -7,7 +7,7 @@ import {
   type ExportFormat,
 } from './ops.js';
 import { startPreview } from './preview.js';
-import { render, PRESETS } from './render.js';
+import { render, PRESETS, ALPHA_FORMATS } from './render.js';
 import { deliver, TARGETS } from './deliver.js';
 import { init } from './scaffold.js';
 import { parse, str, num, bool, type Args } from './args.js';
@@ -26,7 +26,8 @@ ${bold('Delivering')}
   cwi deliver <manifest> --video f --target youtube
                                        burned video + mandated sidecar, ready to upload
   cwi render <manifest> --video f      just burn captions into the video
-  cwi targets / cwi presets            list delivery targets and encoding presets
+  cwi render <manifest> --alpha        transparent overlay for Premiere/FCP/Resolve/CapCut
+  cwi targets / presets / overlays     list delivery targets, encodings, overlay formats
 
 ${bold('Producing captions')}
   cwi analyze <media> --vtt f          media + captions  -> manifest
@@ -197,12 +198,15 @@ const commands: Record<string, (a: Args) => Promise<void> | void> = {
 
   async render(a) {
     const manifest = need(a, 'manifest');
-    const outPath = str(a, 'out') ?? manifest.replace(/\.cwi\.json$|\.json$/, '') + '.burned.mp4';
+    const alpha = str(a, 'alpha') ?? (bool(a, 'alpha') ? 'prores4444' : undefined);
+    const ext = alpha ? (ALPHA_FORMATS[alpha]?.ext ?? '.mov') : '.burned.mp4';
+    const stem = manifest.replace(/\.cwi\.json$|\.json$/, '');
+    const outPath = str(a, 'out') ?? (alpha === 'png' ? `${stem}.frames` : stem + ext);
     const quiet = bool(a, 'quiet') || bool(a, 'json');
     let lastPct = -1;
     const r = await render({
       manifest, video: str(a, 'video'), out: outPath,
-      preset: str(a, 'preset'), fps: num(a, 'fps'),
+      preset: str(a, 'preset'), fps: num(a, 'fps'), alpha,
       width: num(a, 'width'), height: num(a, 'height'),
       from: num(a, 'from'), duration: num(a, 'duration'),
       onProgress: quiet ? undefined : (done, total) => {
@@ -216,9 +220,15 @@ const commands: Record<string, (a: Args) => Promise<void> | void> = {
     if (!quiet) process.stderr.write('\n');
     out(a, r, () => {
       console.log(`${grn('wrote')} ${r.out}`);
-      console.log(dim(`  ${r.width}x${r.height} @ ${r.fps}fps · ${r.seconds.toFixed(1)}s · preset "${r.preset}"`));
+      console.log(dim(`  ${r.width}x${r.height} @ ${r.fps}fps · ${r.seconds.toFixed(1)}s`));
       console.log(dim(`  ${r.captured} frames captured, ${r.skipped} blank (no caption on screen)`));
-      console.log(dim(`  ${PRESETS[r.preset].note}`));
+      if (r.alpha) {
+        const f = ALPHA_FORMATS[r.alpha];
+        console.log(dim(`  ${f.label} — ${f.note}`));
+        console.log(`\n  ${bold('Import as a track above your picture in:')} ${r.worksIn?.join(', ')}`);
+      } else {
+        console.log(dim(`  ${PRESETS[r.preset].note}`));
+      }
     });
   },
 
@@ -251,6 +261,17 @@ const commands: Record<string, (a: Args) => Promise<void> | void> = {
     out(a, Object.entries(TARGETS).map(([k, v]) => ({ id: k, label: v.label, preset: v.preset, sidecar: v.sidecar })), () => {
       for (const [k, v] of Object.entries(TARGETS)) {
         console.log(`  ${cyan(k.padEnd(9))} ${v.label}  ${dim(`(${v.preset} + ${v.sidecar} sidecar)`)}`);
+      }
+    });
+  },
+
+  overlays(a) {
+    out(a, Object.entries(ALPHA_FORMATS).map(([id, f]) => ({ id, ...f })), () => {
+      console.log(`Transparent overlay formats — import above your picture, no plugin needed.\n`);
+      for (const [id, f] of Object.entries(ALPHA_FORMATS)) {
+        console.log(`  ${cyan(id.padEnd(11))} ${f.label}`);
+        console.log(`  ${' '.repeat(11)} ${dim(f.note)}`);
+        console.log(`  ${' '.repeat(11)} ${dim('works in: ' + f.worksIn.join(', '))}`);
       }
     });
   },
