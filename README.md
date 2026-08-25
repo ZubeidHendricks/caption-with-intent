@@ -42,9 +42,18 @@ npm install -g cwi-cli          # the toolchain
 npm install cwi-core cwi-web    # to build against
 ```
 
-`cwi analyze` and `cwi scene` additionally need **Python 3 with numpy** and
-**ffmpeg** on PATH. The Python pipeline ships inside `cwi-cli`; set `CWI_PYTHON`
-to choose an interpreter. Everything else is pure Node.
+Requirements vary by command — run `cwi doctor` to see what this machine has:
+
+| Command | Needs |
+|---|---|
+| everything else | Node 18+ |
+| `analyze`, `scene` | Python 3 with numpy, and ffmpeg on PATH |
+| `render`, `deliver` | ffmpeg, plus **Node 20+** and a headless browser (`playwright-core`) |
+
+The Python pipeline ships inside `cwi-cli`; set `CWI_PYTHON` to choose an
+interpreter. Playwright enforces its Node 20 floor by exiting the process rather
+than throwing, so the browser-backed commands check the version before importing
+it and report a clear message on Node 18.
 
 ## Working on this repo
 
@@ -257,7 +266,7 @@ exactly that during setup.
 - f0 uses YIN, accurate to ~0.01% on synthetic tones even when the fundamental is deliberately weaker than its second harmonic. It replaced plain autocorrelation, which measured a 101 Hz voice at 162 Hz because a third of its frames doubled.
 - `centroidRange` is calibrated against 17 real voices (measured 770–1569 Hz), and spends ~80% of the width axis on that population.
 - ASR and diarization are behind adapters and **not exercised by the test suite** — they download multi-GB models.
-- The ASS burn-in export is generated to format spec but **was not executed end to end here**, because the local ffmpeg build lacks `libass`.
+- The ASS export is generated to format spec but never executed end to end here (the local ffmpeg lacks `libass`). It is superseded by `cwi render`, which is faithful where ASS cannot be — libass has no variable-font axis support.
 - `to-vtt` and `to-ass` are lossy by necessity and print exactly what they dropped. ASS cannot carry the variable-font axes at all, so the intonation layer is lost.
 
 ## Licence
