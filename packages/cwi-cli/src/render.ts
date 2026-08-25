@@ -21,7 +21,7 @@ import { execFile } from 'node:child_process';
 import { existsSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
-import { CwiError, readManifest } from './ops.js';
+import { BROWSER_MIN_NODE, browserSupported, CwiError, readManifest } from './ops.js';
 import { startPreview, type PreviewHandle } from './preview.js';
 
 const run = promisify(execFile);
@@ -185,6 +185,14 @@ async function probe(path: string): Promise<Probe> {
 
 /** playwright-core is optional: only `render` needs a browser. */
 async function launchBrowser() {
+  // playwright enforces its Node floor with process.exit rather than a throw,
+  // so this must be checked BEFORE the import — a try/catch cannot save us.
+  if (!browserSupported()) {
+    throw new CwiError(
+      `Rendering needs Node ${BROWSER_MIN_NODE} or newer; this is Node ${process.versions.node}.`,
+      'Everything except render and deliver works on Node 18.',
+    );
+  }
   let chromium;
   try {
     ({ chromium } = await import('playwright-core'));
@@ -264,7 +272,16 @@ export async function render(opts: RenderOptions): Promise<RenderResult> {
       deviceScaleFactor: 1,
     });
     await page.goto(`${preview.url}render?w=${width}&h=${height}`, { waitUntil: 'load' });
-    await page.waitForFunction('window.__cwiReady === true', null, { timeout: 30000 });
+    await page.waitForFunction('window.__cwiReady === true', null, { timeout: 45000 });
+
+    // A render in a fallback face is not spec-accurate: the wght and wdth axes
+    // are the entire intonation layer. Fail rather than quietly ship it.
+    if (!(await page.evaluate(() => (globalThis as unknown as { __cwiFontsLoaded: boolean }).__cwiFontsLoaded))) {
+      throw new CwiError(
+        'Roboto Flex did not load, so the variable-font axes would render in a fallback face.',
+        'Check network access to fonts.googleapis.com, or self-host the font and adjust the render page.',
+      );
+    }
 
     const windows = activeWindows(manifest.cues);
     const isActive = (t: number) => windows.some(([a, b]) => t >= a && t <= b);

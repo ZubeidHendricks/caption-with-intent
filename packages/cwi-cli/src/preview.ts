@@ -328,9 +328,26 @@ renderer.seek(0);
 
 // Fonts must be resolved before the first capture, or early frames render in a
 // fallback face and the whole intonation layer is silently wrong.
-await document.fonts.load("400 100px 'Roboto Flex'");
-await document.fonts.load("900 100px 'Roboto Flex'");
-await document.fonts.ready;
+//
+// But never block forever on it. Roboto Flex comes from a font CDN, and a slow
+// or blocked network would otherwise hang the page indefinitely — which turns a
+// transient network problem into a render that never finishes and a test suite
+// that silently skips itself. Race the load and report the outcome instead.
+const fontsLoaded = await Promise.race([
+  (async () => {
+    await document.fonts.load("400 100px 'Roboto Flex'");
+    await document.fonts.load("900 100px 'Roboto Flex'");
+    await document.fonts.ready;
+    return true;
+  })(),
+  new Promise((r) => setTimeout(() => r(false), 15000)),
+]);
+
+window.__cwiFontsLoaded = fontsLoaded;
+if (!fontsLoaded) {
+  console.warn('[cwi] Roboto Flex did not load within 15s — rendering in a fallback face. ' +
+    'The variable-font axes carry the intonation layer, so this output is not spec-accurate.');
+}
 
 window.__cwiSeek = (t) => { renderer.seek(t); };
 window.__cwiReady = true;

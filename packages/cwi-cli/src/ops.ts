@@ -302,6 +302,20 @@ async function python(script: string, args: string[]): Promise<string> {
   }
 }
 
+/**
+ * Minimum Node for the browser-backed commands.
+ *
+ * playwright-core requires Node 20+ and enforces it by calling process.exit —
+ * not by throwing — so importing it on Node 18 kills the process outright and
+ * cannot be caught. Every path that might import it has to check first.
+ * Everything else in this toolchain still works on Node 18.
+ */
+export const BROWSER_MIN_NODE = 20;
+
+export function browserSupported(): boolean {
+  return Number(process.versions.node.split('.')[0]) >= BROWSER_MIN_NODE;
+}
+
 export interface DoctorCheck {
   name: string;
   ok: boolean;
@@ -370,6 +384,14 @@ export async function doctor(): Promise<{ checks: DoctorCheck[]; ok: boolean }> 
     }
   }
 
+  if (!browserSupported()) {
+    checks.push({
+      name: 'browser', ok: false, needed: 'render, deliver',
+      detail: `Node ${process.versions.node} — playwright needs ${BROWSER_MIN_NODE}+`,
+      fix: `Upgrade to Node ${BROWSER_MIN_NODE} or newer. Everything except render and deliver works on this version.`,
+    });
+    return { checks, ok: checks.every((c) => c.ok) };
+  }
   try {
     const { chromium } = await import('playwright-core');
     const b = await chromium.launch({ headless: true });

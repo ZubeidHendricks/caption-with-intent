@@ -68,13 +68,25 @@ before(async () => {
   const manifestPath = join(dir, 'm.cwi.json');
   writeFileSync(manifestPath, JSON.stringify(MANIFEST));
 
+  // playwright enforces its Node 20 floor with process.exit, not a throw, so
+  // the version must be checked before the import or the whole file dies.
+  if (Number(process.versions.node.split('.')[0]) < 20) {
+    unavailable = `needs Node 20+ for playwright; this is Node ${process.versions.node}`;
+    console.error(`\n  renderer tests skipped — ${unavailable}\n`);
+    return;
+  }
   try {
     preview = await startPreview({ manifest: manifestPath, port: 0, inspector: false });
     const { chromium } = await import('playwright-core');
     browser = await chromium.launch({ headless: true });
     page = await browser.newPage({ viewport: { width: FRAME_W, height: FRAME_H } });
     await page.goto(`${preview.url}render?w=${FRAME_W}&h=${FRAME_H}`, { waitUntil: 'load' });
-    await page.waitForFunction('window.__cwiReady === true', null, { timeout: 30000 });
+    await page.waitForFunction('window.__cwiReady === true', null, { timeout: 45000 });
+    if (!(await page.evaluate(() => window.__cwiFontsLoaded))) {
+      // Metrics tests (word gaps, sizes) depend on the real font.
+      unavailable = 'Roboto Flex did not load — layout metrics would be measured in a fallback face';
+      console.error(`\n  renderer tests skipped — ${unavailable}\n`);
+    }
   } catch (e) {
     unavailable = `no headless browser: ${String(e.message).split('\n')[0]} — run \`npx playwright install chromium\``;
     console.error(`\n  renderer tests skipped — ${unavailable}\n`);
