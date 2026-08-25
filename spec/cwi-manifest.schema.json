@@ -4,19 +4,43 @@
   "title": "Caption with Intention manifest",
   "description": "Interchange format for captions authored to the Caption with Intention design system V1.0 (2025.1). Carries per-word timing, speaker attribution, and either measured acoustics or resolved typography.",
   "type": "object",
-  "required": ["cwi", "characters", "cues"],
+  "required": [
+    "cwi",
+    "characters",
+    "cues"
+  ],
   "additionalProperties": false,
   "properties": {
-    "cwi": { "const": "1.0" },
+    "cwi": {
+      "const": "1.0"
+    },
     "meta": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "title": { "type": "string" },
-        "aspectRatio": { "type": "string", "examples": ["16:9", "1.85:1", "2.39:1", "1.43:1"] },
-        "frameRate": { "type": "number", "exclusiveMinimum": 0 },
-        "language": { "type": "string", "description": "BCP 47 tag" },
-        "generator": { "type": "string" }
+        "title": {
+          "type": "string"
+        },
+        "aspectRatio": {
+          "type": "string",
+          "examples": [
+            "16:9",
+            "1.85:1",
+            "2.39:1",
+            "1.43:1"
+          ]
+        },
+        "frameRate": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "language": {
+          "type": "string",
+          "description": "BCP 47 tag"
+        },
+        "generator": {
+          "type": "string"
+        }
       }
     },
     "options": {
@@ -28,15 +52,44 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "tier"],
+        "required": [
+          "id",
+          "tier"
+        ],
         "additionalProperties": false,
         "properties": {
-          "id": { "type": "string", "minLength": 1 },
-          "name": { "type": "string" },
-          "tier": { "enum": ["main", "supporting", "minor"], "description": "Spec 2.1.1-2.1.4" },
-          "role": { "enum": ["hero", "villain", "neutral"], "description": "Drives the spec's hero/villain hue-opposition rule" },
-          "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
-          "rank": { "type": "integer", "minimum": 0, "description": "Prominence within tier, 0 = most prominent" }
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "tier": {
+            "enum": [
+              "main",
+              "supporting",
+              "minor"
+            ],
+            "description": "Spec 2.1.1-2.1.4"
+          },
+          "role": {
+            "enum": [
+              "hero",
+              "villain",
+              "neutral"
+            ],
+            "description": "Drives the spec's hero/villain hue-opposition rule"
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$"
+          },
+          "rank": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Prominence within tier, 0 = most prominent"
+          }
         }
       }
     },
@@ -44,16 +97,44 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["start", "end", "kind", "lines"],
+        "required": [
+          "start",
+          "end",
+          "kind",
+          "lines"
+        ],
         "additionalProperties": false,
         "properties": {
-          "id": { "type": "string" },
-          "start": { "type": "number", "minimum": 0 },
-          "end": { "type": "number", "minimum": 0 },
-          "speaker": { "type": "string", "description": "Character id. Required for kind=dialogue." },
-          "kind": { "enum": ["dialogue", "sfx", "music"] },
-          "onCamera": { "type": "boolean", "description": "false renders obliqued (spec 2.1.5)" },
-          "breakout": { "type": "boolean", "description": "Sudden loud speech may leave the caption box (spec 2.4.1)" },
+          "id": {
+            "type": "string"
+          },
+          "start": {
+            "type": "number",
+            "minimum": 0
+          },
+          "end": {
+            "type": "number",
+            "minimum": 0
+          },
+          "speaker": {
+            "type": "string",
+            "description": "Character id. Required for kind=dialogue."
+          },
+          "kind": {
+            "enum": [
+              "dialogue",
+              "sfx",
+              "music"
+            ]
+          },
+          "onCamera": {
+            "type": "boolean",
+            "description": "false renders obliqued (spec 2.1.5)"
+          },
+          "breakout": {
+            "type": "boolean",
+            "description": "Sudden loud speech may leave the caption box (spec 2.4.1)"
+          },
           "lines": {
             "type": "array",
             "minItems": 1,
@@ -61,10 +142,51 @@
             "description": "Spec 2.4.2 permits at most two lines per frame.",
             "items": {
               "type": "object",
-              "required": ["tokens"],
+              "required": [
+                "tokens"
+              ],
               "additionalProperties": false,
               "properties": {
-                "tokens": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/token" } }
+                "tokens": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "$ref": "#/$defs/token"
+                  }
+                }
+              }
+            }
+          },
+          "prosody": {
+            "type": "object",
+            "description": "Measured prosody over the cue. Carried as data; NOT rendered by CWI V1.0. These are acoustic measurements, not emotion labels \u2014 see pipeline/prosody.py.",
+            "additionalProperties": true,
+            "properties": {
+              "pitchVariationSemitones": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Interquartile pitch range. Monotone ~0; animated 4-8+."
+              },
+              "pitchContourSemitones": {
+                "type": "number",
+                "description": "Net pitch direction. Positive rises (questioning), negative falls (assertive)."
+              },
+              "speechRateWpm": {
+                "type": "number",
+                "minimum": 0
+              },
+              "hnrDb": {
+                "type": "number",
+                "description": "Harmonics-to-noise ratio. Low = breathy, strained or tearful."
+              },
+              "jitter": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Cycle-to-cycle pitch instability; heard as tremor."
+              },
+              "spectralTiltDbPerOctave": {
+                "type": "number",
+                "description": "Spectral slope. Flatter = more vocal effort at the same loudness."
               }
             }
           }
@@ -75,30 +197,77 @@
   "$defs": {
     "token": {
       "type": "object",
-      "required": ["text", "start", "end"],
+      "required": [
+        "text",
+        "start",
+        "end"
+      ],
       "additionalProperties": false,
-      "description": "One word. Carry acoustics (db/f0/centroid) and let the renderer resolve typography, or carry resolved typography (size/wght/wdth) directly, or both — resolved values win.",
+      "description": "One word. Carry acoustics (db/f0/centroid) and let the renderer resolve typography, or carry resolved typography (size/wght/wdth) directly, or both \u2014 resolved values win.",
       "properties": {
-        "text": { "type": "string" },
-        "start": { "type": "number", "minimum": 0, "description": "Onset of the word's FIRST phoneme — the colour flips here (spec 2.2.2)." },
-        "end": { "type": "number", "minimum": 0 },
-        "db": { "type": "number", "description": "Level relative to this speaker's normal speaking voice. 0 = normal." },
-        "f0": { "type": "number", "minimum": 0, "description": "Median fundamental frequency over the word, Hz." },
-        "centroid": { "type": "number", "minimum": 0, "description": "Median spectral centroid over the word, Hz." },
-        "size": { "type": "number", "description": "Resolved type size, % of frame height. Spec range 3-12, baseline 5." },
-        "wght": { "type": "number", "minimum": 100, "maximum": 1000, "description": "Roboto Flex wght axis." },
-        "wdth": { "type": "number", "minimum": 25, "maximum": 151, "description": "Roboto Flex wdth axis." },
+        "text": {
+          "type": "string"
+        },
+        "start": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Onset of the word's FIRST phoneme \u2014 the colour flips here (spec 2.2.2)."
+        },
+        "end": {
+          "type": "number",
+          "minimum": 0
+        },
+        "db": {
+          "type": "number",
+          "description": "Level relative to this speaker's normal speaking voice. 0 = normal."
+        },
+        "f0": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Median fundamental frequency over the word, Hz."
+        },
+        "centroid": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Median spectral centroid over the word, Hz."
+        },
+        "size": {
+          "type": "number",
+          "description": "Resolved type size, % of frame height. Spec range 3-12, baseline 5."
+        },
+        "wght": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 1000,
+          "description": "Roboto Flex wght axis."
+        },
+        "wdth": {
+          "type": "number",
+          "minimum": 25,
+          "maximum": 151,
+          "description": "Roboto Flex wdth axis."
+        },
         "syllables": {
           "type": "array",
           "description": "Optional syllable subdivision (spec 2.2.4).",
           "items": {
             "type": "object",
-            "required": ["text", "start", "end"],
+            "required": [
+              "text",
+              "start",
+              "end"
+            ],
             "additionalProperties": false,
             "properties": {
-              "text": { "type": "string" },
-              "start": { "type": "number" },
-              "end": { "type": "number" }
+              "text": {
+                "type": "string"
+              },
+              "start": {
+                "type": "number"
+              },
+              "end": {
+                "type": "number"
+              }
             }
           }
         }

@@ -19,6 +19,7 @@ from collections import defaultdict
 from pathlib import Path
 
 import acoustics
+import prosody
 import transcript as tr
 
 import segment as seg
@@ -99,6 +100,11 @@ def build(media: Path, data: dict, args) -> dict:
         off = meta_speakers.get(spk, {}).get("offCamera", [])
         mid = (group[0]["start"] + group[-1]["end"]) / 2
         lines = seg.wrap(group, args.max_chars)
+        # Prosody is measured per cue, never per word: contour, variation and
+        # rate are properties of a phrase. Carried as data, not rendered — see
+        # prosody.py on why this is measurement rather than emotion inference.
+        pros = prosody.cue_features(x, sr, frames, group[0]["start"], group[-1]["end"], len(group)) \
+            if not args.no_prosody else None
         cues.append({
             "id": f"c{int(group[0]['start'] * 1000):07d}",
             "start": c_start,
@@ -106,6 +112,7 @@ def build(media: Path, data: dict, args) -> dict:
             "speaker": spk,
             "kind": "dialogue",
             "onCamera": not in_ranges(mid, off),
+            **({"prosody": pros} if pros else {}),
             "lines": [{"tokens": [{
                 "text": w["text"],
                 "start": round(w["start"], 3),
@@ -141,6 +148,8 @@ def main() -> None:
     ap.add_argument("--max-cue", type=float, default=seg.MAX_CUE_S)
     ap.add_argument("--max-chars", type=int, default=seg.MAX_CHARS_PER_LINE)
     ap.add_argument("--tail", type=float, default=0.35, help="hold after the last word, seconds")
+    ap.add_argument("--no-prosody", action="store_true",
+                    help="skip the per-cue prosody measurements")
     ap.add_argument("--pitch-mode", choices=["voice", "word", "raw"], default="voice",
                     help="voice: weight/width identify the character (default, see acoustics.stabilize); "
                          "word: per-word prosody, damped; raw: uncorrected, diagnostics only")

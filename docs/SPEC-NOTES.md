@@ -58,6 +58,14 @@ So `acoustics.stabilize()` defaults to `mode="voice"`: weight and width identify
 
 **Spectral centroid needs corpus calibration.** The analyzer measures centroid over *voiced* frames only, deliberately excluding unvoiced consonants so they cannot drag the estimate. That runs well below a full-band speech centroid — a real low male voice measured 695 Hz — so `centroidRange` defaults to `[450, 2000]` rather than the full-band figures a naive reading would suggest. This is calibrated against a single real voice and should be re-tuned on a proper corpus.
 
+**Emotion is not encoded, and that is the point.** CWI V1.0 carries volume, pitch and harmonics, and nothing that names a feeling. It is tempting to add emotion — conversational-video systems like Tavus's Raven read it from the speaker's face in real time and describe it in natural language — but copying that here would be a mistake for a reason specific to captioning: **a Deaf viewer watching a film can already see the actor's face.** Rendering "angry" in type duplicates what the picture carries perfectly well.
+
+What the picture does not carry is the vocal channel, and the highest-information case is where voice *contradicts* face — sarcasm, suppressed anger, forced cheer, a threat delivered with a smile. That is exactly what is lost without hearing, and exactly what a face-reading model cannot supply.
+
+`pipeline/prosody.py` therefore measures six further acoustic properties per cue — pitch variation, pitch contour, speech rate, harmonics-to-noise ratio, jitter and spectral tilt — and renders none of them. Two of these close real gaps: contour separates a question from a statement, which text cannot do at all ("you're going" / "you're going?"), and HNR separates *quiet because whispering* from *quiet because barely holding together*, which the size axis alone flattens into identical small type.
+
+They stay unrendered deliberately. The CWI team's own account of building V1.0 is that they over-indexed and pulled back — "we learned subtlety prevents captions from becoming distracting" — and adding five more visual channels would repeat a mistake they already made and corrected. Any decision to surface these should be validated with DHH viewers first, as the original system was.
+
 **Colour-vision safety — a gap, not an ambiguity.** See `ARCHITECTURE.md` §4. The V1.0 palette has pairs that collapse under all three dichromacies, and the spec sets no contrast floor. `assignColors()` adds a CVD-safety constraint on top of the spec's rules, using only the spec's own swatches.
 
 **Colour stability across a series.** Not addressed. A character's colour should be identical in every episode. Pin `characters[].color` in a show-level manifest and reuse it rather than re-running assignment per episode.

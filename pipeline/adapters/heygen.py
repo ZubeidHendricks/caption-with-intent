@@ -47,6 +47,7 @@ from urllib.request import urlopen
 
 import acoustics
 import align
+import prosody
 import segment as seg
 import transcript as tr
 
@@ -111,7 +112,7 @@ def build(
             "aspectRatio": "16:9",
         },
         "characters": [{"id": speaker, "name": name or speaker, "tier": tier, "rank": 0}],
-        "cues": _cues(seg.segment(words), speaker, on_camera),
+        "cues": _cues(seg.segment(words), speaker, on_camera, (x, sr, frames)),
     }
 
 
@@ -135,9 +136,17 @@ def _group_by_cue(words: list[dict], max_gap: float = 0.35) -> list[list[dict]]:
     return out
 
 
-def _cues(groups: list[list[dict]], speaker: str, on_camera: bool) -> list[dict]:
+def _cues(groups: list[list[dict]], speaker: str, on_camera: bool,
+           audio: tuple | None = None) -> list[dict]:
     bounds = seg.cue_bounds(groups)
-    return [_cue(g, speaker, on_camera, *b) for g, b in zip(groups, bounds)]
+    out = []
+    for g, b in zip(groups, bounds):
+        cue = _cue(g, speaker, on_camera, *b)
+        if audio:
+            x, sr, frames = audio
+            cue["prosody"] = prosody.cue_features(x, sr, frames, g[0]["start"], g[-1]["end"], len(g))
+        out.append(cue)
+    return out
 
 
 def _cue(group: list[dict], speaker: str, on_camera: bool, start: float, end: float) -> dict:
