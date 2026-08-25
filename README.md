@@ -109,6 +109,7 @@ not a copy of it.
 ### The command
 
 ```
+cwi doctor                          check what is available on this machine
 cwi init [dir]                      scaffold a runnable app
 cwi preview <manifest> [--video f]  open a player for any manifest
 cwi deliver <manifest> --target youtube
@@ -253,7 +254,8 @@ exactly that during setup.
 - **A plain four-hander cannot be captioned CVD-safely with the CWI V1.0 palette.** Best worst-case separation across four main characters is ΔE 11.8 — Vale and Ruiz collide under tritanopia — against a floor of 20. The assigner reports this rather than degrading silently.
 - Alignment accuracy for providers that give no word timings, measured against ground truth: median 45 ms, p90 78 ms, 97% within 100 ms. Measured on synthetic tones, so it bounds the algorithm rather than predicting real-world TTS accuracy.
 - **HeyGen silently ignored both `voice_id` and `voice_settings.pitch`** on the studio avatars used here — see the note at the top of `pipeline/adapters/heygen.py`. The captions are still correct because typography is derived from the rendered audio, but the intended vocal contrast between characters was lost. Measure a probe clip per character before committing to a full pass.
-- f0 estimation has a known octave-error failure mode on some rendered audio. A naive sub-harmonic correction was tried and rejected (it over-corrected higher voices); fixing it properly needs pYIN or CREPE behind the same interface.
+- f0 uses YIN, accurate to ~0.01% on synthetic tones even when the fundamental is deliberately weaker than its second harmonic. It replaced plain autocorrelation, which measured a 101 Hz voice at 162 Hz because a third of its frames doubled.
+- `centroidRange` is calibrated against 17 real voices (measured 770–1569 Hz), and spends ~80% of the width axis on that population.
 - ASR and diarization are behind adapters and **not exercised by the test suite** — they download multi-GB models.
 - The ASS burn-in export is generated to format spec but **was not executed end to end here**, because the local ffmpeg build lacks `libass`.
 - `to-vtt` and `to-ass` are lossy by necessity and print exactly what they dropped. ASS cannot carry the variable-font axes at all, so the intonation layer is lost.

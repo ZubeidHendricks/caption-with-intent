@@ -19,7 +19,7 @@ export const DEFAULT_OPTIONS: CwiOptions = {
   weightRange: [900, 100],
   baselineWeight: 400,
 
-  centroidRange: [450, 2000],
+  centroidRange: [700, 1700],
   widthRange: [151, 25],
   baselineWidth: 100,
 

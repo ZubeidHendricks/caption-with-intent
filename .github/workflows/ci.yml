@@ -29,6 +29,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - run: npm ci
+
+      # The renderer tests run in a real browser: the spec's geometry is all
+      # resolved layout, and a DOM emulator would report plausible zeros and
+      # pass while the renderer was broken.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
       - run: npm run setup:py
       - run: npm run build
       - run: npm run test:node

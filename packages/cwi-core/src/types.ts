@@ -143,11 +143,16 @@ export interface CwiOptions {
    * ambiguous (see docs/SPEC-NOTES.md); we follow the prose — energy low in the
    * spectrum reads fuller, so it maps wider — using spectral centroid in Hz.
    *
-   * The default is tuned for the median centroid over VOICED frames, which the
-   * analyzer produces. That runs well below a full-band speech centroid,
-   * because unvoiced consonants (which carry most of the high-frequency
-   * energy) are deliberately excluded so they cannot drag the estimate. Feeding
-   * a full-band centroid through these bounds will read far too condensed.
+   * Calibrated against the median centroid over VOICED frames, which is what
+   * the analyzer produces. That runs well below a full-band speech centroid,
+   * because unvoiced consonants — which carry most of the high-frequency
+   * energy — are deliberately excluded so they cannot drag the estimate.
+   * Feeding a full-band centroid through these bounds reads far too condensed.
+   *
+   * The default spans 700-1700 Hz, measured across 17 real voices (synthesised
+   * and rendered) whose voiced-frame centroids ran 770-1569 Hz. An earlier
+   * 450-2000 guess was too wide: every real voice landed in the middle of the
+   * width axis and the axis carried almost no information.
    */
   centroidRange: [number, number];
   /** Roboto Flex wdth at the low-centroid and high-centroid bounds. */

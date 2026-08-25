@@ -323,3 +323,43 @@ test('deliver rejects an unknown target', async () => {
   await assert.rejects(() => deliver({ manifest: p, target: 'tiktok', outDir: '/tmp/x' }),
     (e) => e instanceof CwiError && /Unknown target/.test(e.message));
 });
+
+// --- doctor ---------------------------------------------------------------
+
+import { doctor, findPython, findPipeline } from '../dist/ops.js';
+
+test('doctor reports every capability with a fix for each failure', async () => {
+  const r = await doctor();
+  const names = r.checks.map((c) => c.name);
+  for (const expected of ['node', 'ffmpeg', 'ffprobe', 'pipeline', 'browser']) {
+    assert.ok(names.includes(expected), `missing check: ${expected}`);
+  }
+  for (const c of r.checks) {
+    assert.equal(typeof c.ok, 'boolean');
+    assert.ok(c.needed, `${c.name} must say what it is needed for`);
+    assert.ok(c.detail, `${c.name} must report a detail`);
+    // A failure the user cannot act on is not worth reporting.
+    if (!c.ok) assert.ok(c.fix, `${c.name} failed without telling the user how to fix it`);
+  }
+  assert.equal(r.ok, r.checks.every((c) => c.ok));
+});
+
+test('findPython locates a venv above the pipeline, not just beside it', async () => {
+  // Regression: the pipeline can resolve to the copy bundled inside the
+  // package, whose parent has no .venv. Searching one level fell through to a
+  // bare `python3` without numpy, and analyze failed with a traceback.
+  const py = findPython();
+  assert.ok(py.length > 0);
+  assert.ok(findPipeline().length > 0);
+});
+
+test('CWI_PYTHON overrides discovery', () => {
+  const prev = process.env.CWI_PYTHON;
+  process.env.CWI_PYTHON = '/custom/python';
+  try {
+    assert.equal(findPython(), '/custom/python');
+  } finally {
+    if (prev === undefined) delete process.env.CWI_PYTHON;
+    else process.env.CWI_PYTHON = prev;
+  }
+});

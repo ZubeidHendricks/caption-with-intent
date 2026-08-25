@@ -81,21 +81,27 @@ test('unvoiced or missing pitch falls back to the baseline weight', () => {
 test('low spectral centroid reads wider, high reads condensed', () => {
   const [lo, hi] = O.centroidRange;
   assert.ok(widthFromCentroid(lo) > widthFromCentroid(hi));
-  // Monotonic across the calibrated range...
-  const xs = [lo, lo * 1.5, lo * 2.5, hi * 0.8, hi].map((c) => widthFromCentroid(c));
+  // Monotonic across the calibrated range. Sample by interpolation rather than
+  // by multipliers, which stop being ordered when the range narrows.
+  const xs = [0, 0.25, 0.5, 0.75, 1].map((f) => widthFromCentroid(lo + (hi - lo) * f));
   for (let i = 1; i < xs.length; i++) assert.ok(xs[i] <= xs[i - 1], `${xs}`);
   // ...and clamped at both edges rather than running off the axis.
   assert.equal(widthFromCentroid(hi * 2), widthFromCentroid(hi));
   assert.equal(widthFromCentroid(lo / 3), widthFromCentroid(lo));
 });
 
-test('centroid range is calibrated for voiced-frame measurement', () => {
-  // The analyzer measures centroid over voiced frames only, which runs well
-  // below a full-band speech centroid. A real low male voice measures ~695 Hz
-  // and must land mid-axis, not pinned to one end.
-  const w = widthFromCentroid(695);
-  assert.ok(w > O.baselineWidth, `695 Hz -> wdth ${w}, expected wider than normal`);
-  assert.ok(w < 151, `695 Hz -> wdth ${w}, expected off the maximum`);
+test('centroid range spreads real voices across the width axis', () => {
+  // Voiced-frame centroids measured across 17 real voices ran 770-1569 Hz.
+  // The range must spend most of the axis on that population, or the width
+  // axis carries almost no information.
+  const measured = [770, 798, 802, 848, 1232, 1260, 1285, 1519, 1546, 1569];
+  const widths = measured.map((c) => widthFromCentroid(c));
+  const span = Math.max(...widths) - Math.min(...widths);
+  assert.ok(span / (151 - 25) > 0.6, `real voices span only ${Math.round(span)} of the width axis`);
+
+  // A deep voice must read wider than normal, a high one narrower.
+  assert.ok(widthFromCentroid(770) > O.baselineWidth, 'deepest voice should be expanded');
+  assert.ok(widthFromCentroid(1569) < O.baselineWidth, 'highest voice should be condensed');
 });
 
 test('width stays within the Roboto Flex wdth axis', () => {

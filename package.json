@@ -13,7 +13,7 @@
     "cwi": "node packages/cwi-cli/dist/cli.js",
     "mcp": "node packages/cwi-mcp/dist/server.js",
     "test": "npm run build && npm run test:node && npm run test:py",
-    "test:node": "node --test packages/cwi-core/test/spec.test.js packages/cwi-cli/test/tools.test.js packages/cwi-mcp/test/server.test.js",
+    "test:node": "node --test packages/cwi-core/test/spec.test.js packages/cwi-cli/test/tools.test.js packages/cwi-mcp/test/server.test.js packages/cwi-web/test/renderer.test.js",
     "test:py": "cd pipeline && ../.venv/bin/python -m unittest discover -s test -t .",
     "setup:py": "python3 -m venv .venv && ./.venv/bin/pip install -q -r pipeline/requirements.txt",
     "release:stamp": "node scripts/release/stamp.mjs",

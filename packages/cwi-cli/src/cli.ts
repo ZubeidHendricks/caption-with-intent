@@ -3,7 +3,7 @@ import { writeFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import {
   CwiError, readManifest, writeManifest, assign, validateManifest, stats,
-  auditPalette, exportCaptions, resolveTypography, analyzeMedia, buildScene,
+  auditPalette, exportCaptions, resolveTypography, analyzeMedia, buildScene, doctor,
   type ExportFormat,
 } from './ops.js';
 import { startPreview } from './preview.js';
@@ -19,6 +19,7 @@ const dim = c('2'), red = c('31'), yel = c('33'), grn = c('32'), bold = c('1'), 
 const USAGE = `${bold('cwi')} — Caption with Intention toolchain
 
 ${bold('Getting started')}
+  cwi doctor                          check what is available on this machine
   cwi init [dir]                      scaffold a runnable app
   cwi preview <manifest> [--video f]  open a player for any manifest
 
@@ -70,6 +71,23 @@ function out(a: Args, data: unknown, human: () => void): void {
 // --------------------------------------------------------------------------
 
 const commands: Record<string, (a: Args) => Promise<void> | void> = {
+  async doctor(a) {
+    const r = await doctor();
+    out(a, r, () => {
+      for (const c of r.checks) {
+        const mark = c.ok ? grn('ok  ') : red('FAIL');
+        console.log(`  ${mark} ${c.name.padEnd(13)} ${c.detail}`);
+        if (!c.ok) {
+          console.log(`       ${dim(`needed for: ${c.needed}`)}`);
+          if (c.fix) console.log(`       ${cyan(c.fix)}`);
+        }
+      }
+      console.log(r.ok ? `\n${grn('Everything is available.')}`
+        : `\n${yel('Some capabilities are unavailable.')} ${dim('The rest of the toolchain still works.')}`);
+    });
+    if (!r.ok) process.exitCode = 1;
+  },
+
   init(a) {
     const r = init({ dir: a.positional[0] ?? '.', name: str(a, 'name'), force: bool(a, 'force') });
     out(a, r, () => {

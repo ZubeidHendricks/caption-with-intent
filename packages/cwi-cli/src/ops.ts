@@ -8,7 +8,7 @@
  */
 import { execFile } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, isAbsolute, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import {
@@ -231,9 +231,19 @@ export function findPipeline(): string {
 
 export function findPython(): string {
   if (process.env.CWI_PYTHON) return process.env.CWI_PYTHON;
-  const root = dirname(findPipeline());
-  for (const c of [join(root, '.venv', 'bin', 'python'), join(root, '.venv', 'Scripts', 'python.exe')]) {
-    if (existsSync(c)) return c;
+
+  // Walk up from the pipeline looking for a venv. One level is not enough: in
+  // a workspace the pipeline may resolve to the copy bundled inside the
+  // package, whose parent has no .venv, and we would silently fall through to
+  // a bare `python3` that lacks numpy.
+  let dir = findPipeline();
+  for (let i = 0; i < 5; i++) {
+    for (const c of [join(dir, '.venv', 'bin', 'python'), join(dir, '.venv', 'Scripts', 'python.exe')]) {
+      if (existsSync(c)) return c;
+    }
+    const up = dirname(dir);
+    if (up === dir) break;
+    dir = up;
   }
   return 'python3';
 }
@@ -290,6 +300,91 @@ async function python(script: string, args: string[]): Promise<string> {
       'Run `npm run setup:py` if the environment is missing, then retry.',
     );
   }
+}
+
+export interface DoctorCheck {
+  name: string;
+  ok: boolean;
+  detail: string;
+  needed: string;
+  fix?: string;
+}
+
+/**
+ * Report which capabilities are actually available.
+ *
+ * Most of this toolchain is pure Node, but `analyze` needs Python with numpy
+ * and `render` needs ffmpeg plus a headless browser. Discovering that three
+ * minutes into a render is a poor experience, and the failure surfaces as a
+ * subprocess error that says nothing useful about the cause.
+ */
+export async function doctor(): Promise<{ checks: DoctorCheck[]; ok: boolean }> {
+  const checks: DoctorCheck[] = [];
+
+  const major = Number(process.versions.node.split('.')[0]);
+  checks.push({
+    name: 'node', ok: major >= 18, needed: 'everything',
+    detail: `v${process.versions.node}`,
+    fix: major >= 18 ? undefined : 'Node 18 or newer is required.',
+  });
+
+  for (const [bin, needed] of [['ffmpeg', 'render, analyze'], ['ffprobe', 'render, analyze']] as const) {
+    try {
+      const { stdout } = await run(bin, ['-version']);
+      checks.push({ name: bin, ok: true, needed, detail: stdout.split('\n')[0].slice(0, 48) });
+    } catch {
+      checks.push({
+        name: bin, ok: false, needed, detail: 'not on PATH',
+        fix: 'brew install ffmpeg   /   apt install ffmpeg',
+      });
+    }
+  }
+
+  let pipeline = '';
+  try {
+    pipeline = findPipeline();
+    const bundled = pipeline.includes(`${sep}packages${sep}cwi-cli${sep}pipeline`);
+    checks.push({
+      name: 'pipeline', ok: true, needed: 'analyze, scene',
+      detail: pipeline + (bundled ? '  (bundled copy)' : ''),
+    });
+  } catch (e) {
+    checks.push({
+      name: 'pipeline', ok: false, needed: 'analyze, scene',
+      detail: (e as Error).message, fix: 'Set CWI_PIPELINE to the directory holding analyze.py.',
+    });
+  }
+
+  if (pipeline) {
+    const py = findPython();
+    try {
+      const { stdout } = await run(py, ['-c', 'import numpy,sys; print(numpy.__version__, sys.version.split()[0])']);
+      const [np, ver] = stdout.trim().split(' ');
+      checks.push({ name: 'python+numpy', ok: true, needed: 'analyze, scene', detail: `${py} (py ${ver}, numpy ${np})` });
+    } catch {
+      checks.push({
+        name: 'python+numpy', ok: false, needed: 'analyze, scene',
+        detail: `${py} cannot import numpy`,
+        fix: 'npm run setup:py   (or set CWI_PYTHON to an interpreter that has numpy)',
+      });
+    }
+  }
+
+  try {
+    const { chromium } = await import('playwright-core');
+    const b = await chromium.launch({ headless: true });
+    const v = b.version();
+    await b.close();
+    checks.push({ name: 'browser', ok: true, needed: 'render, deliver', detail: `chromium ${v}` });
+  } catch (e) {
+    checks.push({
+      name: 'browser', ok: false, needed: 'render, deliver',
+      detail: String((e as Error).message).split('\n')[0].slice(0, 60),
+      fix: 'npm i playwright-core && npx playwright install chromium',
+    });
+  }
+
+  return { checks, ok: checks.every((c) => c.ok) };
 }
 
 export interface AnalyzeInput {
