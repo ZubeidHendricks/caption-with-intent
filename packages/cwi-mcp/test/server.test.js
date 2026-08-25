@@ -88,11 +88,16 @@ after(() => { proc?.kill(); });
 test('advertises the full toolset with descriptions', async () => {
   const { result } = await send('tools/list', {});
   const names = result.tools.map((t) => t.name);
-  for (const expected of [
+  const EXPECTED = [
     'cwi_validate', 'cwi_assign_colors', 'cwi_stats', 'cwi_palette_audit',
     'cwi_resolve_typography', 'cwi_export', 'cwi_analyze', 'cwi_build_scene',
-    'cwi_init_app', 'cwi_preview', 'cwi_preview_stop',
-  ]) {
+    'cwi_render', 'cwi_deliver', 'cwi_init_app', 'cwi_preview', 'cwi_preview_stop',
+  ];
+  // Exact, not a subset: a tool added without being documented is a tool
+  // nobody discovers, and the README claims a specific count.
+  assert.equal(names.length, EXPECTED.length,
+    `advertised ${names.length} tools, expected ${EXPECTED.length}: ${names.join(', ')}`);
+  for (const expected of EXPECTED) {
     assert.ok(names.includes(expected), `missing tool ${expected}`);
   }
   for (const t of result.tools) {

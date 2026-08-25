@@ -147,9 +147,10 @@ to a person. `.mcp.json` in the repo root registers it; or:
 claude mcp add cwi -- node "$PWD/packages/cwi-mcp/dist/server.js"
 ```
 
-Eleven tools: `cwi_validate`, `cwi_assign_colors`, `cwi_stats`,
+Thirteen tools: `cwi_validate`, `cwi_assign_colors`, `cwi_stats`,
 `cwi_palette_audit`, `cwi_resolve_typography`, `cwi_export`, `cwi_analyze`,
-`cwi_build_scene`, `cwi_init_app`, `cwi_preview`, `cwi_preview_stop`.
+`cwi_build_scene`, `cwi_render`, `cwi_deliver`, `cwi_init_app`, `cwi_preview`,
+`cwi_preview_stop`.
 Each returns a one-line summary plus structured JSON, and lossy exports report
 what they dropped rather than pretending to be complete.
 
