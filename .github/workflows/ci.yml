@@ -41,6 +41,13 @@ jobs:
       - run: npm run test:node
       - run: npm run test:py
 
+      # Hold the reference renderer to the same render-conformance bar every
+      # third-party implementation is held to. Node 18 has no playwright, so
+      # this rides with the versions that do.
+      - name: Render conformance
+        if: matrix.node != '18'
+        run: npm run test:render
+
   package:
     runs-on: ubuntu-latest
     steps:

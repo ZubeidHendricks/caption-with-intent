@@ -9,13 +9,14 @@
   "files": [
     "dist",
     "pipeline",
+    "conformance",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json && node -e \"require('fs').chmodSync('dist/cli.js', 0o755)\"",
     "prepublishOnly": "npm run build",
-    "prepack": "node scripts/bundle-pipeline.mjs"
+    "prepack": "node scripts/bundle-assets.mjs"
   },
   "dependencies": {
     "cwi-core": "^0.1.0"
@@ -59,6 +60,14 @@
     "./audit-report": {
       "types": "./dist/audit-report.d.ts",
       "default": "./dist/audit-report.js"
+    },
+    "./render-conform": {
+      "types": "./dist/render-conform.d.ts",
+      "default": "./dist/render-conform.js"
+    },
+    "./render-probe": {
+      "types": "./dist/render-probe.d.ts",
+      "default": "./dist/render-probe.js"
     }
   },
   "author": "Zubeid Hendricks",

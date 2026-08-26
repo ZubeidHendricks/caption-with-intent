@@ -40,6 +40,7 @@ dichromacies at once, under a contrast constraint. See
 ```
 spec/cwi-manifest.schema.json   the .cwi interchange format
 conformance/                    language-agnostic vectors + mutants that test them
+  render/                       scenes + the report contract for renderers
 packages/cwi-core               spec math: palettes, acoustics→type, assignment, validation (0 deps)
 packages/cwi-web                DOM + variable-font renderer, drives off any <video>
 packages/cwi-cli                the `cwi` command + shared operations layer
@@ -182,10 +183,11 @@ to a person. `.mcp.json` in the repo root registers it; or:
 claude mcp add cwi -- node "$PWD/packages/cwi-mcp/dist/server.js"
 ```
 
-Fifteen tools: `cwi_validate`, `cwi_assign_colors`, `cwi_stats`,
+Sixteen tools: `cwi_validate`, `cwi_assign_colors`, `cwi_stats`,
 `cwi_palette_audit`, `cwi_resolve_typography`, `cwi_export`, `cwi_analyze`,
-`cwi_build_scene`, `cwi_render`, `cwi_deliver`, `cwi_conform`, `cwi_audit`,
-`cwi_init_app`, `cwi_preview`, `cwi_preview_stop`.
+`cwi_build_scene`, `cwi_render`, `cwi_deliver`, `cwi_conform`,
+`cwi_conform_render`, `cwi_audit`, `cwi_init_app`, `cwi_preview`,
+`cwi_preview_stop`.
 Each returns a one-line summary plus structured JSON, and lossy exports report
 what they dropped rather than pretending to be complete.
 
@@ -378,6 +380,36 @@ carrying one realistic bug — an inverted pitch-to-weight curve, a validator
 blind to unattributed dialogue, two characters sharing a colour — and the test
 suite asserts every one is caught. A conformance suite only ever run against a
 correct implementation proves nothing.
+
+### What was actually drawn
+
+Those vectors check computation. All of them can pass while the picture is
+wrong: words revealed at the wrong moment, a speaker drawn in another's colour,
+the line reflowing under the emphasis pop. So there is a second suite for the
+picture.
+
+```bash
+cwi render-scenes                     # the scenes, and the instants to sample
+cwi conform-render                    # drives the reference web renderer
+cwi conform-render --report mine.json # anything else that can draw a manifest
+```
+
+An implementation reports what it drew — one record per token per sampled
+instant — and the checker compares that against what the manifest says it
+should have drawn. A Swift player, a shader, an NLE plugin and a web renderer
+all emit the same report, and the checker never learns which produced it.
+
+Three levels, because "conformant" is otherwise unfalsifiable. **A** is
+attribution and word-level synchronisation, the mechanic the design exists for.
+**AA** adds the acoustics-to-typography mapping within tolerance. **AAA** adds
+layout discipline — no reflow, line limits, safe area, and a second non-colour
+attribution channel where the profile provides one. A check whose inputs an
+implementation did not report is skipped, and a skipped check forfeits its
+level rather than failing it: a renderer with a static font is not AA, but
+nothing it did was wrong and it can still certify at A.
+
+The reference renderer runs this in CI on every commit, at Level AAA on every
+scene. `conformance/render/README.md` is the contract.
 
 ## Publishing
 

@@ -96,6 +96,9 @@ for (const name of NAMES) {
   if (files.some((f) => f.startsWith('src/') || f.startsWith('test/'))) {
     fail(name, 'source or tests are leaking into the tarball — check "files"');
   }
+  if (name === 'cwi-cli' && !files.some((f) => f.startsWith('conformance/'))) {
+    fail(name, 'conformance/ is missing — `cwi conform` and `cwi conform-render` have no vectors for anyone installing from npm');
+  }
   if (name === 'cwi-cli' && !files.some((f) => f.startsWith('pipeline/'))) {
     fail(name, 'pipeline/ is missing — `cwi analyze` breaks for anyone installing from npm');
   }

@@ -91,7 +91,7 @@ test('advertises the full toolset with descriptions', async () => {
   const EXPECTED = [
     'cwi_validate', 'cwi_assign_colors', 'cwi_stats', 'cwi_palette_audit',
     'cwi_resolve_typography', 'cwi_export', 'cwi_analyze', 'cwi_build_scene',
-    'cwi_render', 'cwi_deliver', 'cwi_conform', 'cwi_audit', 'cwi_init_app',
+    'cwi_render', 'cwi_deliver', 'cwi_conform', 'cwi_conform_render', 'cwi_audit', 'cwi_init_app',
     'cwi_preview', 'cwi_preview_stop',
   ];
   // Exact, not a subset: a tool added without being documented is a tool

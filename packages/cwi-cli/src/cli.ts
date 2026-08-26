@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { writeFileSync } from 'node:fs';
-import { basename } from 'node:path';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { basename, resolve } from 'node:path';
 import {
   CwiError, readManifest, writeManifest, assign, validateManifest, stats,
   auditPalette, exportCaptions, resolveTypography, analyzeMedia, buildScene, doctor,
@@ -10,6 +10,9 @@ import { startPreview } from './preview.js';
 import { render, PRESETS, ALPHA_FORMATS } from './render.js';
 import { deliver, TARGETS } from './deliver.js';
 import { conform } from './conform.js';
+import { checkReport, loadScene, loadScenes,
+  type RenderReport, type RenderConformResult } from './render-conform.js';
+import { probeWebRenderer } from './render-probe.js';
 import { audit } from './audit.js';
 import { analyse, readResponses } from './study.js';
 import { startStudy } from './study-server.js';
@@ -55,6 +58,8 @@ ${bold('Validating with viewers')}
 
 ${bold('Reference')}
   cwi conform [--impl f]              run the conformance suite
+  cwi conform-render [--report r.json] check what a renderer actually draws
+  cwi render-scenes                   list the render conformance scenes
   cwi palette                         audit the spec's own palette
   cwi type --db 6 --f0 110            what typography an acoustic reading yields
 
@@ -171,6 +176,57 @@ const commands: Record<string, (a: Args) => Promise<void> | void> = {
         : `\n${red(`${r.normativeFailures.length} normative failure(s)`)} of ${r.total} checks`);
     });
     if (!r.ok) process.exitCode = 1;
+  },
+
+  async 'conform-render'(a) {
+    const scenes = str(a, 'scene') ? [loadScene(str(a, 'scene')!)] : loadScenes();
+    const reportPath = str(a, 'report');
+    const results: RenderConformResult[] = [];
+
+    for (const scene of scenes) {
+      // Either an implementation hands us what it drew, or we drive the web
+      // renderer ourselves. The checker cannot tell the difference, which is
+      // the point: the reference renderer earns its level the same way.
+      const report: RenderReport = reportPath
+        ? JSON.parse(readFileSync(resolve(reportPath), 'utf8'))
+        : await probeWebRenderer({ scene });
+      if (reportPath && report.scene !== scene.id) {
+        throw new CwiError(`That report is for scene "${report.scene}", not "${scene.id}".`,
+          'Pass --scene to pick the scene the report covers.');
+      }
+      results.push(checkReport(scene, report));
+    }
+
+    out(a, results.length === 1 ? results[0] : results, () => {
+      for (const r of results) {
+        console.log(`render conformance — ${dim(r.implementation)} · ${bold(r.scene)}\n`);
+        for (const c of r.checks) {
+          const mark = c.skipped ? yel('skip') : c.ok ? grn(' ok ') : red('FAIL');
+          console.log(`  ${mark} ${c.level.padEnd(3)} ${c.id.padEnd(5)} ${c.title}`);
+          if (c.detail && (!c.ok || c.skipped)) console.log(`         ${dim(c.detail.slice(0, 160))}`);
+          if (!c.ok && c.spec) console.log(`         ${dim(`spec ${c.spec}`)}`);
+        }
+        const tint = r.level === null ? red : grn;
+        console.log(`\n  ${tint(r.level ? `Level ${r.level}` : 'not conformant')}` +
+          dim(`  A ${r.byLevel.A.passed}/${r.byLevel.A.total}` +
+            ` · AA ${r.byLevel.AA.passed}/${r.byLevel.AA.total}` +
+            ` · AAA ${r.byLevel.AAA.passed}/${r.byLevel.AAA.total}`) + '\n');
+      }
+    });
+    if (results.some((r) => !r.ok)) process.exitCode = 1;
+  },
+
+  async 'render-scenes'(a) {
+    const scenes = loadScenes().map((s) => ({
+      id: s.id, title: s.title, why: s.why, frame: s.frame, samples: s.samples.length,
+    }));
+    out(a, scenes, () => {
+      for (const s of scenes) {
+        console.log(`  ${bold(s.id)}  ${dim(`${s.frame.w}x${s.frame.h}, ${s.samples} samples`)}`);
+        console.log(`    ${s.title}`);
+        console.log(`    ${dim(s.why)}\n`);
+      }
+    });
   },
 
   async doctor(a) {

@@ -16,7 +16,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import {
   CwiError, readManifest, writeManifest, assign, validateManifest, stats,
   auditPalette, exportCaptions, resolveTypography, analyzeMedia, buildScene,
@@ -25,6 +26,9 @@ import { startPreview, type PreviewHandle } from 'cwi-cli/preview';
 import { render, PRESETS } from 'cwi-cli/render';
 import { deliver, TARGETS } from 'cwi-cli/deliver';
 import { conform } from 'cwi-cli/conform';
+import { checkReport, loadScene, loadScenes,
+  type RenderReport, type RenderConformResult } from 'cwi-cli/render-conform';
+import { probeWebRenderer } from 'cwi-cli/render-probe';
 import { audit } from 'cwi-cli/audit';
 import { toHtml, toMarkdown } from 'cwi-cli/audit-report';
 import { init } from 'cwi-cli/scaffold';
@@ -297,6 +301,43 @@ server.registerTool('cwi_conform', {
       ? `Conformant — ${r.passed}/${r.total} checks passed${r.informativeFailures.length ? `, ${r.informativeFailures.length} informative difference(s)` : ''}.`
       : `NOT conformant — ${r.normativeFailures.length} normative failure(s) of ${r.total} checks.`,
     r,
+  );
+}));
+
+server.registerTool('cwi_conform_render', {
+  title: 'Check what a renderer actually draws',
+  description:
+    'Check a caption renderer against the render conformance scenes: does the picture on screen ' +
+    'match the manifest. This is a different question from `cwi_conform`, which checks ' +
+    'computation — a renderer can compute every type size correctly and still reveal words at the ' +
+    'wrong moment, draw a speaker in another speaker\'s colour, or reflow the line under the ' +
+    'emphasis pop. Supply `report` with a render report your implementation produced (the format ' +
+    'is in conformance/render/README.md); omit it to check the reference web renderer, which ' +
+    'needs a headless browser. Awards Level A (attribution and synchronisation), AA (adds the ' +
+    'typography mapping) or AAA (adds layout discipline and a non-colour attribution channel).',
+  inputSchema: {
+    report: z.string().optional().describe('Path to a render report JSON produced by your renderer'),
+    scene: z.string().optional().describe('Scene id; omit to run every scene'),
+  },
+}, wrap(async ({ report, scene }: { report?: string; scene?: string }) => {
+  const scenes = scene ? [loadScene(scene)] : loadScenes();
+  const results: RenderConformResult[] = [];
+  for (const s of scenes) {
+    const rep: RenderReport = report
+      ? JSON.parse(readFileSync(resolve(report), 'utf8'))
+      : await probeWebRenderer({ scene: s });
+    if (report && rep.scene !== s.id) {
+      throw new Error(`That report is for scene "${rep.scene}", not "${s.id}". Pass 'scene' to pick the one it covers.`);
+    }
+    results.push(checkReport(s, rep));
+  }
+  const worst = results.reduce((acc, r) => (r.level === null ? null : acc), 'AAA' as string | null);
+  return result(
+    results.map((r) => `${r.scene}: ${r.level ? `Level ${r.level}` : 'NOT conformant'}` +
+      (r.checks.filter((c) => !c.ok).length
+        ? ` — failing ${r.checks.filter((c) => !c.ok).map((c) => c.id).join(', ')}`
+        : '')).join('\n') + (worst ? '' : '\n\nLevel A is the floor: attribution or synchronisation is wrong.'),
+    results,
   );
 }));
 

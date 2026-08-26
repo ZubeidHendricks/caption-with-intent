@@ -1,0 +1,202 @@
+{
+  "id": "chorus-4speaker",
+  "title": "Four speakers under the Chorus profile",
+  "why": "A cast large enough that colour alone cannot separate every pair under dichromacy, so the non-colour channels are load-bearing.",
+  "frame": {
+    "w": 1920,
+    "h": 1080
+  },
+  "samples": [
+    0.8,
+    1.6,
+    3.9,
+    6.4,
+    9.2
+  ],
+  "manifest": {
+    "cwi": "1.0",
+    "profile": "chorus-1.0",
+    "meta": {
+      "title": "Four voices",
+      "language": "en",
+      "direction": "ltr",
+      "aspectRatio": "16:9"
+    },
+    "characters": [
+      {
+        "id": "a",
+        "name": "Ada",
+        "tier": "main",
+        "rank": 0,
+        "color": "#9E60FB",
+        "position": "left",
+        "glyph": "●"
+      },
+      {
+        "id": "b",
+        "name": "Bo",
+        "tier": "main",
+        "rank": 1,
+        "color": "#E95935",
+        "position": "center",
+        "glyph": "■"
+      },
+      {
+        "id": "c",
+        "name": "Cy",
+        "tier": "main",
+        "rank": 2,
+        "color": "#5793C7",
+        "position": "right",
+        "glyph": "▲"
+      },
+      {
+        "id": "d",
+        "name": "Del",
+        "tier": "main",
+        "rank": 3,
+        "color": "#A8F906",
+        "position": "left",
+        "glyph": "◆"
+      }
+    ],
+    "cues": [
+      {
+        "id": "q1",
+        "start": 0.5,
+        "end": 2.32,
+        "speaker": "a",
+        "kind": "dialogue",
+        "onCamera": true,
+        "lines": [
+          {
+            "tokens": [
+              {
+                "text": "Channel",
+                "start": 0.5,
+                "end": 0.955,
+                "db": 0,
+                "f0": 220,
+                "centroid": 1200
+              },
+              {
+                "text": "one",
+                "start": 1.005,
+                "end": 1.28,
+                "db": 0,
+                "f0": 220,
+                "centroid": 1200
+              },
+              {
+                "text": "is",
+                "start": 1.33,
+                "end": 1.56,
+                "db": 0,
+                "f0": 220,
+                "centroid": 1200
+              },
+              {
+                "text": "clear.",
+                "start": 1.61,
+                "end": 2.02,
+                "db": 0,
+                "f0": 220,
+                "centroid": 1200
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "q2",
+        "start": 3.5,
+        "end": 4.58,
+        "speaker": "b",
+        "kind": "dialogue",
+        "onCamera": true,
+        "lines": [
+          {
+            "tokens": [
+              {
+                "text": "Two",
+                "start": 3.5,
+                "end": 3.775,
+                "db": 0,
+                "f0": 150,
+                "centroid": 1200
+              },
+              {
+                "text": "copies.",
+                "start": 3.825,
+                "end": 4.28,
+                "db": 0,
+                "f0": 150,
+                "centroid": 1200
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "q3",
+        "start": 6,
+        "end": 7.54,
+        "speaker": "c",
+        "kind": "dialogue",
+        "onCamera": true,
+        "lines": [
+          {
+            "tokens": [
+              {
+                "text": "Three",
+                "start": 6,
+                "end": 6.365,
+                "db": 0,
+                "f0": 95,
+                "centroid": 1200
+              },
+              {
+                "text": "standing",
+                "start": 6.415,
+                "end": 6.915,
+                "db": 0,
+                "f0": 95,
+                "centroid": 1200
+              },
+              {
+                "text": "by.",
+                "start": 6.965,
+                "end": 7.24,
+                "db": 0,
+                "f0": 95,
+                "centroid": 1200
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "q4",
+        "start": 9,
+        "end": 9.665,
+        "speaker": "d",
+        "kind": "dialogue",
+        "onCamera": true,
+        "lines": [
+          {
+            "tokens": [
+              {
+                "text": "Four.",
+                "start": 9,
+                "end": 9.365,
+                "db": 0,
+                "f0": 300,
+                "centroid": 1200
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

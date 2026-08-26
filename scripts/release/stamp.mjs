@@ -56,7 +56,7 @@ const PACKAGES = {
   },
   'cwi-cli': {
     keywords: [...COMMON_KEYWORDS, 'cli', 'ffmpeg', 'transcription'],
-    files: ['dist', 'pipeline', 'README.md', 'LICENSE'],
+    files: ['dist', 'pipeline', 'conformance', 'README.md', 'LICENSE'],
   },
   'cwi-mcp': {
     keywords: [...COMMON_KEYWORDS, 'mcp', 'model-context-protocol', 'ai-agents'],

@@ -32,3 +32,5 @@ Caption-With-Intention_Design-System_V1.0.pdf
 *.webm
 !apps/demo/public/scene.mp4
 !apps/demo/public/control-room.mp4
+# Copied into the package by prepack; the source of truth is /conformance
+packages/cwi-cli/conformance/
