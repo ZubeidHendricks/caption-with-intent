@@ -43,7 +43,7 @@ async function loadSource(key: SourceKey): Promise<void> {
   bound = false;
 
   const m = await fetch(src.manifest).then((r) => r.json()) as CwiManifest;
-  pristineCast = m.characters.map((c) => ({ ...c, color: undefined }));
+  pristineCast = m.characters.map((c) => ({ ...c, color: undefined, position: undefined, glyph: undefined }));
   manifest = m;
   duration = Math.max(...m.cues.map((c) => c.end)) + 1;
   $<HTMLInputElement>('scrub').max = String(duration);
@@ -132,7 +132,9 @@ $('cvdsafe').onclick = () => {
 
 function reassign() {
   if (!pristineCast.length) return;
-  const { characters, warnings } = assignColors(pristineCast, { cvdSafe });
+  // The manifest names its design profile; assignment must honour it or a
+  // Chorus track silently gets the CWI palette and its defects.
+  const { characters, warnings } = assignColors(pristineCast, { cvdSafe, profile: manifest.profile });
   manifest = { ...manifest, characters };
   renderer.load(manifest);
   renderAside(warnings);
