@@ -234,10 +234,18 @@ $('begin').onclick = async () => {
 
 function show() {
   const t = session.trials[i];
+  const shownIndex = i;
   const variantId = session.order[i];
   renderer.load(manifests[variantId]);
 
-  // Play the cue once, then hold on its final frame so the caption stays
+  // Paint the cue's start state synchronously before animating. rAF does not
+  // fire in a background tab, so a participant who tabbed away and back — or is
+  // on a throttled machine — would otherwise be asked to name a speaker while
+  // looking at an empty frame.
+  renderer.seek(t.start);
+  if (video) video.currentTime = t.start;
+
+  // Play the cue once, then hold on its final state so the whole line stays
   // readable while the participant decides.
   let clock = t.start;
   const step = () => {
@@ -247,6 +255,13 @@ function show() {
     if (clock < t.end) requestAnimationFrame(step);
   };
   requestAnimationFrame(step);
+
+  // Guarantee the hold state on a timer as well. If rAF never runs, the
+  // participant still ends up looking at the complete line rather than a
+  // half-revealed one, which would make the trial measure the wrong thing.
+  const holdAt = Math.max(t.start, t.end - 0.01);
+  setTimeout(() => { if (i === shownIndex) renderer.seek(holdAt); },
+    Math.min(6000, (t.end - t.start) * 1000 + 200));
 
   $('opts').innerHTML = t.options.map((o, n) =>
     \`<button data-id="\${o.id}">\${n + 1}. \${o.name}</button>\`).join('');
