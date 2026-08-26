@@ -130,6 +130,7 @@ cwi analyze <media> --vtt f         media + captions -> manifest
 cwi scene <spec.json> --out f       multi-speaker scene from provider renders
 cwi assign <manifest>               assign character colours (CVD-safe)
 cwi validate <manifest>             structural + accessibility audit
+cwi audit <manifest> --out r.html   compliance report (WCAG / EN 301 549 / FCC)
 cwi stats <manifest>                per-character screen time
 cwi export <manifest> --format vtt  emit a delivery format (vtt | ass)
 cwi conform [--impl f]              run the conformance suite
@@ -149,10 +150,10 @@ to a person. `.mcp.json` in the repo root registers it; or:
 claude mcp add cwi -- node "$PWD/packages/cwi-mcp/dist/server.js"
 ```
 
-Fourteen tools: `cwi_validate`, `cwi_assign_colors`, `cwi_stats`,
+Fifteen tools: `cwi_validate`, `cwi_assign_colors`, `cwi_stats`,
 `cwi_palette_audit`, `cwi_resolve_typography`, `cwi_export`, `cwi_analyze`,
-`cwi_build_scene`, `cwi_render`, `cwi_deliver`, `cwi_conform`, `cwi_init_app`,
-`cwi_preview`, `cwi_preview_stop`.
+`cwi_build_scene`, `cwi_render`, `cwi_deliver`, `cwi_conform`, `cwi_audit`,
+`cwi_init_app`, `cwi_preview`, `cwi_preview_stop`.
 Each returns a one-line summary plus structured JSON, and lossy exports report
 what they dropped rather than pretending to be complete.
 
@@ -233,6 +234,49 @@ npm run sample -w cwi-demo     # rebuilds sample.cwi.json
 
 `scene.mp4` and `control-room.mp4` are small enough to be committed, so the
 demo runs from a clean clone.
+
+## Auditing a title
+
+`validate` asks whether a manifest is well-formed. `audit` asks a different
+question: against the criteria a broadcaster is actually held to, what is wrong
+with this caption track and what should be done about it.
+
+```bash
+cwi audit captions.cwi.json --duration 1847 --out report.html
+```
+
+It checks **WCAG 2.2**, **EN 301 549** (the standard the European Accessibility
+Act references), **FCC 47 CFR 79.1** caption-quality rules, and CWI V1.0 itself.
+The report is dated, identified by the SHA-256 of the exact manifest audited,
+and self-contained — no fonts, no scripts, no network — because compliance
+artifacts get archived and opened years later. It exits non-zero on failures, so
+it drops into CI.
+
+### The finding that matters
+
+**A CWI track with more than one speaker fails WCAG 2.2 SC 1.4.1 (Use of Color,
+Level A).** The criterion is that colour must not be *the only* visual means of
+distinguishing an element. CWI attributes speakers by hue (2.1) and defines no
+non-colour cue for identity, so the base design cannot satisfy it.
+
+Conventional captioning *does* satisfy it — a speaker label, or `>>` on a
+speaker change, carries identity without colour. So this is a regression against
+ordinary practice on this specific point, not merely a gap in a new system. It
+compounds the colour-vision problem: the palette has pairs that collapse under
+common dichromacies, and there is no second channel to fall back on.
+
+The audit names remediations in order of how little they disturb the design:
+place each speaker's captions consistently left/centre/right; prefix a label on
+speaker change; give each character a small persistent glyph. Off-camera italics
+(2.1.5) is a non-colour cue but marks *where* a voice is, not *whose* it is.
+
+### What it will not do
+
+It will not tell you that you are compliant, and says so on every rendering.
+Accuracy against the spoken audio, and whether captions obscure important
+picture, are not decidable from a manifest — those criteria are reported as
+**needs review** rather than quietly passing. A green report that hid an
+unanswerable question would be worse than no report.
 
 ## Conformance
 

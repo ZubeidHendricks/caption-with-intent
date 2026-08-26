@@ -25,6 +25,8 @@ import { startPreview, type PreviewHandle } from 'cwi-cli/preview';
 import { render, PRESETS } from 'cwi-cli/render';
 import { deliver, TARGETS } from 'cwi-cli/deliver';
 import { conform } from 'cwi-cli/conform';
+import { audit } from 'cwi-cli/audit';
+import { toHtml, toMarkdown } from 'cwi-cli/audit-report';
 import { init } from 'cwi-cli/scaffold';
 
 const server = new McpServer({ name: 'caption-with-intention', version: '0.1.0' });
@@ -295,6 +297,36 @@ server.registerTool('cwi_conform', {
       ? `Conformant — ${r.passed}/${r.total} checks passed${r.informativeFailures.length ? `, ${r.informativeFailures.length} informative difference(s)` : ''}.`
       : `NOT conformant — ${r.normativeFailures.length} normative failure(s) of ${r.total} checks.`,
     r,
+  );
+}));
+
+server.registerTool('cwi_audit', {
+  title: 'Accessibility audit of a caption track',
+  description:
+    'Audit a caption track against WCAG 2.2, EN 301 549 (the standard the European Accessibility ' +
+    'Act references), FCC 47 CFR 79.1 caption-quality rules, and CWI V1.0 itself. Produces a ' +
+    'dated report identified by the SHA-256 of the manifest audited.\n\n' +
+    'The finding that matters most: Caption with Intention attributes speakers by hue alone and ' +
+    'defines no non-colour cue for identity, so a track using the base design FAILS WCAG 1.4.1 ' +
+    '(Use of Color, Level A) whenever it has more than one speaker. Conventional captioning ' +
+    'satisfies that criterion with speaker labels and ">>" markers, so this is a regression ' +
+    'against ordinary practice, not merely a gap.\n\n' +
+    'This is NOT a compliance certificate. Accuracy against the audio, and whether captions ' +
+    'obscure important picture, are not decidable from a manifest; those criteria are reported ' +
+    'as "review" rather than passing. Never describe its output as certifying compliance.',
+  inputSchema: {
+    manifest: z.string(),
+    duration: z.number().optional().describe('Programme length in seconds, for the completeness check'),
+    out: z.string().optional().describe('Write a report here; .md for markdown, otherwise HTML'),
+  },
+}, wrap(({ manifest, duration, out }: { manifest: string; duration?: number; out?: string }) => {
+  const r = audit({ manifest, duration });
+  if (out) writeFileSync(out, out.endsWith('.md') ? toMarkdown(r) : toHtml(r));
+  const failing = r.findings.filter((f) => f.verdict === 'fail').map((f) => f.criterion.id);
+  return result(
+    `${r.summary.fail} failing, ${r.summary.warn} warning, ${r.summary.review} needs review, ` +
+    `${r.summary.pass} passing.` + (failing.length ? ` Failing: ${failing.join(', ')}.` : ''),
+    { ...r, reportWritten: out ?? null },
   );
 }));
 

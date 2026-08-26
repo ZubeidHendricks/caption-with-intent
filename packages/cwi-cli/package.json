@@ -51,6 +51,14 @@
     "./conform": {
       "types": "./dist/conform.d.ts",
       "default": "./dist/conform.js"
+    },
+    "./audit": {
+      "types": "./dist/audit.d.ts",
+      "default": "./dist/audit.js"
+    },
+    "./audit-report": {
+      "types": "./dist/audit-report.d.ts",
+      "default": "./dist/audit-report.js"
     }
   },
   "author": "Zubeid Hendricks",

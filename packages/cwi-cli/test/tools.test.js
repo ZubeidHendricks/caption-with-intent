@@ -415,3 +415,141 @@ test('an implementation missing an entry point fails loudly', async () => {
   assert.equal(r.ok, false);
   assert.ok(r.normativeFailures.some((f) => /exports no/.test(f.detail ?? '')));
 });
+
+// --- audit ----------------------------------------------------------------
+
+import { audit } from '../dist/audit.js';
+import { toHtml, toMarkdown } from '../dist/audit-report.js';
+
+const NOW = '2026-01-01T00:00:00.000Z';
+
+function auditFixture(overrides = {}) {
+  const dir = tmp();
+  const p = join(dir, 'a.cwi.json');
+  writeFileSync(p, JSON.stringify({ ...MANIFEST, ...overrides }));
+  return audit({ manifest: p, now: NOW, ...(overrides.__opts ?? {}) });
+}
+
+const find = (r, id) => r.findings.find((f) => f.criterion.id === id);
+
+test('WCAG 1.4.1 fails when speakers are told apart by colour alone', () => {
+  // The headline finding: CWI attributes speakers by hue and defines no
+  // non-colour cue, so the base design fails this Level A criterion.
+  const r = auditFixture();
+  const f = find(r, 'wcag-1.4.1');
+  assert.equal(f.verdict, 'fail');
+  assert.match(f.detail, /colour alone/);
+  assert.ok(f.remediation, 'a failure this consequential must carry remediation');
+  assert.deepEqual(f.affected.sort(), ['a', 'b']);
+});
+
+test('WCAG 1.4.1 passes with a single speaker', () => {
+  const r = auditFixture({
+    characters: [{ id: 'a', name: 'Alpha', tier: 'main', color: '#17E5E5' }],
+    cues: [MANIFEST.cues[0]],
+  });
+  assert.equal(find(r, 'wcag-1.4.1').verdict, 'pass');
+});
+
+test('WCAG 1.4.1 passes when captions carry speaker labels', () => {
+  // Conventional captioning satisfies 1.4.1 with labels; a CWI track that
+  // keeps them does too.
+  const labelled = MANIFEST.cues.map((c) => ({
+    ...c,
+    lines: [{ tokens: [{ text: `${c.speaker.toUpperCase()}:`, start: c.start, end: c.start + 0.1 },
+                       ...c.lines[0].tokens] }],
+  }));
+  assert.equal(find(auditFixture({ cues: labelled }), 'wcag-1.4.1').verdict, 'pass');
+});
+
+test('contrast failures are named with their ratio', () => {
+  const r = auditFixture({
+    characters: [{ id: 'a', name: 'Alpha', tier: 'main', color: '#E51717' },
+                 { id: 'b', name: 'Beta', tier: 'main', color: '#17E5E5' }],
+  });
+  const f = find(r, 'wcag-1.4.3');
+  assert.equal(f.verdict, 'fail');
+  assert.match(f.detail, /3\.70:1/);
+});
+
+test('colour-vision collisions are detected across all three dichromacies', () => {
+  const r = auditFixture({
+    characters: [{ id: 'a', name: 'A', tier: 'main', color: '#E51717' },
+                 { id: 'b', name: 'B', tier: 'main', color: '#E58017' }],
+  });
+  const f = find(r, 'cwi-colour-distinct');
+  assert.equal(f.verdict, 'fail');
+  assert.match(f.detail, /deuteranopia/);
+});
+
+test('criteria that need a human are reported as review, never as pass', () => {
+  const r = auditFixture();
+  for (const id of ['fcc-accuracy', 'wcag-1.4.12', 'en-7.1.1']) {
+    assert.equal(find(r, id).verdict, 'review', `${id} must not silently pass`);
+  }
+});
+
+test('completeness needs a duration and says so when it has none', () => {
+  assert.equal(find(auditFixture(), 'fcc-completeness').verdict, 'review');
+  const dir = tmp();
+  const p = join(dir, 'a.cwi.json');
+  writeFileSync(p, JSON.stringify(MANIFEST));
+  const withDur = audit({ manifest: p, now: NOW, duration: 4 });
+  assert.equal(find(withDur, 'fcc-completeness').verdict, 'pass');
+});
+
+test('completeness flags long uncaptioned stretches', () => {
+  const dir = tmp();
+  const p = join(dir, 'a.cwi.json');
+  writeFileSync(p, JSON.stringify(MANIFEST));
+  const r = audit({ manifest: p, now: NOW, duration: 600 });
+  const f = find(r, 'fcc-completeness');
+  assert.equal(f.verdict, 'warn');
+  assert.match(f.detail, /uncaptioned stretch/);
+});
+
+test('the report identifies the exact manifest it audited', () => {
+  const r = auditFixture();
+  assert.match(r.manifest.sha256, /^[0-9a-f]{64}$/);
+  assert.ok(r.manifest.bytes > 0);
+  assert.equal(r.generated, NOW);
+  assert.ok(r.disclaimer.includes('not a legal determination'),
+    'the report must never imply it certifies compliance');
+});
+
+test('a changed manifest produces a different hash', () => {
+  const a = auditFixture();
+  const b = auditFixture({ meta: { title: 'Different' } });
+  assert.notEqual(a.manifest.sha256, b.manifest.sha256);
+});
+
+test('every finding carries a requirement and a method', () => {
+  for (const f of auditFixture().findings) {
+    assert.ok(f.criterion.requirement.length > 30, `${f.criterion.id} requirement`);
+    assert.ok(f.criterion.method.length > 30, `${f.criterion.id} method`);
+    assert.ok(['automated', 'partial', 'manual'].includes(f.criterion.assessment));
+    if (f.verdict === 'fail') assert.ok(f.remediation, `${f.criterion.id} fails without remediation`);
+  }
+});
+
+test('renders to self-contained HTML and to markdown', () => {
+  const r = auditFixture();
+  const html = toHtml(r);
+  assert.match(html, /^<!doctype html>/);
+  assert.match(html, /Use of Color/);
+  assert.match(html, new RegExp(r.manifest.sha256));
+  // Archived compliance artifacts get opened years later on machines that will
+  // not fetch anything.
+  assert.equal(/<script|<link[^>]+href=["']http|@import|src=["']http/.test(html), false,
+    'the report must not depend on any external resource');
+
+  const md = toMarkdown(r);
+  assert.match(md, /# Caption accessibility audit/);
+  assert.match(md, /Use of Color/);
+});
+
+test('summary counts every finding exactly once', () => {
+  const r = auditFixture();
+  const total = r.summary.pass + r.summary.fail + r.summary.warn + r.summary.review;
+  assert.equal(total, r.findings.length);
+});

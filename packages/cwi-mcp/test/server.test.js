@@ -91,7 +91,8 @@ test('advertises the full toolset with descriptions', async () => {
   const EXPECTED = [
     'cwi_validate', 'cwi_assign_colors', 'cwi_stats', 'cwi_palette_audit',
     'cwi_resolve_typography', 'cwi_export', 'cwi_analyze', 'cwi_build_scene',
-    'cwi_render', 'cwi_deliver', 'cwi_conform', 'cwi_init_app', 'cwi_preview', 'cwi_preview_stop',
+    'cwi_render', 'cwi_deliver', 'cwi_conform', 'cwi_audit', 'cwi_init_app',
+    'cwi_preview', 'cwi_preview_stop',
   ];
   // Exact, not a subset: a tool added without being documented is a tool
   // nobody discovers, and the README claims a specific count.
@@ -151,6 +152,14 @@ test('conform reports the reference implementation as conformant', async () => {
   assert.equal(r.ok, true);
   assert.equal(r.normativeFailures.length, 0);
   assert.ok(r.total > 100);
+});
+
+test('audit reports the colour-only attribution failure', async () => {
+  const r = payload(await call('cwi_audit', { manifest: manifestPath }));
+  const useOfColor = r.findings.find((f) => f.criterion.id === 'wcag-1.4.1');
+  assert.equal(useOfColor.verdict, 'fail', 'two speakers distinguished by hue alone');
+  assert.ok(useOfColor.remediation);
+  assert.ok(r.disclaimer.includes('not a legal determination'));
 });
 
 test('preview starts, serves, and stops', async () => {

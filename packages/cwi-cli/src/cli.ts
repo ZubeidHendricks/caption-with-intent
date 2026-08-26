@@ -10,6 +10,8 @@ import { startPreview } from './preview.js';
 import { render, PRESETS, ALPHA_FORMATS } from './render.js';
 import { deliver, TARGETS } from './deliver.js';
 import { conform } from './conform.js';
+import { audit } from './audit.js';
+import { toHtml, toMarkdown } from './audit-report.js';
 import { init } from './scaffold.js';
 import { parse, str, num, bool, type Args } from './args.js';
 
@@ -38,6 +40,7 @@ ${bold('Producing captions')}
   cwi scene <spec.json> --out f        multi-speaker scene from provider renders
 
 ${bold('Working on a manifest')}
+  cwi audit <manifest> [--out r.html]  accessibility audit against WCAG / EN 301 549 / FCC
   cwi assign <manifest>               assign character colours (CVD-safe)
   cwi validate <manifest>             structural + accessibility audit
   cwi stats <manifest>                per-character screen time
@@ -73,6 +76,35 @@ function out(a: Args, data: unknown, human: () => void): void {
 // --------------------------------------------------------------------------
 
 const commands: Record<string, (a: Args) => Promise<void> | void> = {
+  audit(a) {
+    const r = audit({ manifest: need(a, 'manifest'), duration: num(a, 'duration') });
+    const format = str(a, 'format') ?? (str(a, 'out')?.endsWith('.md') ? 'md' : 'html');
+    const target = str(a, 'out');
+
+    if (bool(a, 'json')) { console.log(JSON.stringify(r, null, 2)); }
+    else if (target) {
+      const body = format === 'md' ? toMarkdown(r) : format === 'json' ? JSON.stringify(r, null, 2) : toHtml(r);
+      writeFileSync(target, body);
+      console.log(`${grn('wrote')} ${target}`);
+    }
+
+    if (!bool(a, 'json')) {
+      const tint = { pass: grn, fail: red, warn: yel, review: cyan } as const;
+      console.log(`\n${bold('Caption accessibility audit')} — ${r.title}`);
+      console.log(dim(`  ${r.manifest.sha256.slice(0, 16)}…  ${r.generated}`));
+      console.log(dim(`  ${r.disclaimer}`));
+      console.log();
+      for (const f of r.findings.filter((x) => x.verdict !== 'pass')) {
+        console.log(`  ${tint[f.verdict](f.verdict.toUpperCase().padEnd(6))} ${f.criterion.id.padEnd(18)} ${f.criterion.title}`);
+        console.log(`         ${dim(f.detail.slice(0, 150))}${f.detail.length > 150 ? dim('…') : ''}`);
+      }
+      const passing = r.findings.filter((x) => x.verdict === 'pass').length;
+      console.log(`\n  ${red(String(r.summary.fail))} failing · ${yel(String(r.summary.warn))} warning · ` +
+        `${cyan(String(r.summary.review))} needs review · ${grn(String(passing))} passing`);
+    }
+    if (r.summary.fail > 0) process.exitCode = 1;
+  },
+
   async conform(a) {
     const r = await conform(str(a, 'impl'));
     out(a, r, () => {
