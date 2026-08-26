@@ -11,6 +11,8 @@ import { render, PRESETS, ALPHA_FORMATS } from './render.js';
 import { deliver, TARGETS } from './deliver.js';
 import { conform } from './conform.js';
 import { audit } from './audit.js';
+import { analyse, readResponses } from './study.js';
+import { startStudy } from './study-server.js';
 import { toHtml, toMarkdown } from './audit-report.js';
 import { init } from './scaffold.js';
 import { parse, str, num, bool, type Args } from './args.js';
@@ -46,6 +48,11 @@ ${bold('Working on a manifest')}
   cwi stats <manifest>                per-character screen time
   cwi export <manifest> --format vtt  emit a delivery format (vtt | ass)
 
+${bold('Validating with viewers')}
+  cwi study <a.cwi.json> <b.cwi.json> --video f
+                                       run an A/B attribution study
+  cwi study-report <results.jsonl>     accuracy per design, with intervals
+
 ${bold('Reference')}
   cwi conform [--impl f]              run the conformance suite
   cwi palette                         audit the spec's own palette
@@ -76,6 +83,44 @@ function out(a: Args, data: unknown, human: () => void): void {
 // --------------------------------------------------------------------------
 
 const commands: Record<string, (a: Args) => Promise<void> | void> = {
+  async study(a) {
+    const variants = a.positional;
+    const results = str(a, 'results') ?? 'study-results.jsonl';
+    const h = await startStudy({
+      variants, results, video: str(a, 'video'),
+      port: num(a, 'port'), host: str(a, 'host'), maxTrials: num(a, 'max-trials'),
+    });
+    console.log(`${grn('study')} ${cyan(h.url)}`);
+    for (const v of h.variants) console.log(dim(`  ${v.id.padEnd(14)} ${v.label}`));
+    console.log(dim(`  results  ${results}`));
+    console.log(dim('\n  Share the URL with participants. Each visit is a fresh session.'));
+    console.log(dim(`  Analyse with: cwi study-report ${results}`));
+    console.log(dim('\nCtrl-C to stop.'));
+    const stop = () => { void h.close().then(() => process.exit(0)); };
+    process.on('SIGINT', stop);
+    process.on('SIGTERM', stop);
+    await new Promise(() => {});
+  },
+
+  'study-report'(a) {
+    const path = need(a, 'results file');
+    const r = analyse(readResponses(path));
+    out(a, r, () => {
+      if (!r.totalTrials) { console.log(yel('No responses recorded yet.')); return; }
+      console.log(`${bold('Study results')} — ${r.participants} participant(s), ${r.totalTrials} trials\n`);
+      console.log('  variant          trials  accuracy        95% CI        median');
+      for (const v of r.variants) {
+        console.log(
+          `  ${v.variantId.padEnd(15)} ${String(v.trials).padStart(6)}  ` +
+          `${(v.accuracy * 100).toFixed(1).padStart(6)}%  ` +
+          `${(v.ci95[0] * 100).toFixed(0).padStart(4)}–${(v.ci95[1] * 100).toFixed(0).padEnd(4)}%  ` +
+          `${String(v.medianMs).padStart(6)}ms`);
+      }
+      console.log();
+      for (const line of r.interpretation) console.log(`  ${dim(line)}`);
+    });
+  },
+
   audit(a) {
     const r = audit({ manifest: need(a, 'manifest'), duration: num(a, 'duration') });
     const format = str(a, 'format') ?? (str(a, 'out')?.endsWith('.md') ? 'md' : 'html');

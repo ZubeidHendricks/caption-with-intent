@@ -553,3 +553,154 @@ test('summary counts every finding exactly once', () => {
   const total = r.summary.pass + r.summary.fail + r.summary.warn + r.summary.review;
   assert.equal(total, r.findings.length);
 });
+
+// --- study harness --------------------------------------------------------
+
+import {
+  loadVariants, buildTrials, answerKey, analyse, wilson, readResponses,
+} from '../dist/study.js';
+import { startStudy } from '../dist/study-server.js';
+
+function variantFiles() {
+  const dir = tmp();
+  const a = join(dir, 'a.cwi.json');
+  const b = join(dir, 'b.cwi.json');
+  writeFileSync(a, JSON.stringify({ ...MANIFEST, profile: 'cwi-1.0' }));
+  writeFileSync(b, JSON.stringify({ ...MANIFEST, profile: 'chorus-1.0' }));
+  return { dir, a, b };
+}
+
+test('a study needs at least two variants', () => {
+  const { a } = variantFiles();
+  assert.throws(() => loadVariants([a]), /at least two variants/);
+});
+
+test('variants must carry the same dialogue', () => {
+  // Comparing designs only means anything if the underlying material matches.
+  const { dir, a } = variantFiles();
+  const c = join(dir, 'c.cwi.json');
+  writeFileSync(c, JSON.stringify({
+    ...MANIFEST, profile: 'other',
+    cues: [{ ...MANIFEST.cues[0], start: 99, end: 101 }],
+  }));
+  assert.throws(() => loadVariants([a, c]), /do not share the same cues/);
+});
+
+test('every cue is asked once per variant', () => {
+  const { a, b } = variantFiles();
+  const variants = loadVariants([a, b]);
+  const trials = buildTrials(variants, 'p1');
+  const dialogue = MANIFEST.cues.filter((c) => c.kind === 'dialogue').length;
+  assert.equal(trials.length, dialogue * 2, 'each design measured on identical material');
+  for (const v of variants) {
+    assert.equal(trials.filter((t) => t.variantId === v.id).length, dialogue);
+  }
+});
+
+test('trial order is per-participant and interleaved, not blocked', () => {
+  const { a, b } = variantFiles();
+  const variants = loadVariants([a, b]);
+  const p1 = buildTrials(variants, 'participant-one').map((t) => t.id).join();
+  const p2 = buildTrials(variants, 'participant-two').map((t) => t.id).join();
+  assert.notEqual(p1, p2, 'order must vary by participant, or fatigue loads onto one design');
+  // Same participant twice must reproduce, so a session can be reconstructed.
+  assert.equal(buildTrials(variants, 'participant-one').map((t) => t.id).join(), p1);
+});
+
+test('the answer is never in what the trial exposes', () => {
+  const { a, b } = variantFiles();
+  const variants = loadVariants([a, b]);
+  const trials = buildTrials(variants, 'p1');
+  const key = answerKey(variants);
+  for (const t of trials) {
+    const serialised = JSON.stringify(t);
+    const correct = key.get(`${t.variantId}:${t.cueId}`);
+    assert.ok(correct, 'the key must know this trial');
+    // The correct id appears among the options, but nothing marks which it is.
+    assert.equal(/correct|answer|speaker/i.test(serialised), false, serialised);
+  }
+});
+
+test('options are shuffled rather than always in cast order', () => {
+  const { a, b } = variantFiles();
+  const variants = loadVariants([a, b]);
+  const orders = new Set(
+    buildTrials(variants, 'p1').map((t) => t.options.map((o) => o.id).join()));
+  assert.ok(orders.size >= 1);
+  for (const t of buildTrials(variants, 'p1')) {
+    assert.equal(t.options.length, MANIFEST.characters.length);
+  }
+});
+
+test('wilson intervals behave at the sample sizes a caption study reaches', () => {
+  // The normal approximation gives nonsense here: intervals past 100%, or zero
+  // width when every answer is correct.
+  const [lo, hi] = wilson(10, 10);
+  assert.ok(hi <= 1 && lo > 0.6 && lo < 1, `[${lo}, ${hi}]`);
+  const [lo0, hi0] = wilson(0, 10);
+  assert.ok(lo0 === 0 && hi0 > 0 && hi0 < 0.4, `[${lo0}, ${hi0}]`);
+  assert.deepEqual(wilson(0, 0), [0, 0]);
+});
+
+test('analysis refuses to call a winner on too few participants', () => {
+  const responses = Array.from({ length: 20 }, (_, i) => ({
+    trialId: `t${i}`, variantId: i % 2 ? 'a' : 'b', cueId: 'c', answerId: 'x',
+    correct: i % 2 === 1, ms: 1000, participant: `p${i % 3}`, at: '',
+  }));
+  const r = analyse(responses);
+  assert.equal(r.participants, 3);
+  assert.ok(r.interpretation.some((l) => /Too few to conclude/.test(l)));
+});
+
+test('analysis reports overlap rather than a difference when intervals overlap', () => {
+  const responses = Array.from({ length: 40 }, (_, i) => ({
+    trialId: `t${i}`, variantId: i % 2 ? 'a' : 'b', cueId: 'c', answerId: 'x',
+    correct: i % 4 < 2, ms: 1000, participant: `p${i}`, at: '',
+  }));
+  const r = analyse(responses);
+  assert.ok(r.interpretation.some((l) => /intervals.*overlap/i.test(l)));
+});
+
+test('the server grades server-side and never returns the answer', async () => {
+  const { dir, a, b } = variantFiles();
+  const results = join(dir, 'r.jsonl');
+  const h = await startStudy({ variants: [a, b], results, port: 0 });
+  try {
+    const session = await fetch(h.url + 'session', { method: 'POST' }).then((r) => r.json());
+    assert.ok(session.participant && session.trials.length);
+    assert.equal(/"correct"|"speaker"/.test(JSON.stringify(session)), false,
+      'the session payload must not leak the key');
+
+    const t = session.trials[0];
+    const posted = await fetch(h.url + 'answer', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        participant: session.participant, trialId: t.id,
+        answerId: t.options[0].id, ms: 1234,
+      }),
+    }).then((r) => r.json());
+    // Telling a participant whether they were right teaches them the cast.
+    assert.deepEqual(posted, { ok: true });
+
+    const recorded = readResponses(results);
+    assert.equal(recorded.length, 1);
+    assert.equal(typeof recorded[0].correct, 'boolean');
+    assert.equal(recorded[0].ms, 1234);
+  } finally {
+    await h.close();
+  }
+});
+
+test('the server rejects an unknown trial', async () => {
+  const { dir, a, b } = variantFiles();
+  const h = await startStudy({ variants: [a, b], results: join(dir, 'r2.jsonl'), port: 0 });
+  try {
+    const res = await fetch(h.url + 'answer', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ participant: 'nope', trialId: 'nope', answerId: 'x', ms: 1 }),
+    });
+    assert.equal(res.status, 400);
+  } finally {
+    await h.close();
+  }
+});

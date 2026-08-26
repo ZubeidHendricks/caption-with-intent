@@ -1,5 +1,6 @@
 {
   "cwi": "1.0",
+  "profile": "cwi-1.0",
   "meta": {
     "title": "Control Room",
     "generator": "cwi-pipeline/adapters/heygen merge 0.1.0",

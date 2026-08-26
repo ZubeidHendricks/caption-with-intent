@@ -160,6 +160,8 @@ cwi scene <spec.json> --out f       multi-speaker scene from provider renders
 cwi assign <manifest>               assign character colours (CVD-safe)
 cwi validate <manifest>             structural + accessibility audit
 cwi audit <manifest> --out r.html   compliance report (WCAG / EN 301 549 / FCC)
+cwi study <a> <b> --video f         A/B attribution study with viewers
+cwi study-report <results.jsonl>    accuracy per design, with intervals
 cwi stats <manifest>                per-character screen time
 cwi export <manifest> --format vtt  emit a delivery format (vtt | ass)
 cwi conform [--impl f]              run the conformance suite
@@ -263,6 +265,48 @@ npm run sample -w cwi-demo     # rebuilds sample.cwi.json
 
 `scene.mp4` and `control-room.mp4` are small enough to be committed, so the
 demo runs from a clean clone.
+
+## Validating with viewers
+
+Every design decision here traces to the spec, to a measurement, or to an
+argument. **None of it has been in front of Deaf or hard of hearing viewers**,
+which is the real ceiling on all of it — and it is how V1.0 was validated, with
+community sessions and per-variant voting, which is why V1.0 is as restrained as
+it is.
+
+```bash
+cwi study control-room.cwi.json chorus-room.cwi.json --video scene.mp4
+cwi study-report study-results.jsonl
+```
+
+The central claim of caption attribution is objectively testable: shown a line,
+can a viewer say who spoke it? That has a right answer, so accuracy is a number
+rather than an opinion. Participants see the same dialogue under each design and
+name the speaker.
+
+```
+  variant          trials  accuracy        95% CI        median
+  chorus-1.0          98    92.9%    86–96  %    1645ms
+  cwi-1.0             98    71.4%    62–79  %    2058ms
+```
+
+What the harness does to stay honest:
+
+- **The answer key never leaves the server.** A participant cannot read it out
+  of the page, and neither can a developer.
+- **No feedback after a trial** — telling someone they were right teaches them
+  the cast and inflates every later answer.
+- **Trial order is per-participant and interleaved**, not blocked, so fatigue
+  and learning do not land on whichever design came last.
+- **Wilson intervals**, because the normal approximation produces nonsense at
+  the sample sizes a caption study actually reaches.
+- **It refuses to call a winner** below about a dozen participants, and says so
+  rather than printing a comparison that looks conclusive.
+- Response time is recorded: a design read accurately but slowly is not
+  equivalent to one read accurately and immediately.
+
+The instrument needs no audio and is fully keyboard operable, because its
+participants are the people it is asking about.
 
 ## Auditing a title
 
