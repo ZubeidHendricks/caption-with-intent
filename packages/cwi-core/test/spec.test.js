@@ -277,7 +277,7 @@ test('cwi-1.0 reproduces the published palette exactly', () => {
     'colour-only attribution is exactly why V1.0 fails WCAG 1.4.1');
 });
 
-test('open-1.0 is substantially more colour-vision safe than cwi-1.0', () => {
+test('chorus-1.0 is substantially more colour-vision safe than cwi-1.0', () => {
   const worst = (hexes) => {
     let w = Infinity;
     for (let i = 0; i < hexes.length; i++)
@@ -286,34 +286,34 @@ test('open-1.0 is substantially more colour-vision safe than cwi-1.0', () => {
     return w;
   };
   const cwi = worst(getProfile('cwi-1.0').mainColors.map((s) => s.hex));
-  const open = worst(getProfile('open-1.0').mainColors.map((s) => s.hex));
-  assert.ok(open > cwi * 3, `open-1.0 ΔE ${open.toFixed(1)} vs cwi-1.0 ${cwi.toFixed(1)}`);
-  assert.ok(open >= DELTA_E_FLOOR, `open-1.0 must clear the ΔE ${DELTA_E_FLOOR} floor`);
+  const open = worst(getProfile('chorus-1.0').mainColors.map((s) => s.hex));
+  assert.ok(open > cwi * 3, `chorus-1.0 ΔE ${open.toFixed(1)} vs cwi-1.0 ${cwi.toFixed(1)}`);
+  assert.ok(open >= DELTA_E_FLOOR, `chorus-1.0 must clear the ΔE ${DELTA_E_FLOOR} floor`);
 });
 
-test('every open-1.0 colour clears WCAG AA contrast on the caption box', () => {
-  for (const s of getProfile('open-1.0').mainColors) {
+test('every chorus-1.0 colour clears WCAG AA contrast on the caption box', () => {
+  for (const s of getProfile('chorus-1.0').mainColors) {
     assert.ok(contrastRatio(s.hex, '#1A1A1A') >= 4.5,
       `${s.name} ${s.hex} at ${contrastRatio(s.hex, '#1A1A1A').toFixed(2)}:1`);
   }
-  // The contrast failure open-1.0 exists partly to fix.
+  // The contrast failure chorus-1.0 exists partly to fix.
   assert.ok(getProfile('cwi-1.0').mainColors.some((s) => contrastRatio(s.hex, '#1A1A1A') < 4.5));
 });
 
-test('open-1.0 separates every speaker pair without colour', () => {
+test('chorus-1.0 separates every speaker pair without colour', () => {
   for (const n of [2, 3, 4, 6, 8]) {
     const cast = Array.from({ length: n }, (_, i) => ({ id: `c${i}`, tier: 'main', rank: i }));
-    const { characters } = assignColors(cast, { profile: 'open-1.0' });
-    const shared = colourOnlyPairs(characters, getProfile('open-1.0'));
+    const { characters } = assignColors(cast, { profile: 'chorus-1.0' });
+    const shared = colourOnlyPairs(characters, getProfile('chorus-1.0'));
     assert.deepEqual(shared, [], `${n} speakers left ${shared.length} colour-only pair(s)`);
   }
 });
 
 test('marks appear only once positions are exhausted', () => {
   const cast = (n) => Array.from({ length: n }, (_, i) => ({ id: `c${i}`, tier: 'main', rank: i }));
-  const three = assignColors(cast(3), { profile: 'open-1.0' }).characters;
+  const three = assignColors(cast(3), { profile: 'chorus-1.0' }).characters;
   assert.ok(three.every((c) => !c.glyph), 'three speakers fit the positions; no marks needed');
-  const four = assignColors(cast(4), { profile: 'open-1.0' }).characters;
+  const four = assignColors(cast(4), { profile: 'chorus-1.0' }).characters;
   assert.ok(four.every((c) => c.glyph), 'marking some speakers and not others would be worse');
 });
 

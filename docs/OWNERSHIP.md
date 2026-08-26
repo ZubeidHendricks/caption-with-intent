@@ -71,11 +71,11 @@ Profiles. `packages/cwi-core/src/profiles.ts` holds two:
 because a profile claiming to be that spec must be it. Use it to author
 CWI-conformant material, or to check something against the published design.
 
-**`open-1.0`** is ours. It keeps the idea worth keeping — derive typography from
+**`chorus-1.0`** is ours. It keeps the idea worth keeping — derive typography from
 *measured acoustics* rather than inferred emotion, which is what makes any of
 this automatable — and fixes the two defects the audit found:
 
-| | `cwi-1.0` | `open-1.0` |
+| | `cwi-1.0` | `chorus-1.0` |
 |---|---|---|
 | worst-case ΔE, 4 speakers | 11.8 | **43.6** |
 | worst-case ΔE, 6 speakers | 6.0 | **33.9** |
@@ -83,7 +83,7 @@ this automatable — and fixes the two defects the audit found:
 | attribution channels | colour | colour + position + mark |
 | WCAG 1.4.1, multi-speaker | **fails** | **passes** |
 
-The `open-1.0` palette was **derived, not adapted**: an optimisation
+The `chorus-1.0` palette was **derived, not adapted**: an optimisation
 maximising the smallest pairwise perceptual distance across normal vision and
 all three dichromacies at once, under a WCAG AA contrast constraint. The
 derivation is `scripts/derive-palette.mjs` and is reproducible. None of its
@@ -96,7 +96,7 @@ colour alone.
 
 ## What this means practically
 
-Ship `open-1.0` and nothing in the delivery derives from the CWI document: not
+Ship `chorus-1.0` and nothing in the delivery derives from the CWI document: not
 the palette, not the attribution scheme, not the name. The numbers it shares
 with V1.0 — a 5% baseline, a 3–12% range — are functional parameters, and a
 successor design is free to keep, retune or replace them.
@@ -107,11 +107,21 @@ faithfully is a stronger position than implementing only one.
 
 Before commercially deploying anything that presents itself as Caption with
 Intention, or that redistributes the V1.0 palette, get written clarification
-from `requests@captionwithintention.org`. Shipping `open-1.0` does not require
+from `requests@captionwithintention.org`. Shipping `chorus-1.0` does not require
 that conversation. Shipping `cwi-1.0` may.
 
 ## Naming
 
-`open-1.0` is a placeholder. The identifier lives in one object in
-`profiles.ts`; renaming it is a one-line change plus its references in the
-docs. That decision is a branding one and has been left open deliberately.
+The design is called **Chorus**. A chorus is many voices that stay individually
+distinguishable — precisely the property this adds over V1.0, where attribution
+rests on a single channel and collapses whenever that channel fails.
+
+The identifier lives in one object in `profiles.ts`, so changing it later is a
+one-line edit plus its references in the docs.
+
+If the project is ever rebranded around it, these npm names were free at the
+time of writing: `chorus-captions`, `choruscaptions`, `@chorus/core`,
+`chorus-core`, `chorus-web`, `chorus-mcp`. Both `chorus` and `chorus-cli` are
+taken. The packages currently ship as `cwi-*`, which describes what they
+implement rather than which design they prefer — defensible either way, and
+worth keeping while `cwi-1.0` is a supported profile.

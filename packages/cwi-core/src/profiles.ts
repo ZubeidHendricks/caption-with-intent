@@ -13,7 +13,10 @@
  * be that spec. Use it to author CWI-conformant material or to check something
  * against the published design.
  *
- * `open-1.0` is this project's own design. It keeps the idea that carries
+ * `chorus-1.0` is this project's own design. The name is the point: a chorus is
+ * many voices that stay individually distinguishable, which is exactly what
+ * this adds — attribution spread across several channels so no single one is
+ * load-bearing. It keeps the idea that carries
  * across — derive typography from *measured acoustics* rather than inferred
  * emotion, which is what makes any of this automatable — and fixes the two
  * defects the audit found in V1.0:
@@ -30,7 +33,7 @@
  *      labels and ">>" markers, so V1.0 regressed against ordinary practice on
  *      that specific point.
  *
- * The colour values in `open-1.0` are computed, not adapted. See
+ * The colour values in `chorus-1.0` are computed, not adapted. See
  * `scripts/derive-palette.mjs` for the derivation.
  */
 import type { CwiOptions } from './types.js';
@@ -80,13 +83,13 @@ export interface Profile {
  * several good ones, and the pair that collapses is precisely what a viewer
  * runs into. Hue names are descriptive only; hue is not the carrier here.
  */
-const OPEN_MAIN: Swatch[] = [
-  { name: 'Open Violet', hex: '#9E60FB', hue: 265 },
-  { name: 'Open Ember', hex: '#E95935', hue: 13 },
-  { name: 'Open Steel', hex: '#5793C7', hue: 205 },
-  { name: 'Open Rose', hex: '#C07C81', hue: 356 },
-  { name: 'Open Lime', hex: '#A8F906', hue: 79 },
-  { name: 'Open Sand', hex: '#FCE99C', hue: 50 },
+const CHORUS_MAIN: Swatch[] = [
+  { name: 'Chorus Violet', hex: '#9E60FB', hue: 265 },
+  { name: 'Chorus Ember', hex: '#E95935', hue: 13 },
+  { name: 'Chorus Steel', hex: '#5793C7', hue: 205 },
+  { name: 'Chorus Rose', hex: '#C07C81', hue: 356 },
+  { name: 'Chorus Lime', hex: '#A8F906', hue: 79 },
+  { name: 'Chorus Sand', hex: '#FCE99C', hue: 50 },
 ];
 
 /**
@@ -94,19 +97,19 @@ const OPEN_MAIN: Swatch[] = [
  * staying clear of them. Same constraint, lower separation budget: supporting
  * characters carry less of the scene, so a smaller margin is acceptable.
  */
-const OPEN_SUPPORTING: Swatch[] = [
-  { name: 'Open Violet Dim', hex: '#7B5BB8', hue: 262 },
-  { name: 'Open Ember Dim', hex: '#B5603F', hue: 15 },
-  { name: 'Open Steel Dim', hex: '#4E7C9E', hue: 203 },
-  { name: 'Open Rose Dim', hex: '#9C6E72', hue: 354 },
-  { name: 'Open Lime Dim', hex: '#8CC22B', hue: 79 },
-  { name: 'Open Sand Dim', hex: '#C7B87E', hue: 48 },
-  { name: 'Open Teal', hex: '#4FB3A6', hue: 172 },
-  { name: 'Open Slate', hex: '#8E9BB0', hue: 217 },
-  { name: 'Open Clay', hex: '#C98F6B', hue: 25 },
-  { name: 'Open Moss', hex: '#7FA86B', hue: 100 },
-  { name: 'Open Plum', hex: '#A87BA8', hue: 300 },
-  { name: 'Open Straw', hex: '#D9C98A', hue: 47 },
+const CHORUS_SUPPORTING: Swatch[] = [
+  { name: 'Chorus Violet Dim', hex: '#7B5BB8', hue: 262 },
+  { name: 'Chorus Ember Dim', hex: '#B5603F', hue: 15 },
+  { name: 'Chorus Steel Dim', hex: '#4E7C9E', hue: 203 },
+  { name: 'Chorus Rose Dim', hex: '#9C6E72', hue: 354 },
+  { name: 'Chorus Lime Dim', hex: '#8CC22B', hue: 79 },
+  { name: 'Chorus Sand Dim', hex: '#C7B87E', hue: 48 },
+  { name: 'Chorus Teal', hex: '#4FB3A6', hue: 172 },
+  { name: 'Chorus Slate', hex: '#8E9BB0', hue: 217 },
+  { name: 'Chorus Clay', hex: '#C98F6B', hue: 25 },
+  { name: 'Chorus Moss', hex: '#7FA86B', hue: 100 },
+  { name: 'Chorus Plum', hex: '#A87BA8', hue: 300 },
+  { name: 'Chorus Straw', hex: '#D9C98A', hue: 47 },
 ];
 
 export const PROFILES: Record<string, Profile> = {
@@ -117,15 +120,15 @@ export const PROFILES: Record<string, Profile> = {
       'The published design, reproduced faithfully — including two known accessibility defects. ' +
       'Speakers are distinguished by hue alone, which fails WCAG 2.2 SC 1.4.1 (Level A) for any ' +
       'scene with more than one speaker, and the palette has pairs that collapse under common ' +
-      'dichromacies. Use this to author CWI-conformant material; use open-1.0 to ship something ' +
+      'dichromacies. Use this to author CWI-conformant material; use chorus-1.0 to ship something ' +
       'that passes an accessibility audit.',
     mainColors: MAIN_COLORS,
     supportingColors: SUPPORTING_COLORS,
     attribution: ['colour'],
   },
-  'open-1.0': {
-    id: 'open-1.0',
-    label: 'Open caption design 1.0',
+  'chorus-1.0': {
+    id: 'chorus-1.0',
+    label: 'Chorus caption design 1.0',
     basedOn: 'The measured-acoustics approach of Caption with Intention V1.0',
     note:
       'Keeps the idea worth keeping — typography derived from measured acoustics rather than ' +
@@ -133,8 +136,8 @@ export const PROFILES: Record<string, Profile> = {
       'optimisation for colour-vision safety under a WCAG AA contrast constraint, and speaker ' +
       'identity is carried by position as well as colour so a multi-speaker track can satisfy ' +
       'WCAG 1.4.1.',
-    mainColors: OPEN_MAIN,
-    supportingColors: OPEN_SUPPORTING,
+    mainColors: CHORUS_MAIN,
+    supportingColors: CHORUS_SUPPORTING,
     attribution: ['colour', 'position', 'glyph'],
     positions: ['left', 'center', 'right'],
     // Plain geometric marks: unambiguous at caption sizes, present in every

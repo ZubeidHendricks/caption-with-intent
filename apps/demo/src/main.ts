@@ -16,7 +16,8 @@ const capture = $('capture');
 const SOURCES = {
   sample: { manifest: '/sample.cwi.json', video: '/scene.mp4', label: 'synthetic scene, original dialogue' },
   heygen: { manifest: '/heygen.cwi.json', video: '/heygen.mp4', label: 'HeyGen render, captions derived by the pipeline' },
-  control: { manifest: '/control-room.cwi.json', video: '/control-room.mp4', label: 'four HeyGen renders merged; attribution across four speakers' },
+  control: { manifest: '/control-room.cwi.json', video: '/control-room.mp4', label: 'four speakers under Caption with Intention V1.0' },
+  chorus: { manifest: '/chorus-room.cwi.json', video: '/control-room.mp4', label: 'the same scene under Chorus — colour, position and mark' },
 } as const;
 type SourceKey = keyof typeof SOURCES;
 

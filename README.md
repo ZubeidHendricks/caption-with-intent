@@ -13,11 +13,12 @@ The toolchain implements caption *profiles*, and ships two.
 **`cwi-1.0`** reproduces Caption with Intention V1.0 faithfully — including two
 accessibility defects this project found in it.
 
-**`open-1.0`** is this project's own design. It keeps the idea worth keeping,
-deriving typography from measured acoustics rather than inferred emotion, and
-fixes both defects:
+**`chorus-1.0`** is this project's own design — *Chorus*, because a chorus is
+many voices that stay individually distinguishable, which is exactly what it
+adds. It keeps the idea worth keeping, deriving typography from measured
+acoustics rather than inferred emotion, and fixes both defects:
 
-| | `cwi-1.0` | `open-1.0` |
+| | `cwi-1.0` | `chorus-1.0` |
 |---|---|---|
 | worst-case ΔE, 4 speakers | 11.8 | **43.6** |
 | worst-case ΔE, 6 speakers | 6.0 | **33.9** |
@@ -25,13 +26,13 @@ fixes both defects:
 | attribution | colour only | colour + position + mark |
 | WCAG 1.4.1, multi-speaker | **fails** | **passes** |
 
-The `open-1.0` palette was derived by optimisation, not adapted — maximising the
+The `chorus-1.0` palette was derived by optimisation, not adapted — maximising the
 smallest pairwise perceptual distance across normal vision and all three
 dichromacies at once, under a contrast constraint. See
 `scripts/derive-palette.mjs`.
 
 ```jsonc
-{ "cwi": "1.0", "profile": "open-1.0", ... }
+{ "cwi": "1.0", "profile": "chorus-1.0", ... }
 ```
 
 ## Layout

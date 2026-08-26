@@ -69,7 +69,7 @@ export interface AssignResultOut {
 
 export function assign(m: CwiManifest, cvdSafe = true): AssignResultOut {
   // The manifest names its own design profile; assignment must honour it, or
-  // an open-1.0 track silently gets the CWI palette and its defects.
+  // an chorus-1.0 track silently gets the CWI palette and its defects.
   const { characters, warnings } = assignColors(m.characters, { cvdSafe, profile: m.profile });
   const mains = characters.filter((c) => c.tier === 'main' && c.color).map((c) => c.color!);
   return {

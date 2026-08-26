@@ -297,7 +297,7 @@ test('caption position varies by speaker when the profile carries it', async () 
   // least intrusive second channel, so it must actually move the captions.
   await page.evaluate(() => {
     const m = window.__cwiManifest;
-    m.profile = 'open-1.0';
+    m.profile = 'chorus-1.0';
     m.characters[0].position = 'left';
     m.characters[1].position = 'right';
     window.__cwiReload(m);

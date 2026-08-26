@@ -110,7 +110,7 @@ export interface CwiManifest {
   cwi: '1.0';
   /**
    * Caption design profile. Defaults to `cwi-1.0`, the published spec.
-   * `open-1.0` uses a colour-vision-safe palette and adds position as a second
+   * `chorus-1.0` uses a colour-vision-safe palette and adds position as a second
    * attribution channel. See profiles.ts.
    */
   profile?: string;
