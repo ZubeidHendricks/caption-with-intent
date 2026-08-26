@@ -22,6 +22,7 @@ import acoustics
 import prosody
 import transcript as tr
 
+import script
 import segment as seg
 
 def tier_speakers(counts: dict[str, int]) -> dict[str, tuple[str, int]]:
@@ -58,6 +59,11 @@ def build(media: Path, data: dict, args) -> dict:
     words = sorted(data["words"], key=lambda w: w["start"])
     if not words:
         raise SystemExit("transcript contains no words")
+
+    # Scripts written without word spaces arrive as one token per phrase, which
+    # destroys word-level synchronisation entirely. Re-split them into
+    # per-character reveal units before anything downstream sees them.
+    words = script.retokenize(words)
 
     with tempfile.TemporaryDirectory() as td:
         wav = acoustics.decode_to_wav(media, Path(td) / "a.wav")
@@ -126,6 +132,7 @@ def build(media: Path, data: dict, args) -> dict:
     return {
         "cwi": "1.0",
         "meta": {
+            "direction": script.direction(" ".join(w["text"] for w in words)),
             "title": media.stem,
             "generator": "cwi-pipeline/analyze.py 0.1.0",
             "language": data.get("language", "en"),

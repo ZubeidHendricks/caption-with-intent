@@ -47,6 +47,7 @@ packages/cwi-mcp                MCP server — the same operations, for agents
 pipeline/                       media → .cwi  (numpy DSP, no models required)
   acoustics.py                    per-word loudness, pitch, spectral centroid
   align.py                        known text → word onsets on clean speech
+  script.py                       writing systems: RTL, unspaced scripts, widths
   segment.py                      cue segmentation and line breaking
   analyze.py                      recorded film: media + transcript → manifest
   build_scene.py                  merge single-speaker renders onto one timeline

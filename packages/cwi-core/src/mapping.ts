@@ -108,6 +108,49 @@ export function resolveToken(t: Token, options: CwiOptions = DEFAULT_OPTIONS): T
 }
 
 /**
+ * Is a gap wanted between these two tokens at all?
+ *
+ * Scripts written without word spaces — Chinese, Japanese, Thai, Khmer, Lao —
+ * are segmented per character so that word-level synchronisation survives. If
+ * the renderer then inserted a word gap between every one of those, the line
+ * would render as spaced-out individual characters: legible in the sense that
+ * the glyphs are present, and wrong in every way that matters to a reader.
+ *
+ * A gap is inserted only where at least one side actually belongs to a spaced
+ * script.
+ */
+export function needsWordGap(a: string, b: string): boolean {
+  return !(isUnspacedText(a) && isUnspacedText(b));
+}
+
+/** True when every character in the string comes from an unspaced script. */
+export function isUnspacedText(s: string): boolean {
+  if (!s) return false;
+  for (const ch of s) {
+    if (/\s/.test(ch)) continue;
+    if (!isUnspacedChar(ch.codePointAt(0)!)) return false;
+  }
+  return true;
+}
+
+/** Blocks written without inter-word spaces. Mirrors pipeline/script.py. */
+function isUnspacedChar(cp: number): boolean {
+  return (
+    (cp >= 0x2e80 && cp <= 0x2fff) ||   // CJK radicals, Kangxi
+    (cp >= 0x3000 && cp <= 0x30ff) ||   // CJK punctuation, kana
+    (cp >= 0x3400 && cp <= 0x4dbf) ||   // CJK Extension A
+    (cp >= 0x4e00 && cp <= 0x9fff) ||   // CJK Unified Ideographs
+    (cp >= 0xf900 && cp <= 0xfaff) ||   // CJK Compatibility
+    (cp >= 0xac00 && cp <= 0xd7af) ||   // Hangul syllables
+    (cp >= 0x0e00 && cp <= 0x0e7f) ||   // Thai
+    (cp >= 0x0e80 && cp <= 0x0eff) ||   // Lao
+    (cp >= 0x1780 && cp <= 0x17ff) ||   // Khmer
+    (cp >= 0x1000 && cp <= 0x109f) ||   // Myanmar
+    (cp >= 0xff00 && cp <= 0xffef)      // Halfwidth/Fullwidth forms
+  );
+}
+
+/**
  * Word gap between two adjacent tokens, in the same "% of frame height" unit
  * the spec uses for type size.
  *

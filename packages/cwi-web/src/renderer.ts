@@ -1,5 +1,5 @@
 import {
-  withDefaults, resolveToken, wordGap,
+  withDefaults, resolveToken, wordGap, needsWordGap,
   type CwiManifest, type CwiOptions, type Cue, type Token, type Character,
 } from 'cwi-core';
 import { injectStyle } from './style.js';
@@ -106,6 +106,11 @@ export class CwiRenderer {
     this.manifest = manifest;
     this.opts = withDefaults({ ...manifest.options, ...this.opts });
     this.chars = new Map(manifest.characters.map((c) => [c.id, c]));
+    // Base writing direction. Left-to-right layout of a right-to-left script
+    // runs the word reveal backwards through the line, which is worse than not
+    // revealing at all. Position classes stay literal: position is a spatial
+    // attribution cue and should not mirror with the text.
+    this.el.dir = manifest.meta?.direction ?? 'ltr';
     this.clear();
   }
 
@@ -276,7 +281,10 @@ export class CwiRenderer {
           el.style.color = '#FFFFFF';
         }
         lineEl.appendChild(el);
-        if (i < line.tokens.length - 1) {
+        // No gap between two unspaced-script characters: they are segmented per
+        // character so synchronisation survives, and gapping them would render
+        // the line as spaced-out glyphs.
+        if (i < line.tokens.length - 1 && needsWordGap(token.text, line.tokens[i + 1].text)) {
           const next = resolveToken(line.tokens[i + 1], o);
           const sp = document.createElement('span');
           sp.className = 'cwi-sp';

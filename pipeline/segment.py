@@ -17,6 +17,8 @@ from __future__ import annotations
 
 import re
 
+import script
+
 MAX_GAP_S = 0.70
 MAX_CUE_S = 6.0
 MAX_CHARS_PER_LINE = 42
@@ -45,7 +47,16 @@ def _is_sticky(word: dict) -> bool:
 
 
 def _chars(words: list[dict]) -> int:
-    return sum(len(w["text"]) + 1 for w in words) - 1 if words else 0
+    """
+    Line length in display columns, not characters.
+
+    A CJK character occupies about two Latin character widths, and combining
+    marks occupy none, so counting characters makes a Japanese line roughly
+    twice as wide as the limit intends and a Thai line narrower.
+    """
+    if not words:
+        return 0
+    return sum(script.display_width(w["text"]) + 1 for w in words) - 1
 
 
 def segment(
@@ -129,7 +140,11 @@ def _absorb_stubs(cues: list[list[dict]], max_dur: float, budget: int,
             prev = out[-1]
             same_speaker = prev[-1].get("speaker") == cue[0].get("speaker")
             merged_dur = cue[-1]["end"] - prev[0]["start"]
-            if same_speaker and merged_dur <= max_dur * 1.15 and _chars(prev + cue) <= budget:
+            # Allow a little overflow rather than leaving an orphan. Character
+            # segmentation fills the budget exactly far more often than word
+            # segmentation does, and a slightly long line reads better than a
+            # line of two characters on its own.
+            if same_speaker and merged_dur <= max_dur * 1.15 and _chars(prev + cue) <= budget * 1.15:
                 out[-1] = prev + cue
                 continue
         out.append(cue)
@@ -152,6 +167,11 @@ def wrap(words: list[dict], max_chars: int = MAX_CHARS_PER_LINE,
     target = total / 2
     best_i, best_cost = 1, float("inf")
     for i in range(1, len(words)):
+        # Kinsoku shori: some characters may not begin or end a line. Breaking
+        # there is not merely ugly — it reads as an error to a native reader.
+        prev_text, next_text = words[i - 1]["text"], words[i]["text"]
+        if not script.can_break_between(prev_text[-1:], next_text[:1]):
+            continue
         left = _chars(words[:i])
         cost = abs(left - target)
         if _CLAUSE_END.search(words[i - 1]["text"]):

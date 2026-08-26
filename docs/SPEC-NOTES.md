@@ -66,6 +66,18 @@ What the picture does not carry is the vocal channel, and the highest-informatio
 
 They stay unrendered deliberately. The CWI team's own account of building V1.0 is that they over-indexed and pulled back — "we learned subtlety prevents captions from becoming distracting" — and adding five more visual channels would repeat a mistake they already made and corrected. Any decision to surface these should be validated with DHH viewers first, as the original system was.
 
+**Writing systems other than English — absent from the spec entirely.** CWI V1.0 is specified, illustrated and validated in English, and three things break on contact with anything else.
+
+*Scripts written without word spaces.* Chinese, Japanese, Thai, Khmer and Lao arrive from any whitespace tokeniser as a single token per phrase — a 30-character Japanese sentence is one "word". The whole line then flips colour at once, which is not a degraded version of word-level synchronisation but its total absence, and synchronisation is the mechanic the design exists for. `pipeline/script.py` re-splits these into per-character reveal units, timed proportionally to display width. The character is what karaoke subtitling has always used as a reveal unit for these scripts.
+
+*Right-to-left scripts.* Arabic, Hebrew, Persian and Urdu tokenise on spaces perfectly well but were laid out left to right, so the reveal ran backwards through the line. The analyzer now detects direction from the dialogue and the renderer sets it on the caption root. Position, being a spatial attribution cue rather than a textual one, deliberately does not mirror.
+
+*Line length in characters.* A CJK character occupies about two Latin character widths and a combining mark none, so a 42-character limit produced Japanese lines roughly twice as wide as intended and Thai lines narrower. Length is now measured in display columns, and line breaking applies kinsoku shori — the rules preventing a line from beginning with closing punctuation or ending with an opening bracket, which read as errors to a native reader rather than merely as odd breaks.
+
+Word gaps are suppressed between two unspaced-script characters. Without that, per-character segmentation renders a Japanese line as spaced-out individual glyphs.
+
+What this does *not* do: correct word segmentation for Thai, Khmer and Lao needs a dictionary, and Japanese needs a morphological analyser. Neither ships here. Reveal units and legal break points are what captions need, and those are handled; where a production needs dictionary-accurate breaks, segment upstream and pass the tokens in.
+
 **Colour-vision safety — a gap, not an ambiguity.** See `ARCHITECTURE.md` §4. The V1.0 palette has pairs that collapse under all three dichromacies, and the spec sets no contrast floor. `assignColors()` adds a CVD-safety constraint on top of the spec's rules, using only the spec's own swatches.
 
 **Colour stability across a series.** Not addressed. A character's colour should be identical in every episode. Pin `characters[].color` in a show-level manifest and reuse it rather than re-running assignment per episode.

@@ -16,6 +16,9 @@ export const CWI_CSS = `
 .cwi-cue { display: flex; flex-direction: column; width: 100%; align-items: center; }
 .cwi-cue--left  { align-items: flex-start; }
 .cwi-cue--right { align-items: flex-end; }
+/* Inline layout follows the root dir attribute, so an RTL track reveals right
+   to left without any per-token handling. */
+.cwi-root[dir='rtl'] .cwi-line { direction: rtl; }
 .cwi-line {
   /* Inline layout, not flex: flex items that contain only whitespace collapse
      to zero width, which silently welds the words together. Inline-block

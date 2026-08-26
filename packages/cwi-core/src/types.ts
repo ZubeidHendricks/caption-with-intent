@@ -101,6 +101,12 @@ export interface CwiMeta {
   aspectRatio?: string;
   frameRate?: number;
   language?: string;
+  /**
+   * Base writing direction. Detected by the analyzer from the dialogue.
+   * Without it an Arabic or Hebrew track is laid out left to right and the
+   * word reveal runs backwards through the line.
+   */
+  direction?: 'ltr' | 'rtl';
   /** Free-text provenance: analyzer version, operator, review status. */
   generator?: string;
 }

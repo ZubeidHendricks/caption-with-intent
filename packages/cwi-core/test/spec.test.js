@@ -341,3 +341,34 @@ test('each profile explains itself', () => {
     assert.ok(p.attribution.includes('colour'));
   }
 });
+
+// --- writing systems --------------------------------------------------------
+
+import { needsWordGap, isUnspacedText } from '../dist/index.js';
+
+test('no word gap between two unspaced-script characters', () => {
+  // CJK and Thai are segmented per character so word-level synchronisation
+  // survives. Gapping every one would render the line as spaced-out glyphs.
+  assert.equal(needsWordGap('大', '门'), false);
+  assert.equal(needsWordGap('ゲ', 'ー'), false);
+  assert.equal(needsWordGap('ป', 'ร'), false);
+});
+
+test('word gaps remain between spaced-script words', () => {
+  assert.equal(needsWordGap('the', 'gate'), true);
+  assert.equal(needsWordGap('البوابة', 'فتحت'), true);
+  assert.equal(needsWordGap('השער', 'נפתח'), true);
+});
+
+test('a mixed boundary keeps its gap', () => {
+  // "Netflix大门" should not weld the Latin to the CJK.
+  assert.equal(needsWordGap('Netflix', '大'), true);
+  assert.equal(needsWordGap('大', 'Netflix'), true);
+});
+
+test('isUnspacedText classifies whole strings', () => {
+  assert.equal(isUnspacedText('大门'), true);
+  assert.equal(isUnspacedText('。'), true, 'CJK punctuation is unspaced too');
+  assert.equal(isUnspacedText('ab'), false);
+  assert.equal(isUnspacedText(''), false);
+});
