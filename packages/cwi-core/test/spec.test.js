@@ -4,7 +4,7 @@ import {
   MAIN_COLORS, SUPPORTING_COLORS, MINOR_HUES, hsbToHex, minorColor,
   DEFAULT_OPTIONS as O, sizeFromDb, weightFromF0, widthFromCentroid, resolveToken, wordGap,
   assignColors, worstCaseSeparation, hexHue, hueDistance,
-  simulateCvd, deltaE, contrastRatio, validate,
+  simulateCvd, deltaE, contrastRatio, validate, DELTA_E_FLOOR,
 } from '../dist/index.js';
 
 // --- Palettes are transcribed correctly (spec 2.1.1-2.1.4) -----------------
@@ -262,4 +262,82 @@ test('mapping functions survive being passed straight to Array.map', () => {
   assert.deepEqual([0, 0, 0].map(sizeFromDb), [5, 5, 5]);
   assert.deepEqual([180, 180].map(weightFromF0), [400, 400]);
   assert.ok([1500, 1500].map(widthFromCentroid).every(Number.isFinite));
+});
+
+// --- profiles ---------------------------------------------------------------
+
+import { PROFILES, getProfile, hasNonColourAttribution, colourOnlyPairs } from '../dist/index.js';
+
+test('cwi-1.0 reproduces the published palette exactly', () => {
+  // A profile claiming to be the published spec must be it, defects included.
+  const p = getProfile('cwi-1.0');
+  assert.deepEqual(p.mainColors.map((s) => s.hex), MAIN_COLORS.map((s) => s.hex));
+  assert.deepEqual(p.attribution, ['colour']);
+  assert.equal(hasNonColourAttribution(p), false,
+    'colour-only attribution is exactly why V1.0 fails WCAG 1.4.1');
+});
+
+test('open-1.0 is substantially more colour-vision safe than cwi-1.0', () => {
+  const worst = (hexes) => {
+    let w = Infinity;
+    for (let i = 0; i < hexes.length; i++)
+      for (let j = i + 1; j < hexes.length; j++)
+        w = Math.min(w, worstCaseSeparation([hexes[i], hexes[j]]));
+    return w;
+  };
+  const cwi = worst(getProfile('cwi-1.0').mainColors.map((s) => s.hex));
+  const open = worst(getProfile('open-1.0').mainColors.map((s) => s.hex));
+  assert.ok(open > cwi * 3, `open-1.0 ΔE ${open.toFixed(1)} vs cwi-1.0 ${cwi.toFixed(1)}`);
+  assert.ok(open >= DELTA_E_FLOOR, `open-1.0 must clear the ΔE ${DELTA_E_FLOOR} floor`);
+});
+
+test('every open-1.0 colour clears WCAG AA contrast on the caption box', () => {
+  for (const s of getProfile('open-1.0').mainColors) {
+    assert.ok(contrastRatio(s.hex, '#1A1A1A') >= 4.5,
+      `${s.name} ${s.hex} at ${contrastRatio(s.hex, '#1A1A1A').toFixed(2)}:1`);
+  }
+  // The contrast failure open-1.0 exists partly to fix.
+  assert.ok(getProfile('cwi-1.0').mainColors.some((s) => contrastRatio(s.hex, '#1A1A1A') < 4.5));
+});
+
+test('open-1.0 separates every speaker pair without colour', () => {
+  for (const n of [2, 3, 4, 6, 8]) {
+    const cast = Array.from({ length: n }, (_, i) => ({ id: `c${i}`, tier: 'main', rank: i }));
+    const { characters } = assignColors(cast, { profile: 'open-1.0' });
+    const shared = colourOnlyPairs(characters, getProfile('open-1.0'));
+    assert.deepEqual(shared, [], `${n} speakers left ${shared.length} colour-only pair(s)`);
+  }
+});
+
+test('marks appear only once positions are exhausted', () => {
+  const cast = (n) => Array.from({ length: n }, (_, i) => ({ id: `c${i}`, tier: 'main', rank: i }));
+  const three = assignColors(cast(3), { profile: 'open-1.0' }).characters;
+  assert.ok(three.every((c) => !c.glyph), 'three speakers fit the positions; no marks needed');
+  const four = assignColors(cast(4), { profile: 'open-1.0' }).characters;
+  assert.ok(four.every((c) => c.glyph), 'marking some speakers and not others would be worse');
+});
+
+test('cwi-1.0 leaves position and marks unset', () => {
+  const cast = Array.from({ length: 4 }, (_, i) => ({ id: `c${i}`, tier: 'main', rank: i }));
+  const { characters } = assignColors(cast, { profile: 'cwi-1.0' });
+  assert.ok(characters.every((c) => !c.position && !c.glyph));
+});
+
+test('colourOnlyPairs reports every pair when there is no second channel', () => {
+  const p = getProfile('cwi-1.0');
+  const speakers = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+  assert.equal(colourOnlyPairs(speakers, p).length, 3, 'all 3 pairs rely on colour alone');
+});
+
+test('an unknown profile fails loudly', () => {
+  assert.throws(() => getProfile('nope'), /Unknown profile/);
+});
+
+test('each profile explains itself', () => {
+  for (const [id, p] of Object.entries(PROFILES)) {
+    assert.ok(p.label, `${id} label`);
+    assert.ok(p.note.length > 80, `${id} needs a note saying when to use it`);
+    assert.ok(p.mainColors.length >= 4 && p.supportingColors.length >= 6, `${id} palettes`);
+    assert.ok(p.attribution.includes('colour'));
+  }
 });

@@ -16,7 +16,7 @@ import { readFileSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import {
   validate, speakerStats, simulateCvd, deltaE, contrastRatio, withDefaults,
-  resolveToken, DELTA_E_FLOOR,
+  resolveToken, DELTA_E_FLOOR, getProfile, colourOnlyPairs, hasNonColourAttribution,
   type CwiManifest, type CwiOptions, type Issue, type CvdType,
 } from 'cwi-core';
 import { readManifest } from './ops.js';
@@ -63,17 +63,39 @@ export function audit(opts: AuditOptions): AuditReport {
     findings.push({ criterion: CRITERIA[id], verdict, detail, remediation, affected });
 
   // --- WCAG 1.4.1: the headline finding -----------------------------------
-  const speakers = new Set(m.cues.filter((c) => c.kind === 'dialogue' && c.speaker).map((c) => c.speaker!));
+  const speakerIds = new Set(m.cues.filter((c) => c.kind === 'dialogue' && c.speaker).map((c) => c.speaker!));
+  const speakers = m.characters.filter((c) => speakerIds.has(c.id));
+  const profile = getProfile(m.profile);
   const nonColour = nonColourAttributionCues(m);
-  if (speakers.size <= 1) {
+  // Assessed per PAIR: declaring a second channel is not enough if two speakers
+  // share a slot on it, because telling those two apart still needs colour.
+  const shared = colourOnlyPairs(
+    speakers.map((c) => ({ id: c.id, position: c.position, glyph: c.glyph })), profile);
+
+  if (speakerIds.size <= 1) {
     add('wcag-1.4.1', 'pass',
       'Only one speaker, so no information is conveyed by colour difference.');
   } else if (nonColour.some((c) => c.includes('label'))) {
     add('wcag-1.4.1', 'pass',
       `Speaker identity is also carried without colour (${nonColour.join('; ')}).`);
+  } else if (hasNonColourAttribution(profile) && shared.length === 0) {
+    add('wcag-1.4.1', 'pass',
+      `Profile "${profile.id}" carries speaker identity by ` +
+      `${[...new Set(speakers.map((c) => c.glyph ? 'position and mark' : 'position'))].join(', ')} ` +
+      `as well as colour, and every one of the ${speakerIds.size} speakers is distinguishable on that ` +
+      'channel alone.');
+  } else if (hasNonColourAttribution(profile)) {
+    add('wcag-1.4.1', 'fail',
+      `Profile "${profile.id}" carries a non-colour channel, but ${shared.length} speaker pair(s) ` +
+      `share a slot on it, so only colour tells them apart: ` +
+      shared.map(([a, b]) => `${a}/${b}`).join(', ') + '. This criterion is assessed per pair, so ' +
+      'a shared slot fails it even though the track as a whole has a second channel.',
+      'Give the affected characters distinct positions, add a further non-colour channel such as ' +
+      'a per-character glyph, or reduce how many speakers are tracked simultaneously.',
+      shared.flat());
   } else {
     add('wcag-1.4.1', 'fail',
-      `${speakers.size} speakers are distinguished by colour alone. Caption with Intention ` +
+      `${speakerIds.size} speakers are distinguished by colour alone. Caption with Intention ` +
       'attributes speakers by hue (2.1) and defines no non-colour cue for identity, so a track ' +
       'using the base design does not satisfy this Level A criterion. Conventional captioning ' +
       'conventions — a speaker label, or ">>" on a speaker change — do satisfy it, so this is a ' +
@@ -83,7 +105,7 @@ export function audit(opts: AuditOptions): AuditReport {
       'left/centre/right; prefix a label on speaker change; give each character a small ' +
       'persistent glyph. Off-camera italics (2.1.5) is a non-colour cue but marks *where* a ' +
       'voice is, not *whose* it is, so it does not resolve this.',
-      [...speakers].map(String));
+      [...speakerIds].map(String));
   }
 
   // --- Contrast -----------------------------------------------------------

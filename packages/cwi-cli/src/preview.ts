@@ -350,6 +350,10 @@ if (!fontsLoaded) {
 }
 
 window.__cwiSeek = (t) => { renderer.seek(t); };
+// Exposed so tests can swap the manifest without a page reload, which would
+// mean re-fetching the font on every case.
+window.__cwiManifest = manifest;
+window.__cwiReload = (m) => { renderer.load(m); renderer.seek(0); };
 window.__cwiReady = true;
 </script></body></html>`;
 }

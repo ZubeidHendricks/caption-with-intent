@@ -4,7 +4,35 @@ An open toolchain for the [Caption with Intention](https://www.captionwithintent
 
 CWI V1.0 ships as a PDF, an After Effects template, and a font. This repo adds the parts needed to run it at scale: **an interchange format, a reference implementation of the spec's math, a web renderer, and an analyzer that derives the whole thing from audio.**
 
-Read `RESEARCH.md` for what the system is, `ARCHITECTURE.md` for how to automate and distribute it, and `docs/SPEC-NOTES.md` for every place this implementation had to decide something the spec left open.
+Read `RESEARCH.md` for what the system is, `ARCHITECTURE.md` for how to automate and distribute it, `docs/SPEC-NOTES.md` for every place this implementation had to decide something the spec left open, and **`docs/OWNERSHIP.md`** for what in here is ours and what is not.
+
+## Two designs
+
+The toolchain implements caption *profiles*, and ships two.
+
+**`cwi-1.0`** reproduces Caption with Intention V1.0 faithfully — including two
+accessibility defects this project found in it.
+
+**`open-1.0`** is this project's own design. It keeps the idea worth keeping,
+deriving typography from measured acoustics rather than inferred emotion, and
+fixes both defects:
+
+| | `cwi-1.0` | `open-1.0` |
+|---|---|---|
+| worst-case ΔE, 4 speakers | 11.8 | **43.6** |
+| worst-case ΔE, 6 speakers | 6.0 | **33.9** |
+| colours below WCAG AA contrast | 1 | **0** |
+| attribution | colour only | colour + position + mark |
+| WCAG 1.4.1, multi-speaker | **fails** | **passes** |
+
+The `open-1.0` palette was derived by optimisation, not adapted — maximising the
+smallest pairwise perceptual distance across normal vision and all three
+dichromacies at once, under a contrast constraint. See
+`scripts/derive-palette.mjs`.
+
+```jsonc
+{ "cwi": "1.0", "profile": "open-1.0", ... }
+```
 
 ## Layout
 

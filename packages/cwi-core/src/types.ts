@@ -24,6 +24,22 @@ export interface Character {
   color?: string;
   /** Rank within tier, 0 = most prominent. Drives deterministic colour order. */
   rank?: number;
+  /**
+   * Horizontal placement of this character's captions.
+   *
+   * A non-colour attribution channel: colour alone fails WCAG 2.2 SC 1.4.1
+   * (Level A) for any scene with more than one speaker. Set by `assignColors`
+   * when the profile carries `position`, and ignored by profiles that do not.
+   */
+  position?: 'left' | 'center' | 'right';
+  /**
+   * A small mark shown before this character's captions.
+   *
+   * Assigned only when the cast outgrows the available positions, so ordinary
+   * scenes stay unmarked. Marking some speakers and not others would be worse
+   * than marking none, so it is applied to the whole cast or to none of it.
+   */
+  glyph?: string;
 }
 
 /** Per-word acoustic measurements, as produced by the analyzer. */
@@ -92,6 +108,12 @@ export interface CwiMeta {
 export interface CwiManifest {
   /** Format version. */
   cwi: '1.0';
+  /**
+   * Caption design profile. Defaults to `cwi-1.0`, the published spec.
+   * `open-1.0` uses a colour-vision-safe palette and adds position as a second
+   * attribution channel. See profiles.ts.
+   */
+  profile?: string;
   meta?: CwiMeta;
   options?: Partial<CwiOptions>;
   characters: Character[];

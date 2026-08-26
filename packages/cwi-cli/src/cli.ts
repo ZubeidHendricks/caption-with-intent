@@ -162,8 +162,10 @@ const commands: Record<string, (a: Args) => Promise<void> | void> = {
     const target = str(a, 'out') ?? path;
     writeManifest(target, { ...m, characters: r.characters });
     out(a, { ...r, out: target }, () => {
+      console.log(dim(`  profile: ${r.profile}`));
       for (const ch of r.characters) {
-        console.log(`  ${(ch.name ?? ch.id).padEnd(22)} ${ch.tier.padEnd(11)} ${ch.color}`);
+        console.log(`  ${(ch.name ?? ch.id).padEnd(22)} ${ch.tier.padEnd(11)} ${ch.color}` +
+          (ch.position ? dim(`  ${ch.position}`) : '') + (ch.glyph ? `  ${ch.glyph}` : ''));
       }
       const sep = Number.isFinite(r.worstCaseDeltaE) ? r.worstCaseDeltaE.toFixed(1) : 'n/a';
       console.log(`\nworst-case separation across mains (normal + all dichromacies): ${dim('ΔE')} ${sep}`);

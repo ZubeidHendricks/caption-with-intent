@@ -10,7 +10,12 @@ export const CWI_CSS = `
   -webkit-font-smoothing: antialiased;
   contain: layout paint;
 }
-.cwi-stack { display: flex; flex-direction: column; align-items: center; gap: 0.35em; }
+.cwi-stack { display: flex; flex-direction: column; align-items: center; gap: 0.35em; width: 100%; }
+/* Horizontal placement as a second, non-colour attribution channel. Colour
+   alone fails WCAG 1.4.1 for any scene with more than one speaker. */
+.cwi-cue { display: flex; flex-direction: column; width: 100%; align-items: center; }
+.cwi-cue--left  { align-items: flex-start; }
+.cwi-cue--right { align-items: flex-end; }
 .cwi-line {
   /* Inline layout, not flex: flex items that contain only whitespace collapse
      to zero width, which silently welds the words together. Inline-block
@@ -31,6 +36,7 @@ export const CWI_CSS = `
   color: rgba(255,255,255,var(--cwi-read-ahead, .9));
 }
 .cwi-tok--spoken { color: var(--cwi-speaker, #fff); }
+.cwi-glyph { opacity: 0.85; vertical-align: baseline; }
 .cwi-sp { display: inline-block; vertical-align: baseline; white-space: pre; }
 .cwi-root--offcam .cwi-tok { font-variation-settings: var(--cwi-axes), 'slnt' var(--cwi-slnt, -10); }
 /* The pop is a transform written per frame from the seek time, not a CSS

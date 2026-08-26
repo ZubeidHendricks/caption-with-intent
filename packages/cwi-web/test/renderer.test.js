@@ -121,6 +121,9 @@ async function at(t) {
       speaker: root ? root.style.getPropertyValue('--cwi-speaker') : null,
       offcam: root ? root.className.includes('offcam') : null,
       lineCount: document.querySelectorAll('.cwi-line').length,
+      cueClass: root ? root.className : null,
+      glyphs: [...document.querySelectorAll('.cwi-glyph')].map((e) => e.textContent),
+      lineLeft: line ? Math.round(line.getBoundingClientRect().left) : null,
       bottom: line ? Math.round(window.innerHeight - line.getBoundingClientRect().bottom) : null,
     };
   }, t);
@@ -285,4 +288,63 @@ test('heavier type gets a wider gap', async () => {
 test('cues appear and retire on their own boundaries', async () => {
   assert.equal((await at(2.5)).texts.length, 0, 'nothing between cues');
   assert.ok((await at(3.2)).texts.length > 0, 'next cue is present');
+});
+
+// --- non-colour attribution (WCAG 1.4.1) ----------------------------------
+
+test('caption position varies by speaker when the profile carries it', async () => {
+  // Colour alone fails WCAG 1.4.1 for a multi-speaker track. Position is the
+  // least intrusive second channel, so it must actually move the captions.
+  await page.evaluate(() => {
+    const m = window.__cwiManifest;
+    m.profile = 'open-1.0';
+    m.characters[0].position = 'left';
+    m.characters[1].position = 'right';
+    window.__cwiReload(m);
+  });
+  const left = await at(0.6);          // speaker "low"
+  const right = await at(6.2);         // speaker "high"
+  assert.match(left.cueClass, /cwi-cue--left/);
+  assert.match(right.cueClass, /cwi-cue--right/);
+  assert.ok(left.lineLeft < right.lineLeft,
+    `left-positioned caption at ${left.lineLeft} should sit left of ${right.lineLeft}`);
+});
+
+test('a centred speaker carries no position modifier', async () => {
+  await page.evaluate(() => {
+    const m = window.__cwiManifest;
+    m.characters[0].position = 'center';
+    m.characters[1].position = 'center';
+    window.__cwiReload(m);
+  });
+  const s = await at(0.6);
+  assert.equal(/cwi-cue--(left|right)/.test(s.cueClass), false, s.cueClass);
+});
+
+test('a per-character mark renders before the first line only', async () => {
+  await page.evaluate(() => {
+    const m = window.__cwiManifest;
+    m.characters[0].glyph = '\u25CF';
+    m.characters[1].glyph = '\u25A0';
+    window.__cwiReload(m);
+  });
+  assert.deepEqual((await at(0.6)).glyphs, ['\u25CF']);
+  assert.deepEqual((await at(6.2)).glyphs, ['\u25A0']);
+});
+
+test('marks are not applied to sound effects or music', async () => {
+  assert.deepEqual((await at(12.2)).glyphs, [], 'sfx has no speaker to mark');
+  assert.deepEqual((await at(15.6)).glyphs, [], 'music has no speaker to mark');
+});
+
+test('a profile without the channels leaves captions centred and unmarked', async () => {
+  await page.evaluate(() => {
+    const m = window.__cwiManifest;
+    delete m.profile;
+    for (const c of m.characters) { delete c.position; delete c.glyph; }
+    window.__cwiReload(m);
+  });
+  const s = await at(0.6);
+  assert.equal(/cwi-cue--(left|right)/.test(s.cueClass), false);
+  assert.deepEqual(s.glyphs, []);
 });

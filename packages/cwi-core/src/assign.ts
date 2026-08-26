@@ -12,6 +12,7 @@
  */
 import type { Character } from './types.js';
 import { simulateCvd, deltaE, type CvdType } from './cvd.js';
+import { colourOnlyPairs, getProfile, positionFor, type Profile } from './profiles.js';
 import {
   MAIN_COLORS, SUPPORTING_COLORS, MINOR_HUES,
   minorColor, hueDistance, hsbToHex, MINOR_SATURATION, MINOR_BRIGHTNESS,
@@ -23,6 +24,12 @@ export interface AssignResult {
 }
 
 export interface AssignOptions {
+  /**
+   * Caption design profile. Selects the palette and, where the profile carries
+   * a non-colour attribution channel, assigns that too. Defaults to cwi-1.0,
+   * which reproduces the published spec including its accessibility defects.
+   */
+  profile?: string | Profile;
   /**
    * Extend the spec's hue-separation rule with a colour-vision-deficiency
    * constraint: prefer sets whose colours stay distinguishable under
@@ -106,6 +113,9 @@ function byRank(a: Character, b: Character): number {
  */
 export function assignColors(input: Character[], opts: AssignOptions = {}): AssignResult {
   const { cvdSafe = true, deltaEFloor = 20 } = opts;
+  const profile = typeof opts.profile === 'object' ? opts.profile : getProfile(opts.profile);
+  const MAIN_COLORS = profile.mainColors;
+  const SUPPORTING_COLORS = profile.supportingColors;
   const warnings: string[] = [];
   const chars = input.map((c) => ({ ...c }));
 
@@ -255,6 +265,45 @@ export function assignColors(input: Character[], opts: AssignOptions = {}): Assi
     usedMinor.push(hue);
   });
   void minorColor; // exported for callers that want the raw indexed colour
+
+  // A second, non-colour channel where the profile has one. Colour alone does
+  // not satisfy WCAG 1.4.1 for a multi-speaker track, whatever the palette.
+  if (profile.attribution.includes('position')) {
+    const speaking = [...mains, ...supporting, ...minors];
+    speaking.forEach((c, i) => {
+      c.position ??= positionFor(i, profile);
+    });
+
+    // Having a non-colour channel is not the same as that channel separating
+    // every pair. With more speakers than slots, two share one and only colour
+    // tells them apart — which still fails WCAG 1.4.1 for that pair.
+    let shared = colourOnlyPairs(speaking as Array<{ id: string; position?: string }>, profile);
+
+    if (shared.length && profile.glyphs?.length) {
+      // Escalate to marks. Applied to the whole cast, not only the colliding
+      // pair: marking some speakers and not others reads as meaning something
+      // it does not.
+      speaking.forEach((c, i) => {
+        c.glyph ??= profile.glyphs![i % profile.glyphs!.length];
+      });
+      shared = colourOnlyPairs(
+        speaking as Array<{ id: string; position?: string; glyph?: string }>, profile);
+      if (speaking.length > profile.glyphs.length) {
+        warnings.push(
+          `${speaking.length} speakers exceeds the ${profile.glyphs.length} available marks, so ` +
+          'some are reused. Consider demoting the least prominent characters.',
+        );
+      }
+    }
+
+    if (shared.length) {
+      warnings.push(
+        `${shared.length} speaker pair(s) share every non-colour channel, so only colour ` +
+        `distinguishes them: ${shared.map(([a, b]) => `${a}/${b}`).join(', ')}. WCAG 1.4.1 is ` +
+        'assessed per pair, so these still rely on colour alone.',
+      );
+    }
+  }
 
   return { characters: chars, warnings };
 }

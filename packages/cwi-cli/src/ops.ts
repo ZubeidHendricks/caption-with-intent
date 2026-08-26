@@ -64,16 +64,20 @@ export interface AssignResultOut {
   warnings: string[];
   worstCaseDeltaE: number;
   cvdSafe: boolean;
+  profile: string;
 }
 
 export function assign(m: CwiManifest, cvdSafe = true): AssignResultOut {
-  const { characters, warnings } = assignColors(m.characters, { cvdSafe });
+  // The manifest names its own design profile; assignment must honour it, or
+  // an open-1.0 track silently gets the CWI palette and its defects.
+  const { characters, warnings } = assignColors(m.characters, { cvdSafe, profile: m.profile });
   const mains = characters.filter((c) => c.tier === 'main' && c.color).map((c) => c.color!);
   return {
     characters,
     warnings,
     worstCaseDeltaE: mains.length > 1 ? worstCaseSeparation(mains) : Infinity,
     cvdSafe,
+    profile: m.profile ?? 'cwi-1.0',
   };
 }
 

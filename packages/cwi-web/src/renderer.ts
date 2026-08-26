@@ -212,7 +212,14 @@ export class CwiRenderer {
   private buildCue(cue: Cue): CueView {
     const o = this.opts;
     const root = document.createElement('div');
+    root.className = 'cwi-cue';
     const speaker = cue.speaker ? this.chars.get(cue.speaker) : undefined;
+
+    // Horizontal placement carries speaker identity without colour. Profiles
+    // that do not use it leave `position` unset and everything stays centred.
+    if (speaker?.position && speaker.position !== 'center') {
+      root.classList.add(`cwi-cue--${speaker.position}`);
+    }
 
     // Spec 2.4.4 / 2.4.5: sound effects and music are always white.
     const color = cue.kind === 'dialogue' && !o.monochrome && speaker?.color
@@ -225,6 +232,10 @@ export class CwiRenderer {
 
     const tokens: TokenView[] = [];
     const lines = cue.lines.slice(0, o.maxLines);
+    // A per-character mark, where the profile escalated to one. Rendered in the
+    // speaker's colour but distinguishable by shape, so it works when the
+    // colour does not.
+    const glyph = cue.kind === 'dialogue' ? speaker?.glyph : undefined;
 
     for (const line of lines) {
       const lineEl = document.createElement('div');
@@ -235,6 +246,18 @@ export class CwiRenderer {
       const maxSize = Math.max(...line.tokens.map((t) => resolveToken(t, o).size), o.baselineSizePct);
       lineEl.style.padding = `${maxSize * 0.14}px ${maxSize * 0.3}px`;
 
+      if (glyph && line === lines[0]) {
+        const g = document.createElement('span');
+        g.className = 'cwi-tok cwi-tok--spoken cwi-glyph';
+        g.textContent = glyph;
+        g.style.fontSize = `${(o.baselineSizePct / 100) * this.frame.height * 0.62}px`;
+        lineEl.appendChild(g);
+        const sp = document.createElement('span');
+        sp.className = 'cwi-sp';
+        sp.textContent = '\u00A0';
+        sp.style.fontSize = g.style.fontSize;
+        lineEl.appendChild(sp);
+      }
       line.tokens.forEach((token, i) => {
         const st = resolveToken(token, o);
         const el = document.createElement('span');
