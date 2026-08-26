@@ -14,8 +14,11 @@ export const CWI_CSS = `
 /* Horizontal placement as a second, non-colour attribution channel. Colour
    alone fails WCAG 1.4.1 for any scene with more than one speaker. */
 .cwi-cue { display: flex; flex-direction: column; width: 100%; align-items: center; }
-.cwi-cue--left  { align-items: flex-start; }
-.cwi-cue--right { align-items: flex-end; }
+/* Physical margins, not flex-start/flex-end: those resolve against the inline
+   direction, so under dir=rtl a speaker pinned left silently rendered right.
+   Position is a spatial attribution cue and must not mirror with the script. */
+.cwi-cue--left  > .cwi-line { margin-right: auto; }
+.cwi-cue--right > .cwi-line { margin-left: auto; }
 /* Inline layout follows the root dir attribute, so an RTL track reveals right
    to left without any per-token handling. */
 .cwi-root[dir='rtl'] .cwi-line { direction: rtl; }

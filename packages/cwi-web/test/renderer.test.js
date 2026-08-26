@@ -348,3 +348,84 @@ test('a profile without the channels leaves captions centred and unmarked', asyn
   assert.equal(/cwi-cue--(left|right)/.test(s.cueClass), false);
   assert.deepEqual(s.glyphs, []);
 });
+
+// --- writing systems -------------------------------------------------------
+
+/**
+ * The Latin manifest cannot exercise these: it has no unspaced script and no
+ * right-to-left text. Reload the same page with a different one rather than
+ * standing up a second browser.
+ */
+async function loadScene(m) {
+  await page.evaluate((manifest) => window.__cwiReload(manifest), m);
+}
+
+const jaTokens = [...'ゲートは内側から開いた。'].map((ch, i) => ({
+  text: ch, start: i * 0.12, end: i * 0.12 + 0.11, db: 0, f0: 180, centroid: 1200,
+}));
+
+const JA = {
+  cwi: '1.0',
+  meta: { title: '日本語', language: 'ja', direction: 'ltr', aspectRatio: '16:9' },
+  characters: [{ id: 'a', name: 'ヴァリ', tier: 'main', color: '#17E517', rank: 0 }],
+  cues: [{ id: 'ja', start: 0, end: 3, speaker: 'a', kind: 'dialogue', onCamera: true,
+    lines: [{ tokens: jaTokens }] }],
+};
+
+const AR = {
+  cwi: '1.0',
+  meta: { title: 'مشهد', language: 'ar', direction: 'rtl', aspectRatio: '16:9' },
+  characters: [{ id: 'a', name: 'فالي', tier: 'main', color: '#17E517', rank: 0 }],
+  cues: [{ id: 'ar', start: 0, end: 3, speaker: 'a', kind: 'dialogue', onCamera: true,
+    lines: [{ tokens: [
+      { text: 'البوابة', start: 0.0, end: 0.5, db: 0, f0: 180, centroid: 1200 },
+      { text: 'فتحت', start: 0.6, end: 1.0, db: 0, f0: 180, centroid: 1200 },
+      { text: 'من', start: 1.1, end: 1.4, db: 0, f0: 180, centroid: 1200 },
+    ] }] }],
+};
+
+test('an unspaced script reveals per character with no gaps between them', async () => {
+  await loadScene(JA);
+  const s = await at(0.5);
+  assert.equal(s.texts.length, jaTokens.length, 'every character is its own reveal unit');
+  assert.deepEqual(s.gaps, [], 'gapping each character would render the line spaced out');
+  // The reveal is still progressive — that is the whole point of splitting.
+  assert.ok(s.spoken.some(Boolean) && s.spoken.some((v) => !v), s.spoken.join(','));
+});
+
+test('a mixed unspaced/Latin boundary keeps its gap', async () => {
+  await loadScene({
+    ...JA,
+    cues: [{ ...JA.cues[0], lines: [{ tokens: [
+      { text: 'Netflix', start: 0, end: 0.4, db: 0, f0: 180, centroid: 1200 },
+      { text: '大', start: 0.5, end: 0.6, db: 0, f0: 180, centroid: 1200 },
+      { text: '門', start: 0.6, end: 0.7, db: 0, f0: 180, centroid: 1200 },
+    ] }] }],
+  });
+  const s = await at(0.9);
+  assert.equal(s.gaps.length, 1, 'one gap, after the Latin word');
+  assert.ok(s.gaps[0] > 0, `gap collapsed to ${s.gaps[0]}px`);
+});
+
+test('a right-to-left scene lays out right to left', async () => {
+  await loadScene(AR);
+  const s = await at(1.2);
+  const dir = await page.evaluate(() =>
+    getComputedStyle(document.querySelector('.cwi-line')).direction);
+  assert.equal(dir, 'rtl');
+  // The first spoken word must sit to the RIGHT of the last. Laid out LTR the
+  // reveal runs backwards through the line, which is worse than no reveal.
+  const lefts = s.layout.map((v) => Number(v.split(',')[0]));
+  assert.ok(lefts[0] > lefts[lefts.length - 1],
+    `first token at ${lefts[0]}, last at ${lefts[lefts.length - 1]}`);
+});
+
+test('right-to-left text does not mirror the position cue', async () => {
+  // Position is a spatial attribution cue, not part of the text. A speaker
+  // pinned left stays left whichever way their script runs.
+  await loadScene({ ...AR, profile: 'chorus-1.0',
+    characters: [{ ...AR.characters[0], position: 'left' }] });
+  const s = await at(1.2);
+  assert.match(s.cueClass, /cwi-cue--left/);
+  assert.ok(s.lineLeft < FRAME_W / 3, `line at ${s.lineLeft}px`);
+});
