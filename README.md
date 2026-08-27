@@ -424,19 +424,14 @@ git tag v0.2.0 && git push --tags
 
 Pushing a `v*` tag runs `.github/workflows/release.yml`, which tests on Node
 18/20/22, verifies the tag matches the package version, runs the preflight, and
-publishes. It needs an `NPM_TOKEN` secret.
+publishes with npm provenance. It needs an `NPM_TOKEN` secret.
 
-**This repository is private, which changes two things about publishing.** npm
-provenance attests that a tarball was built from a specific commit, and that
-attestation is only verifiable if the commit is publicly readable — so npm
-refuses to generate it from a private repo. The workflow reads the repository's
-visibility at release time and passes `--provenance` only when it would work,
-so a tag never fails over it and provenance returns by itself if the repo is
-ever made public. The second thing has no automatic answer: the `repository`,
-`homepage` and `bugs` links in each package point at this repo, so on a
-published npm page they are 404s for everyone who is not a collaborator. That
-is a decision to make deliberately before a first publish, not a bug — the
-packages are still installable and the links are still correct.
+Provenance attests that a tarball was built from a specific commit, and that
+attestation is only verifiable if the commit is publicly readable — npm refuses
+to generate it from a private repository. The workflow therefore reads the
+repository's visibility at release time rather than hard-coding the flag, so a
+release cannot fail over it in either direction: provenance is attached while
+this repo is public, and publishing still works if it is ever closed again.
 
 `release:check` is the part worth keeping: publishing is irreversible, so it
 verifies every cheap thing beforehand — placeholder metadata, missing
