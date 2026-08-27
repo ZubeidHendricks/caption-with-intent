@@ -51,6 +51,25 @@ jobs:
       - name: Release preflight
         run: node scripts/release/check.mjs
 
+      # npm provenance attests that a tarball was built from a specific commit,
+      # and the attestation is only verifiable if that commit is publicly
+      # readable — so npm refuses to generate it from a private repository.
+      # This repo is private by choice, so provenance is decided here rather
+      # than hard-coded: publishing must not fail over it, and if the repo is
+      # ever made public the attestation comes back with no edit needed.
+      - name: Decide on provenance
+        id: prov
+        run: |
+          VIS=$(gh repo view "$GITHUB_REPOSITORY" --json visibility -q .visibility)
+          if [ "$VIS" = "PUBLIC" ]; then
+            echo "flag=--provenance" >> "$GITHUB_OUTPUT"
+          else
+            echo "flag=" >> "$GITHUB_OUTPUT"
+            echo "::notice::repository is $VIS, so publishing without provenance"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       # Order matters: dependents must not publish before their dependencies,
       # or an install between the two publishes resolves nothing.
       - name: Publish
@@ -58,7 +77,7 @@ jobs:
         run: |
           for p in cwi-core cwi-web cwi-cli cwi-mcp; do
             echo "publishing $p"
-            npm publish --workspace "$p" --provenance --access public
+            npm publish --workspace "$p" ${{ steps.prov.outputs.flag }} --access public
           done
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
