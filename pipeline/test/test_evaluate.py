@@ -12,6 +12,7 @@ A detector that has only ever been run on clean input is not a detector.
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 import unittest
 import wave
@@ -28,14 +29,29 @@ import make_fixture  # noqa: E402
 from evaluate import evaluate as run_eval, size_from_db, spectral_flatness  # noqa: E402
 
 FIXTURE = HERE / "fixture.wav"
-MANIFEST = HERE / "fixture.cwi.json"
+MANIFEST = HERE / "evaluate.cwi.json"
 
 
 def load() -> tuple[np.ndarray, int, dict]:
-    # The fixture is generated, not committed — it is a build artifact of
-    # make_fixture.py and gitignored, so a clean checkout has to build it.
-    if not FIXTURE.exists() or not MANIFEST.exists():
+    """
+    Build the fixture and analyse it, rather than reading files that happen to
+    be lying around.
+
+    make_fixture writes the wav and the word list; the manifest is what
+    analyze.py makes of them. An earlier version of this test read a
+    fixture.cwi.json that no current code path produces — it existed only as a
+    leftover on a machine that had run the pipeline by hand, so the tests
+    passed locally and failed on a clean checkout.
+    """
+    if not FIXTURE.exists():
         make_fixture.main()
+    if not MANIFEST.exists():
+        subprocess.run(
+            [sys.executable, str(HERE.parent / "analyze.py"),
+             "--media", str(FIXTURE),
+             "--transcript", str(HERE / "fixture.words.json"),
+             "--out", str(MANIFEST)],
+            check=True, capture_output=True, text=True)
     with wave.open(str(FIXTURE), "rb") as w:
         sr = w.getframerate()
         x = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16).astype(np.float32) / 32768.0
