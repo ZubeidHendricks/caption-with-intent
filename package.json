@@ -1,7 +1,7 @@
 {
   "name": "caption-with-intent",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Open toolchain for the Caption with Intention design system: interchange format, reference spec implementation, renderers, and an AI analyzer.",
   "workspaces": [
     "packages/*",

@@ -1,11 +1,11 @@
 {
   "name": "@corerus/chorus-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Command line toolchain for Caption with Intention: scaffold apps, analyze media, assign colours, validate accessibility, preview, and export.",
   "type": "module",
   "bin": {
-    "chorus": "./dist/cli.js",
-    "cwi": "./dist/cli.js"
+    "chorus": "dist/cli.js",
+    "cwi": "dist/cli.js"
   },
   "files": [
     "dist",
@@ -20,7 +20,7 @@
     "prepack": "node scripts/bundle-assets.mjs"
   },
   "dependencies": {
-    "@corerus/chorus-core": "^0.1.0"
+    "@corerus/chorus-core": "^0.1.1"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

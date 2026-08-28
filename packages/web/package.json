@@ -1,6 +1,6 @@
 {
   "name": "@corerus/chorus-web",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Reference web renderer for Caption with Intention manifests. DOM + variable font, zero runtime dependencies, drives off any HTMLMediaElement.",
   "type": "module",
   "main": "./dist/index.js",
@@ -22,7 +22,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@corerus/chorus-core": "^0.1.0"
+    "@corerus/chorus-core": "^0.1.1"
   },
   "devDependencies": {
     "typescript": "^5.6.0",
