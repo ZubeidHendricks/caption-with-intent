@@ -9,8 +9,8 @@
     "build": "npm run sample && vite build"
   },
   "dependencies": {
-    "@corerus/chorus-core": "0.1.0",
-    "@corerus/chorus-web": "0.1.0"
+    "@corerus/chorus-core": "*",
+    "@corerus/chorus-web": "*"
   },
   "devDependencies": {
     "vite": "^5.4.0"

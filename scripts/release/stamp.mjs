@@ -106,6 +106,29 @@ for (const [name, extra] of Object.entries(PACKAGES)) {
   if (before !== after) changed.push(name);
 }
 
+/**
+ * The demo is not published, but it depends on two packages that are. Pinning
+ * it to an exact version means that the moment the workspace version moves,
+ * npm stops satisfying the dependency locally and installs the *published*
+ * package instead — the demo then silently exercises the registry copy rather
+ * than the code in this repo. "*" always resolves to the workspace.
+ */
+const demoPath = join(root, 'apps', 'demo', 'package.json');
+if (existsSync(demoPath)) {
+  const demo = JSON.parse(readFileSync(demoPath, 'utf8'));
+  let touched = false;
+  for (const dep of Object.keys(demo.dependencies ?? {})) {
+    if (INTERNAL.has(dep) && demo.dependencies[dep] !== '*') {
+      demo.dependencies[dep] = '*';
+      touched = true;
+    }
+  }
+  if (touched) {
+    writeFileSync(demoPath, JSON.stringify(demo, null, 2) + '\n');
+    console.log('  demo repointed at the workspace');
+  }
+}
+
 console.log(`stamped ${Object.keys(PACKAGES).length} packages` + (VERSION ? ` at ${VERSION}` : ''));
 if (changed.length) console.log(`  changed: ${changed.join(', ')}`);
 if (REPO === PLACEHOLDER_REPO) {
