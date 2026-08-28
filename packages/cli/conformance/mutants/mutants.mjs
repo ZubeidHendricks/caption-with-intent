@@ -2,7 +2,7 @@
  * Each mutant re-exports the reference implementation with one thing wrong.
  * The comment on each says what a viewer would experience.
  */
-import * as ref from '@chorus/core';
+import * as ref from '@corerus/chorus-core';
 
 const base = { ...ref };
 

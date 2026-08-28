@@ -103,8 +103,8 @@ export async function startPreview(opts: PreviewOptions): Promise<PreviewHandle>
   const videoPath = opts.video ? resolve(opts.video) : undefined;
   if (videoPath && !existsSync(videoPath)) throw new CwiError(`No such video: ${videoPath}`);
 
-  const coreDist = distOf('@chorus/core');
-  const webDist = distOf('@chorus/web');
+  const coreDist = distOf('@corerus/chorus-core');
+  const webDist = distOf('@corerus/chorus-web');
   const html = playerHtml({ hasVideo: !!videoPath, inspector: opts.inspector !== false });
 
   const server = createServer((req, res) => {
@@ -217,11 +217,11 @@ aside h2:first-child{margin-top:0}
 <filter id="f-trit" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="1.255528 -0.076749 -0.178779 0 0 -0.078411 0.930809 0.147602 0 0 0.004733 0.691367 0.303900 0 0 0 0 0 1 0"/></filter>
 </defs></svg>
 <script type="importmap">
-{"imports":{"@chorus/core":"/_cwi/core/index.js","@chorus/web":"/_cwi/web/index.js"}}
+{"imports":{"@corerus/chorus-core":"/_cwi/core/index.js","@corerus/chorus-web":"/_cwi/web/index.js"}}
 </script>
 <script type="module">
-import { CwiRenderer } from '@chorus/web';
-import { validate, speakerStats } from '@chorus/core';
+import { CwiRenderer } from '@corerus/chorus-web';
+import { validate, speakerStats } from '@corerus/chorus-core';
 
 const $ = (id) => document.getElementById(id);
 const stage = $('stage'), capture = $('capture'), video = $('vid');
@@ -316,10 +316,10 @@ function renderHtml(w: number, h: number): string {
 </style></head>
 <body><div id="frame"></div>
 <script type="importmap">
-{"imports":{"@chorus/core":"/_cwi/core/index.js","@chorus/web":"/_cwi/web/index.js"}}
+{"imports":{"@corerus/chorus-core":"/_cwi/core/index.js","@corerus/chorus-web":"/_cwi/web/index.js"}}
 </script>
 <script type="module">
-import { CwiRenderer } from '@chorus/web';
+import { CwiRenderer } from '@corerus/chorus-web';
 const manifest = await fetch('/manifest.cwi.json').then(r => r.json());
 const frame = document.getElementById('frame');
 const renderer = new CwiRenderer(frame, { frame: { width: ${w}, height: ${h} } });

@@ -72,8 +72,8 @@ export async function startStudy(opts: StudyOptions): Promise<StudyHandle> {
   const video = opts.video ? resolve(opts.video) : undefined;
   if (video && !existsSync(video)) throw new CwiError(`No such video: ${video}`);
 
-  const coreDist = distOf('@chorus/core');
-  const webDist = distOf('@chorus/web');
+  const coreDist = distOf('@corerus/chorus-core');
+  const webDist = distOf('@corerus/chorus-web');
   const sessions = new Map<string, Trial[]>();
 
   const server = createServer((req, res) => {
@@ -209,10 +209,10 @@ function studyHtml(hasVideo: boolean): string {
 </div>
 </main>
 <script type="importmap">
-{"imports":{"@chorus/core":"/_cwi/core/index.js","@chorus/web":"/_cwi/web/index.js"}}
+{"imports":{"@corerus/chorus-core":"/_cwi/core/index.js","@corerus/chorus-web":"/_cwi/web/index.js"}}
 </script>
 <script type="module">
-import { CwiRenderer } from '@chorus/web';
+import { CwiRenderer } from '@corerus/chorus-web';
 
 const $ = (id) => document.getElementById(id);
 const video = $('vid');

@@ -31,7 +31,7 @@ import { createHash } from 'node:crypto';
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { CwiError, readManifest } from './ops.js';
-import type { CwiManifest } from '@chorus/core';
+import type { CwiManifest } from '@corerus/chorus-core';
 
 export interface Variant {
   id: string;

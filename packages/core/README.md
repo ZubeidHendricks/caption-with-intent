@@ -1,4 +1,4 @@
-# @chorus/core
+# @corerus/chorus-core
 
 Reference implementation of the [Caption with Intention](https://www.captionwithintention.org/)
 design system: palettes, acoustics-to-typography mapping, colour-vision-safe
@@ -8,13 +8,13 @@ character assignment, and validation.
 being vendored into a Rust compositor, a Swift player or a Skia canvas.
 
 ```bash
-npm install @chorus/core
+npm install @corerus/chorus-core
 ```
 
 ## What it does
 
 ```js
-import { assignColors, resolveToken, validate } from '@chorus/core';
+import { assignColors, resolveToken, validate } from '@corerus/chorus-core';
 
 // Speaker colours, following the spec's hue rules PLUS a colour-vision
 // constraint the spec itself lacks. Never pick these by hand.

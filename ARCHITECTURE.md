@@ -13,13 +13,13 @@ So this repo is layered deliberately:
 | Layer | What it is | Who owns it long-term |
 |---|---|---|
 | **`.cwi` manifest** | Interchange format: per-word timing, speaker attribution, acoustics *or* resolved typography | An open spec — the thing to standardise |
-| **`@chorus/core`** | Reference implementation of the spec's math: palettes, acoustics→type mapping, CVD-safe colour assignment, validation | Us, as the conformance reference |
-| **Renderers** | `@chorus/web` (DOM + variable font), ASS burn-in, After Effects | Us for reference; platforms write their own |
+| **`@corerus/chorus-core`** | Reference implementation of the spec's math: palettes, acoustics→type mapping, CVD-safe colour assignment, validation | Us, as the conformance reference |
+| **Renderers** | `@corerus/chorus-web` (DOM + variable font), ASS burn-in, After Effects | Us for reference; platforms write their own |
 | **Analyzer** | media → `.cwi` | Us, and eventually the platforms' own ASR stacks |
 
 A platform adopting CWI should have to write *one* thing: a renderer against a format whose semantics are already pinned down and whose correctness they can test against a reference. Everything else — what colour is character 4, how loud is "loud", how do you break the line — is already decided, in code, identically for everyone.
 
-**Corollary: `@chorus/core` must have zero dependencies and stay small.** It does. It is the piece that has to survive being vendored into a Rust compositor, a Swift player, and a Skia canvas.
+**Corollary: `@corerus/chorus-core` must have zero dependencies and stay small.** It does. It is the piece that has to survive being vendored into a Rust compositor, a Swift player, and a Skia canvas.
 
 ---
 
@@ -62,7 +62,7 @@ An LLM pass over the script also fills in `tier` and the `hero`/`villain` roles 
 - Loudness is normalised **per speaker**, using a modal estimator over their word levels. The spec maps volume onto 3–12% but never says what the 5% baseline is anchored to — an unfixed gap. Anchoring per speaker means a quiet scene reads correctly and a soft-spoken actor isn't permanently captioned at 3%. (An early mean-based version anchored on the shouts and captioned normal speech as quiet. The modal estimator fixes it.)
 - Run this on the **dialogue stem** if you have one. Against a full mix, music and effects contaminate every estimate. Where stems are unavailable, a source-separation pass (Demucs) first is a large quality win.
 
-**5. Colour assignment.** Rules, in `@chorus/core`. Implements the spec's hue-spacing and hero/villain opposition — plus a CVD-safety constraint the spec does not have and needs (see §4).
+**5. Colour assignment.** Rules, in `@corerus/chorus-core`. Implements the spec's hue-spacing and hero/villain opposition — plus a CVD-safety constraint the spec does not have and needs (see §4).
 
 **6. Segmentation.** Split on speaker change, pause > 0.7 s, duration > 6 s; balance lines. All configurable, all conventional caption practice, none of it specified by CWI.
 
@@ -117,7 +117,7 @@ The captions were still correct, because the pipeline derives typography from th
 **CapCut, Descript, Premiere, DaVinci Resolve, Final Cut.**
 
 They already run ASR with word timings and already render styled captions. What they need:
-1. A colour-assignment step (`@chorus/core`, vendored — it's dependency-free for this reason).
+1. A colour-assignment step (`@corerus/chorus-core`, vendored — it's dependency-free for this reason).
 2. Acoustic analysis on the audio they already have decoded.
 3. Variable-font rendering in their compositor. **This is the real blocker.** Most NLE title engines predate variable fonts and expose weight as a discrete family choice, not a continuous axis. Without axis interpolation you lose the entire intonation layer.
 
@@ -127,7 +127,7 @@ CapCut specifically: consumer-scale, template-driven, already leans hard on anim
 
 **Video.js, Shaka Player, hls.js, JW Player.**
 
-`@chorus/web` already does this — it overlays any `HTMLMediaElement` and measures the letterboxed frame correctly. A plugin for each is small. This is the cheapest route to *closed* (toggleable) CWI, because the browser has variable fonts natively and you're not fighting a codec. Worth doing early, because it's the only path that demonstrates CWI as a genuine closed caption rather than burned-in pixels.
+`@corerus/chorus-web` already does this — it overlays any `HTMLMediaElement` and measures the letterboxed frame correctly. A plugin for each is small. This is the cheapest route to *closed* (toggleable) CWI, because the browser has variable fonts natively and you're not fighting a codec. Worth doing early, because it's the only path that demonstrates CWI as a genuine closed caption rather than burned-in pixels.
 
 ### Tier 4 — streamers and broadcast
 
@@ -144,7 +144,7 @@ Until then, delivery is burned-in open captions, per spec 3.2, **in addition to*
 - **WebVTT** keeps speaker identity (as cue classes) and word timing. Loses all typography.
 - **ASS/libass** keeps colour, per-word size, karaoke timing, and the box. **Loses weight and width entirely** — libass has no variable-axis support, so the whole pitch/harmonics layer is gone.
 
-The only faithful burn-in paths are the After Effects project or rendering `@chorus/web` offscreen and compositing. Never let a lossy export ship as "CWI support" without saying what's missing — a silently degraded accessibility feature is worse than one you chose not to ship.
+The only faithful burn-in paths are the After Effects project or rendering `@corerus/chorus-web` offscreen and compositing. Never let a lossy export ship as "CWI support" without saying what's missing — a silently degraded accessibility feature is worse than one you chose not to ship.
 
 ---
 
@@ -175,7 +175,7 @@ The same applies to the size axis in the other direction. Size *is* per word, bu
 
 ## 5. Suggested sequencing
 
-1. **Now** — harden the format, publish the schema, get `@chorus/core` conformance-tested. Send the CVD finding and the per-voice reading to the CWI team.
+1. **Now** — harden the format, publish the schema, get `@corerus/chorus-core` conformance-tested. Send the CVD finding and the per-voice reading to the CWI team.
 2. **Done** — Tier 1 adapters for HeyGen and ElevenLabs, with HeyGen verified end to end on a real render. Next step here is a real title, not more code: pick something short, run it through, and put it in front of DHH viewers.
 3. **Then** — a player plugin (Shaka or Video.js) to prove *closed* CWI is possible, not just burned-in.
 4. **Then** — an editor. CapCut if you can get the conversation; Descript or Resolve if you want a shorter path via plugin APIs.

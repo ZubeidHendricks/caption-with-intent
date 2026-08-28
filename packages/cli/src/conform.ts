@@ -101,9 +101,9 @@ export async function conform(implementation?: string | Record<string, unknown>)
       ? (implementation as Impl)
       : implementation
         ? await import(pathToFileURL(implementation).href)
-        : await import('@chorus/core');
+        : await import('@corerus/chorus-core');
   const label = typeof implementation === 'string' ? implementation
-    : implementation ? '(supplied module)' : '@chorus/core (reference)';
+    : implementation ? '(supplied module)' : '@corerus/chorus-core (reference)';
 
   const dir = findVectors();
   const files = readdirSync(dir).filter((f) => f.endsWith('.json')).sort();

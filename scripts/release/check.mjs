@@ -18,7 +18,7 @@ const root = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
  * Directories under packages/. The published name is read from each
  * package.json rather than assumed to match: once names are scoped, a
  * directory is no longer a package name and conflating the two silently
- * looks for packages/@chorus/core.
+ * looks for packages/@corerus/chorus-core.
  */
 const DIRS = ['core', 'web', 'cli', 'mcp'];
 
@@ -40,7 +40,7 @@ const versions = new Set(NAMES.map((n) => pkgs[n].json.version));
 if (versions.size !== 1) {
   problems.push(`versions disagree across packages: ${[...versions].join(', ')}`);
 }
-const version = pkgs['@chorus/core'].json.version;
+const version = pkgs['@corerus/chorus-core'].json.version;
 
 for (const name of NAMES) {
   const { dir, json } = pkgs[name];
@@ -105,10 +105,10 @@ for (const name of NAMES) {
   if (files.some((f) => f.startsWith('src/') || f.startsWith('test/'))) {
     fail(name, 'source or tests are leaking into the tarball — check "files"');
   }
-  if (name === '@chorus/cli' && !files.some((f) => f.startsWith('conformance/'))) {
+  if (name === '@corerus/chorus-cli' && !files.some((f) => f.startsWith('conformance/'))) {
     fail(name, 'conformance/ is missing — `cwi conform` and `cwi conform-render` have no vectors for anyone installing from npm');
   }
-  if (name === '@chorus/cli' && !files.some((f) => f.startsWith('pipeline/'))) {
+  if (name === '@corerus/chorus-cli' && !files.some((f) => f.startsWith('pipeline/'))) {
     fail(name, 'pipeline/ is missing — `cwi analyze` breaks for anyone installing from npm');
   }
   notes.push(`  ${name.padEnd(9)} ${String(files.length).padStart(3)} files  ${(meta.size / 1024).toFixed(0)} kB packed  ${(meta.unpackedSize / 1024).toFixed(0)} kB unpacked`);

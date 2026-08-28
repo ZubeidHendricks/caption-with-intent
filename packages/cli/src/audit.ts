@@ -18,7 +18,7 @@ import {
   validate, speakerStats, simulateCvd, deltaE, contrastRatio, withDefaults,
   resolveToken, DELTA_E_FLOOR, getProfile, colourOnlyPairs, hasNonColourAttribution,
   type CwiManifest, type CwiOptions, type Issue, type CvdType,
-} from '@chorus/core';
+} from '@corerus/chorus-core';
 import { readManifest } from './ops.js';
 import { CRITERIA, issuesFor, nonColourAttributionCues, type Finding, type Verdict } from './criteria.js';
 

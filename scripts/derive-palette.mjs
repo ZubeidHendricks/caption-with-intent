@@ -14,7 +14,7 @@
  * Constraint: every colour must clear 4.5:1 against the caption box composited
  * over a bright frame (WCAG 1.4.3, Level AA).
  */
-import { simulateCvd, deltaE, contrastRatio, hexToLab } from '@chorus/core';
+import { simulateCvd, deltaE, contrastRatio, hexToLab } from '@corerus/chorus-core';
 
 const BOX = '#1A1A1A';
 const MODES = [null, 'protanopia', 'deuteranopia', 'tritanopia'];

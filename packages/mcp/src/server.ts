@@ -8,7 +8,7 @@
  * usually needs to reason, the JSON is what it needs to act.
  *
  * Run over stdio:
- *     @chorus/mcp
+ *     @corerus/chorus-mcp
  *
  * Register with Claude Code:
  *     claude mcp add cwi -- node /path/to/packages/mcp/dist/server.js
@@ -21,17 +21,17 @@ import { resolve } from 'node:path';
 import {
   CwiError, readManifest, writeManifest, assign, validateManifest, stats,
   auditPalette, exportCaptions, resolveTypography, analyzeMedia, buildScene,
-} from '@chorus/cli';
-import { startPreview, type PreviewHandle } from '@chorus/cli/preview';
-import { render, PRESETS } from '@chorus/cli/render';
-import { deliver, TARGETS } from '@chorus/cli/deliver';
-import { conform } from '@chorus/cli/conform';
+} from '@corerus/chorus-cli';
+import { startPreview, type PreviewHandle } from '@corerus/chorus-cli/preview';
+import { render, PRESETS } from '@corerus/chorus-cli/render';
+import { deliver, TARGETS } from '@corerus/chorus-cli/deliver';
+import { conform } from '@corerus/chorus-cli/conform';
 import { checkReport, loadScene, loadScenes,
-  type RenderReport, type RenderConformResult } from '@chorus/cli/render-conform';
-import { probeWebRenderer } from '@chorus/cli/render-probe';
-import { audit } from '@chorus/cli/audit';
-import { toHtml, toMarkdown } from '@chorus/cli/audit-report';
-import { init } from '@chorus/cli/scaffold';
+  type RenderReport, type RenderConformResult } from '@corerus/chorus-cli/render-conform';
+import { probeWebRenderer } from '@corerus/chorus-cli/render-probe';
+import { audit } from '@corerus/chorus-cli/audit';
+import { toHtml, toMarkdown } from '@corerus/chorus-cli/audit-report';
+import { init } from '@corerus/chorus-cli/scaffold';
 
 const server = new McpServer({ name: 'caption-with-intention', version: '0.1.0' });
 

@@ -23,7 +23,7 @@ export interface ProbeOptions {
   implementation?: string;
 }
 
-export async function probeWebRenderer({ scene, implementation = '@chorus/web' }: ProbeOptions): Promise<RenderReport> {
+export async function probeWebRenderer({ scene, implementation = '@corerus/chorus-web' }: ProbeOptions): Promise<RenderReport> {
   if (Number(process.versions.node.split('.')[0]) < 20) {
     // playwright enforces its floor with process.exit rather than a throw, so
     // this has to be caught before the import or the process dies here.

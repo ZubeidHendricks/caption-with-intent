@@ -1,7 +1,7 @@
 import {
   withDefaults, resolveToken, wordGap, needsWordGap,
   type CwiManifest, type CwiOptions, type Cue, type Token, type Character,
-} from '@chorus/core';
+} from '@corerus/chorus-core';
 import { injectStyle } from './style.js';
 
 export interface RendererOptions extends Partial<CwiOptions> {

@@ -9,7 +9,7 @@
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assignColors, type CwiManifest } from '@chorus/core';
+import { assignColors, type CwiManifest } from '@corerus/chorus-core';
 import { CwiError } from './ops.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -18,7 +18,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 function repoRoot(): string | null {
   let dir = here;
   for (let i = 0; i < 6; i++) {
-    if (existsSync(join(dir, 'packages', '@chorus/core', 'package.json'))) return dir;
+    if (existsSync(join(dir, 'packages', '@corerus/chorus-core', 'package.json'))) return dir;
     dir = dirname(dir);
   }
   return null;
@@ -52,7 +52,7 @@ export function init(opts: InitOptions): { dir: string; files: string[]; next: s
       version: '0.1.0',
       type: 'module',
       scripts: { dev: 'vite', build: 'vite build', preview: 'vite preview' },
-      dependencies: { '@chorus/core': dep('@chorus/core'), '@chorus/web': dep('@chorus/web') },
+      dependencies: { '@corerus/chorus-core': dep('@corerus/chorus-core'), '@corerus/chorus-web': dep('@corerus/chorus-web') },
       devDependencies: { vite: '^5.4.0', typescript: '^5.6.0' },
     }, null, 2) + '\n'],
 
@@ -61,7 +61,7 @@ export function init(opts: InitOptions): { dir: string; files: string[]; next: s
       `export default defineConfig({\n` +
       `  // Workspace packages are rebuilt in place by tsc; pre-bundling them\n` +
       `  // makes Vite serve a stale copy after every rebuild.\n` +
-      `  optimizeDeps: { exclude: ['@chorus/core', '@chorus/web'] },\n});\n`],
+      `  optimizeDeps: { exclude: ['@corerus/chorus-core', '@corerus/chorus-web'] },\n});\n`],
 
     ['index.html', INDEX_HTML(name)],
     ['src/main.ts', MAIN_TS],
@@ -154,8 +154,8 @@ const INDEX_HTML = (name: string) => `<!doctype html>
 </html>
 `;
 
-const MAIN_TS = `import { CwiRenderer } from '@chorus/web';
-import { validate, type CwiManifest } from '@chorus/core';
+const MAIN_TS = `import { CwiRenderer } from '@corerus/chorus-web';
+import { validate, type CwiManifest } from '@corerus/chorus-core';
 import manifest from '../captions/example.cwi.json';
 
 const stage = document.getElementById('stage')!;

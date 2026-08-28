@@ -21,11 +21,11 @@ That line is why the position below holds.
 
 Every line of code in this repository, MIT licensed:
 
-- `@chorus/core` — the acoustics-to-typography mapping as *implemented*, the
+- `@corerus/chorus-core` — the acoustics-to-typography mapping as *implemented*, the
   colour-vision-safe assignment search, validation
-- `@chorus/web` — the renderer, including the no-reflow layout approach and the
+- `@corerus/chorus-web` — the renderer, including the no-reflow layout approach and the
   time-derived pop
-- `@chorus/cli`, `@chorus/mcp` — the toolchain and the agent interface
+- `@corerus/chorus-cli`, `@corerus/chorus-mcp` — the toolchain and the agent interface
 - `pipeline/` — the DSP: the YIN implementation, alignment, segmentation,
   prosody, the provider adapters
 - The **`.cwi` interchange format** and its schema
@@ -116,12 +116,14 @@ The design is called **Chorus**. A chorus is many voices that stay individually
 distinguishable — precisely the property this adds over V1.0, where attribution
 rests on a single channel and collapses whenever that channel fails.
 
-The packages ship under the **`@chorus` scope**: `@chorus/core`, `@chorus/web`,
-`@chorus/cli` and `@chorus/mcp`. The profile identifier `chorus-1.0` lives in
-one object in `profiles.ts`.
+The packages ship as **`@corerus/chorus-core`**, **`@corerus/chorus-web`**,
+**`@corerus/chorus-cli`** and **`@corerus/chorus-mcp`**. The scope is the
+publisher; `chorus-` in each package name is the product, kept explicit so an
+install line still says what it installs. The profile identifier `chorus-1.0`
+is unchanged and lives in one object in `profiles.ts`.
 
-The scope is not cosmetic. Three unscoped names were lost to unrelated
-publishers, one of them mid-project:
+The scope exists because the unscoped namespace could not be held. Three names
+went to unrelated publishers:
 
 - **`chorus`** — a music composition toolkit, published since 2016 by the npm
   user `adamjmurray`, last released 2022.
@@ -131,13 +133,14 @@ publishers, one of them mid-project:
   published 2026-08-28 at 00:00 UTC, roughly a day after this project checked
   the name as free and chose it.
 
-The last one is the argument. Under a scope, the namespace is owned outright
-and no adjacent name can be taken from underneath a release. `scripts/release/
-names.mjs` checks every name against the registry before the publish step, so
-if this is ever wrong the release stops before uploading rather than halfway
-through it.
+The npm organisation `chorus` was taken as well. `corerus` is the org that was
+available. Under any scope the namespace is owned outright and no adjacent name
+can be taken from underneath a release, which is the property that matters here
+— `scripts/release/names.mjs` checks every name against the registry before the
+publish step, so if that ever stops being true the release stops before
+uploading rather than halfway through.
 
-The `chorus` command name is unaffected — a bin name is a command on PATH, not
-a package name — and `cwi` remains as an alias. Note that `npx chorus …` still
-fetches the unrelated music toolkit; the scoped equivalent is
-`npx @chorus/cli …`.
+Command names are unaffected by any of this: a bin name is a command on PATH,
+not a package name. The CLI installs as `chorus`, with `cwi` kept as an alias.
+Note that `npx chorus …` fetches the unrelated music toolkit; the correct
+invocation is `npx @corerus/chorus-cli …`.

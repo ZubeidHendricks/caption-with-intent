@@ -8,8 +8,8 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build -w @chorus/core && npm run build -w @chorus/web && npm run build -w @chorus/cli && npm run build -w @chorus/mcp",
-    "dev": "npm run dev -w @chorus/demo",
+    "build": "npm run build -w @corerus/chorus-core && npm run build -w @corerus/chorus-web && npm run build -w @corerus/chorus-cli && npm run build -w @corerus/chorus-mcp",
+    "dev": "npm run dev -w @corerus/chorus-demo",
     "chorus": "node packages/cli/dist/cli.js",
     "cwi": "node packages/cli/dist/cli.js",
     "mcp": "node packages/mcp/dist/server.js",

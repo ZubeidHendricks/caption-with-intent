@@ -183,7 +183,7 @@ test('init creates a runnable project', () => {
     assert.ok(existsSync(join(dir, f)), `missing ${f}`);
   }
   const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
-  assert.ok(pkg.dependencies['@chorus/core'] && pkg.dependencies['@chorus/web']);
+  assert.ok(pkg.dependencies['@corerus/chorus-core'] && pkg.dependencies['@corerus/chorus-web']);
   assert.ok(r.next.length);
 });
 

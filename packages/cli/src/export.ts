@@ -1,7 +1,7 @@
 import {
   withDefaults, resolveToken,
   type CwiManifest, type CwiOptions, type Cue,
-} from '@chorus/core';
+} from '@corerus/chorus-core';
 
 /** #RRGGBB -> ASS &HBBGGRR& */
 function assColor(hex: string): string {

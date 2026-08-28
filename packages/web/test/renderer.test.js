@@ -9,7 +9,7 @@
  */
 import { test as nodeTest, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { startPreview } from '@chorus/cli/preview';
+import { startPreview } from '@corerus/chorus-cli/preview';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';

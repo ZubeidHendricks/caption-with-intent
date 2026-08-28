@@ -13,8 +13,8 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveToken, withDefaults } from '@chorus/core';
-import { checkReport, loadScene, loadScenes, cueAt, toHex } from '@chorus/cli/render-conform';
+import { resolveToken, withDefaults } from '@corerus/chorus-core';
+import { checkReport, loadScene, loadScenes, cueAt, toHex } from '@corerus/chorus-cli/render-conform';
 
 const scene = loadScene('dialogue-2speaker');
 const opts = withDefaults(scene.manifest.options ?? {});

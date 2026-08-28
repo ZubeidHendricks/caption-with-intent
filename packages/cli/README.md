@@ -1,10 +1,10 @@
-# @chorus/cli
+# @corerus/chorus-cli
 
 The `cwi` command: scaffold apps, analyze media into caption manifests, assign
 accessible colours, validate, preview and export.
 
 ```bash
-npm install -g @chorus/cli
+npm install -g @corerus/chorus-cli
 cwi --help
 ```
 

@@ -1,5 +1,5 @@
 {
-  "name": "@chorus/core",
+  "name": "@corerus/chorus-core",
   "version": "0.1.0",
   "description": "Reference implementation of the Caption with Intention design system: palettes, acoustic-to-typography mapping, character colour assignment, manifest validation. Zero dependencies.",
   "type": "module",

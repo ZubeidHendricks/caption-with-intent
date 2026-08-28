@@ -12,7 +12,7 @@
  *
  * Reporting "compliant" from a script would be worse than reporting nothing.
  */
-import type { CwiManifest, Issue } from '@chorus/core';
+import type { CwiManifest, Issue } from '@corerus/chorus-core';
 
 export type Framework = 'CWI V1.0' | 'WCAG 2.2' | 'EN 301 549' | 'FCC 47 CFR 79.1';
 export type Assessment = 'automated' | 'partial' | 'manual';

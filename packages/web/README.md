@@ -1,14 +1,14 @@
-# @chorus/web
+# @corerus/chorus-web
 
 Reference web renderer for [Caption with Intention](https://www.captionwithintention.org/)
 manifests. DOM plus variable-font axes, drives off any `<video>`.
 
 ```bash
-npm install @chorus/web
+npm install @corerus/chorus-web
 ```
 
 ```js
-import { CwiRenderer } from '@chorus/web';
+import { CwiRenderer } from '@corerus/chorus-web';
 
 const renderer = new CwiRenderer(document.getElementById('captions'));
 renderer.load(manifest);

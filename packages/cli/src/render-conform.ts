@@ -31,7 +31,7 @@ import { fileURLToPath } from 'node:url';
 import {
   resolveToken, withDefaults, deltaE, getProfile,
   type CwiManifest, type Token, type Cue, type Character,
-} from '@chorus/core';
+} from '@corerus/chorus-core';
 import { CwiError } from './ops.js';
 
 const here = dirname(fileURLToPath(import.meta.url));

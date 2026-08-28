@@ -16,7 +16,7 @@ import {
   simulateCvd, deltaE, contrastRatio, resolveToken, withDefaults,
   MAIN_COLORS, SUPPORTING_COLORS, DELTA_E_FLOOR,
   type CwiManifest, type CwiOptions, type Issue, type Character, type CvdType,
-} from '@chorus/core';
+} from '@corerus/chorus-core';
 import { toAss, toVtt } from './export.js';
 
 const run = promisify(execFile);
@@ -361,7 +361,7 @@ export async function doctor(): Promise<{ checks: DoctorCheck[]; ok: boolean }> 
   let pipeline = '';
   try {
     pipeline = findPipeline();
-    const bundled = pipeline.includes(`${sep}packages${sep}@chorus/cli${sep}pipeline`);
+    const bundled = pipeline.includes(`${sep}packages${sep}@corerus/chorus-cli${sep}pipeline`);
     checks.push({
       name: 'pipeline', ok: true, needed: 'analyze, scene',
       detail: pipeline + (bundled ? '  (bundled copy)' : ''),

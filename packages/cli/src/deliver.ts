@@ -64,7 +64,7 @@ export const TARGETS: Record<string, Target> = {
       `Serve ${video} with HTTP range support, or seeking will not work.`,
       `Attach ${sidecar} as <track kind="captions"> for the toggleable track.`,
       '',
-      'If you control the player, prefer the @chorus/web renderer over burned-in',
+      'If you control the player, prefer the @corerus/chorus-web renderer over burned-in',
       'captions: it keeps the captions selectable and re-styleable, which burned',
       'pixels cannot be.',
     ],

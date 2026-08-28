@@ -1,4 +1,4 @@
-import { widthFromCentroid } from '@chorus/core';
+import { widthFromCentroid } from '@corerus/chorus-core';
 const voices = [['SpudsOxley',770],['AdamStone',798],['Archer',802],['MichaelC',848],
   ['DavidCastlemore',1232],['Ivy',1260],['Annie',1285],['Hope',1519],['Cassidy',1546],['MonikaSogam',1569]];
 const w = voices.map(([n,c])=>[n,c,widthFromCentroid(c)]);

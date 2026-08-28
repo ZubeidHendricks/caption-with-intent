@@ -1,16 +1,16 @@
-# @chorus/mcp
+# @corerus/chorus-mcp
 
 MCP server for the [Caption with Intention](https://www.captionwithintention.org/)
 toolchain, so an agent gets identical behaviour to a person at the CLI.
 
 ```bash
-claude mcp add chorus -- npx -y @chorus/mcp
+claude mcp add chorus -- npx -y @corerus/chorus-mcp
 ```
 
 Or in `.mcp.json`:
 
 ```json
-{ "mcpServers": { "cwi": { "command": "npx", "args": ["-y", "@chorus/mcp"] } } }
+{ "mcpServers": { "cwi": { "command": "npx", "args": ["-y", "@corerus/chorus-mcp"] } } }
 ```
 
 ## Tools
