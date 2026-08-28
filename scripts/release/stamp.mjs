@@ -44,25 +44,29 @@ const COMMON_KEYWORDS = [
 ];
 
 const PACKAGES = {
-  'chorus-core': {
+  'core': {
     keywords: [...COMMON_KEYWORDS, 'colour-blindness', 'color-vision-deficiency', 'wcag'],
     sideEffects: false,
     files: ['dist', 'README.md', 'LICENSE'],
   },
-  'chorus-web': {
+  'web': {
     keywords: [...COMMON_KEYWORDS, 'renderer', 'video', 'roboto-flex'],
     sideEffects: false,
     files: ['dist', 'README.md', 'LICENSE'],
   },
-  'chorus-captions': {
+  'cli': {
     keywords: [...COMMON_KEYWORDS, 'cli', 'ffmpeg', 'transcription'],
     files: ['dist', 'pipeline', 'conformance', 'README.md', 'LICENSE'],
   },
-  'chorus-mcp': {
+  'mcp': {
     keywords: [...COMMON_KEYWORDS, 'mcp', 'model-context-protocol', 'ai-agents'],
     files: ['dist', 'README.md', 'LICENSE'],
   },
 };
+
+/** Published names of the packages in this repo, for internal-dep matching. */
+const INTERNAL = new Set(Object.keys(PACKAGES).map(
+  (d) => JSON.parse(readFileSync(join(root, 'packages', d, 'package.json'), 'utf8')).name));
 
 const changed = [];
 for (const [name, extra] of Object.entries(PACKAGES)) {
@@ -84,10 +88,12 @@ for (const [name, extra] of Object.entries(PACKAGES)) {
   Object.assign(p, extra);
 
   // Internal deps track the stamped version with a caret so patches flow.
+  // PACKAGES is keyed by directory, so match on the published names instead —
+  // keying on the directory silently matches nothing once the names are scoped.
   for (const field of ['dependencies', 'peerDependencies']) {
     if (!p[field]) continue;
     for (const dep of Object.keys(p[field])) {
-      if (PACKAGES[dep]) p[field][dep] = `^${VERSION ?? p.version}`;
+      if (INTERNAL.has(dep)) p[field][dep] = `^${VERSION ?? p.version}`;
     }
   }
 

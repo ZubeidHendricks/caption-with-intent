@@ -42,7 +42,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           TAG="${GITHUB_REF_NAME#v}"
-          PKG=$(node -p "require('./packages/chorus-core/package.json').version")
+          PKG=$(node -p "require('./packages/core/package.json').version")
           if [ "$TAG" != "$PKG" ]; then
             echo "::error::tag v$TAG does not match package version $PKG"
             exit 1
@@ -100,7 +100,7 @@ jobs:
       - name: Publish
         if: ${{ github.event_name == 'push' || !inputs.dry-run }}
         run: |
-          for p in chorus-core chorus-web chorus-captions chorus-mcp; do
+          for p in @corerus/chorus-core @corerus/chorus-web @corerus/chorus-cli @corerus/chorus-mcp; do
             echo "publishing $p"
             npm publish --workspace "$p" ${{ steps.prov.outputs.flag }} --access public
           done
@@ -110,6 +110,6 @@ jobs:
       - name: Dry run
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run }}
         run: |
-          for p in chorus-core chorus-web chorus-captions chorus-mcp; do
+          for p in @corerus/chorus-core @corerus/chorus-web @corerus/chorus-cli @corerus/chorus-mcp; do
             npm publish --workspace "$p" --dry-run --access public
           done

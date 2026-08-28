@@ -1,0 +1,60 @@
+{
+  "name": "@corerus/chorus-core",
+  "version": "0.1.0",
+  "description": "Reference implementation of the Caption with Intention design system: palettes, acoustic-to-typography mapping, character colour assignment, manifest validation. Zero dependencies.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  },
+  "license": "MIT",
+  "author": "Zubeid Hendricks",
+  "homepage": "https://github.com/ZubeidHendricks/caption-with-intent#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZubeidHendricks/caption-with-intent.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/ZubeidHendricks/caption-with-intent/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "captions",
+    "subtitles",
+    "accessibility",
+    "a11y",
+    "deaf",
+    "hard-of-hearing",
+    "caption-with-intention",
+    "cwi",
+    "variable-fonts",
+    "webvtt",
+    "colour-blindness",
+    "color-vision-deficiency",
+    "wcag"
+  ],
+  "sideEffects": false
+}

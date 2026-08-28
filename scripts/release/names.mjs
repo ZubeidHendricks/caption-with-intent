@@ -8,9 +8,11 @@
  *      gone out — a half-published release that cannot be undone.
  *   2. A name is ours but the version already exists. Same shape of failure.
  *
- * Neither is hypothetical. `chorus-mcp` was free when this project chose it and
- * taken by an unrelated publisher hours later; the first the release knew of it
- * would have been a 403 after three packages had already published.
+ * Neither is hypothetical. The unscoped name `chorus-mcp` was free when this
+ * project chose it and was published by an unrelated party hours later; the
+ * first the release knew of it was a 403, and only an unrelated failure earlier
+ * in the loop kept that from being a half-published release. Moving under a
+ * scope removes the race, and this check is what proves it stayed removed.
  *
  * Run before the publish step. Network access is the point, so this is not part
  * of the offline preflight in check.mjs.
@@ -22,7 +24,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
-const PACKAGES = ['chorus-core', 'chorus-web', 'chorus-captions', 'chorus-mcp'];
+/** Directory names under packages/; the scoped name is read from each package.json. */
+const PACKAGES = ['core', 'web', 'cli', 'mcp'];
 
 const arg = (k) => {
   const i = process.argv.indexOf(`--${k}`);

@@ -1,4 +1,4 @@
-import { resolveToken, DEFAULT_OPTIONS } from 'chorus-core';
+import { resolveToken, DEFAULT_OPTIONS } from '@corerus/chorus-core';
 import { readFileSync } from 'node:fs';
 const m = JSON.parse(readFileSync('pipeline/test/fixture.cwi.json','utf8'));
 console.log('id'.padEnd(6),'tier'.padEnd(11),'name');

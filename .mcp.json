@@ -3,7 +3,7 @@
     "chorus": {
       "command": "node",
       "args": [
-        "packages/chorus-mcp/dist/server.js"
+        "packages/mcp/dist/server.js"
       ],
       "description": "Caption with Intention: analyze media into caption manifests, assign colour-vision-safe speaker colours, validate accessibility, preview, and export."
     }
