@@ -12,21 +12,30 @@ A detector that has only ever been run on clean input is not a detector.
 from __future__ import annotations
 
 import json
+import sys
 import unittest
 import wave
 from pathlib import Path
 
 import numpy as np
 
-import evaluate
-from evaluate import evaluate as run_eval, size_from_db, spectral_flatness
-
 HERE = Path(__file__).parent
+sys.path.insert(0, str(HERE.parent))
+sys.path.insert(0, str(HERE))
+
+import evaluate  # noqa: E402
+import make_fixture  # noqa: E402
+from evaluate import evaluate as run_eval, size_from_db, spectral_flatness  # noqa: E402
+
 FIXTURE = HERE / "fixture.wav"
 MANIFEST = HERE / "fixture.cwi.json"
 
 
 def load() -> tuple[np.ndarray, int, dict]:
+    # The fixture is generated, not committed — it is a build artifact of
+    # make_fixture.py and gitignored, so a clean checkout has to build it.
+    if not FIXTURE.exists() or not MANIFEST.exists():
+        make_fixture.main()
     with wave.open(str(FIXTURE), "rb") as w:
         sr = w.getframerate()
         x = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16).astype(np.float32) / 32768.0
@@ -81,6 +90,7 @@ class TestDetection(unittest.TestCase):
         self.tmp.unlink(missing_ok=True)
 
     def test_the_clean_fixture_passes(self):
+        # setUp already ensured the fixture exists via load().
         # The control. If this ever fails the thresholds have drifted into
         # flagging correct input, which is worse than missing bad input.
         r = run_eval(FIXTURE, self.manifest, workdir=HERE)
