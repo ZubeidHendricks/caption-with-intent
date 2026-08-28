@@ -41,10 +41,10 @@ dichromacies at once, under a contrast constraint. See
 spec/cwi-manifest.schema.json   the .cwi interchange format
 conformance/                    language-agnostic vectors + mutants that test them
   render/                       scenes + the report contract for renderers
-packages/cwi-core               spec math: palettes, acoustics→type, assignment, validation (0 deps)
-packages/cwi-web                DOM + variable-font renderer, drives off any <video>
-packages/cwi-cli                the `cwi` command + shared operations layer
-packages/cwi-mcp                MCP server — the same operations, for agents
+packages/chorus-core            spec math: palettes, acoustics→type, assignment, validation (0 deps)
+packages/chorus-web             DOM + variable-font renderer, drives off any <video>
+packages/chorus-captions        the `chorus` command + shared operations layer
+packages/chorus-mcp             MCP server — the same operations, for agents
 pipeline/                       media → .cwi  (numpy DSP, no models required)
   acoustics.py                    per-word loudness, pitch, spectral centroid
   align.py                        known text → word onsets on clean speech
@@ -64,17 +64,17 @@ The packages are published unscoped:
 
 | Package | What it is |
 |---|---|
-| [`cwi-core`](packages/cwi-core) | Spec math: palettes, acoustics→type, assignment, validation. Zero deps. |
-| [`cwi-web`](packages/cwi-web) | DOM + variable-font renderer |
-| [`cwi-cli`](packages/cwi-cli) | The `cwi` command |
-| [`cwi-mcp`](packages/cwi-mcp) | MCP server, for agents |
+| [`chorus-core`](packages/chorus-core) | Spec math: palettes, acoustics→type, assignment, validation. Zero deps. |
+| [`chorus-web`](packages/chorus-web) | DOM + variable-font renderer |
+| [`chorus-captions`](packages/chorus-captions) | The `chorus` command |
+| [`chorus-mcp`](packages/chorus-mcp) | MCP server, for agents |
 
 ```bash
-npm install -g cwi-cli          # the toolchain
-npm install cwi-core cwi-web    # to build against
+npm install -g chorus-captions        # the toolchain, as `chorus`
+npm install chorus-core chorus-web    # to build against
 ```
 
-Requirements vary by command — run `cwi doctor` to see what this machine has:
+Requirements vary by command — run `chorus doctor` to see what this machine has:
 
 | Command | Needs |
 |---|---|
@@ -82,7 +82,7 @@ Requirements vary by command — run `cwi doctor` to see what this machine has:
 | `analyze`, `scene` | Python 3 with numpy, and ffmpeg on PATH |
 | `render`, `deliver` | ffmpeg, plus **Node 20+** and a headless browser (`playwright-core`) |
 
-The Python pipeline ships inside `cwi-cli`; set `CWI_PYTHON` to choose an
+The Python pipeline ships inside `chorus-captions`; set `CWI_PYTHON` to choose an
 interpreter. Playwright enforces its Node 20 floor by exiting the process rather
 than throwing, so the browser-backed commands check the version before importing
 it and report a clear message on Node 18.
@@ -98,7 +98,7 @@ npm run build
 ### Make an app
 
 ```bash
-npx cwi init my-captions     # scaffold a runnable Vite app
+npx chorus-captions init my-captions     # scaffold a runnable Vite app
 cd my-captions && npm install && npm run dev
 ```
 
@@ -110,7 +110,7 @@ so and prescribes burned-in open captions until decoders catch up. So delivery
 means burning the captions into the picture:
 
 ```bash
-cwi deliver captions.cwi.json --video scene.mp4 --target youtube --out ./upload
+chorus deliver captions.cwi.json --video scene.mp4 --target youtube --out ./upload
 ```
 
 That produces a directory with three things:
@@ -129,7 +129,7 @@ translatable. Ship only the burned video and you have an illegal file; ship only
 the sidecar and you have lost the design.
 
 Targets: `youtube`, `web`, `cinema` (a DCP source master — see
-`cwi targets`). Encoding presets are listed by `cwi presets`.
+`chorus targets`). Encoding presets are listed by `chorus presets`.
 
 The captions are captured offscreen from the same renderer the preview uses, so
 a burned-in master and the preview agree frame for frame. Rendering needs
@@ -139,7 +139,7 @@ captures every frame where a caption is on screen.
 ### Or just look at a manifest
 
 ```bash
-npx cwi preview captions.cwi.json --video scene.mp4
+npx chorus-captions preview captions.cwi.json --video scene.mp4
 ```
 
 `preview` needs no scaffolding and no build step. It serves a player with the
@@ -150,25 +150,25 @@ not a copy of it.
 ### The command
 
 ```
-cwi doctor                          check what is available on this machine
-cwi init [dir]                      scaffold a runnable app
-cwi preview <manifest> [--video f]  open a player for any manifest
-cwi deliver <manifest> --target youtube
+chorus doctor                          check what is available on this machine
+chorus init [dir]                      scaffold a runnable app
+chorus preview <manifest> [--video f]  open a player for any manifest
+chorus deliver <manifest> --target youtube
                                     burned video + sidecar, ready to upload
-cwi render <manifest> --video f     just burn captions into the video
-cwi targets / cwi presets           delivery targets and encoding presets
-cwi analyze <media> --vtt f         media + captions -> manifest
-cwi scene <spec.json> --out f       multi-speaker scene from provider renders
-cwi assign <manifest>               assign character colours (CVD-safe)
-cwi validate <manifest>             structural + accessibility audit
-cwi audit <manifest> --out r.html   compliance report (WCAG / EN 301 549 / FCC)
-cwi study <a> <b> --video f         A/B attribution study with viewers
-cwi study-report <results.jsonl>    accuracy per design, with intervals
-cwi stats <manifest>                per-character screen time
-cwi export <manifest> --format vtt  emit a delivery format (vtt | ass)
-cwi conform [--impl f]              run the conformance suite
-cwi palette                         audit the spec's own palette
-cwi type --db 6 --f0 110            what typography an acoustic reading yields
+chorus render <manifest> --video f     just burn captions into the video
+chorus targets / chorus presets           delivery targets and encoding presets
+chorus analyze <media> --vtt f         media + captions -> manifest
+chorus scene <spec.json> --out f       multi-speaker scene from provider renders
+chorus assign <manifest>               assign character colours (CVD-safe)
+chorus validate <manifest>             structural + accessibility audit
+chorus audit <manifest> --out r.html   compliance report (WCAG / EN 301 549 / FCC)
+chorus study <a> <b> --video f         A/B attribution study with viewers
+chorus study-report <results.jsonl>    accuracy per design, with intervals
+chorus stats <manifest>                per-character screen time
+chorus export <manifest> --format vtt  emit a delivery format (vtt | ass)
+chorus conform [--impl f]              run the conformance suite
+chorus palette                         audit the spec's own palette
+chorus type --db 6 --f0 110            what typography an acoustic reading yields
 ```
 
 Every command takes `--json` for machine-readable output. `validate` exits
@@ -180,7 +180,7 @@ The same operations are exposed over MCP, so an agent gets identical behaviour
 to a person. `.mcp.json` in the repo root registers it; or:
 
 ```bash
-claude mcp add cwi -- node "$PWD/packages/cwi-mcp/dist/server.js"
+claude mcp add chorus -- node "$PWD/packages/chorus-mcp/dist/server.js"
 ```
 
 Sixteen tools: `cwi_validate`, `cwi_assign_colors`, `cwi_stats`,
@@ -201,8 +201,8 @@ Analyze a clip you already have word timings for:
 
 ```bash
 ./.venv/bin/python pipeline/analyze.py --media clip.mp4 --transcript words.json --out clip.cwi.json
-node packages/cwi-cli/dist/cli.js assign   clip.cwi.json
-node packages/cwi-cli/dist/cli.js validate clip.cwi.json
+node packages/chorus-captions/dist/cli.js assign   clip.cwi.json
+node packages/chorus-captions/dist/cli.js validate clip.cwi.json
 ```
 
 Or start from a caption file (word timings are approximated — see `transcript.py`):
@@ -237,7 +237,7 @@ ElevenLabs returns character-level alignment, so onsets are exact and no estimat
 ## Audit the spec's palette
 
 ```bash
-node packages/cwi-cli/dist/cli.js palette
+node packages/chorus-captions/dist/cli.js palette
 ```
 
 ```
@@ -247,7 +247,7 @@ deuteranopia  Yellow/Green ΔE18.0  Green/Orange ΔE10.7  Red/Orange ΔE14.1
 tritanopia    Green/Blue ΔE11.8
 ```
 
-CWI V1.0 tells speakers apart by hue alone. Give two leads Red and Orange and a deuteranopic viewer cannot tell them apart — which defeats the attribution mechanic rather than merely degrading it. `cwi assign` avoids colliding pairs by default while drawing only from the spec's own swatches. Toggle it in the demo to watch the difference.
+CWI V1.0 tells speakers apart by hue alone. Give two leads Red and Orange and a deuteranopic viewer cannot tell them apart — which defeats the attribution mechanic rather than merely degrading it. `chorus assign` avoids colliding pairs by default while drawing only from the spec's own swatches. Toggle it in the demo to watch the difference.
 
 ## Regenerating the demo media
 
@@ -263,7 +263,7 @@ Two things are deliberately **not** in this repository:
 The synthetic scene regenerates from source:
 
 ```bash
-npm run sample -w cwi-demo     # rebuilds sample.cwi.json
+npm run sample -w chorus-demo     # rebuilds sample.cwi.json
 ```
 
 `scene.mp4` and `control-room.mp4` are small enough to be committed, so the
@@ -278,8 +278,8 @@ community sessions and per-variant voting, which is why V1.0 is as restrained as
 it is.
 
 ```bash
-cwi study control-room.cwi.json chorus-room.cwi.json --video scene.mp4
-cwi study-report study-results.jsonl
+chorus study control-room.cwi.json chorus-room.cwi.json --video scene.mp4
+chorus study-report study-results.jsonl
 ```
 
 The central claim of caption attribution is objectively testable: shown a line,
@@ -318,7 +318,7 @@ question: against the criteria a broadcaster is actually held to, what is wrong
 with this caption track and what should be done about it.
 
 ```bash
-cwi audit captions.cwi.json --duration 1847 --out report.html
+chorus audit captions.cwi.json --duration 1847 --out report.html
 ```
 
 It checks **WCAG 2.2**, **EN 301 549** (the standard the European Accessibility
@@ -361,8 +361,8 @@ should write its own renderer against semantics that are pinned down. That is
 only credible if an implementation can prove it got them right.
 
 ```bash
-cwi conform                        # the reference implementation
-cwi conform --impl ./mine.js       # yours
+chorus conform                        # the reference implementation
+chorus conform --impl ./mine.js       # yours
 ```
 
 `conformance/` holds the vectors as plain JSON, so an implementation in Rust,
@@ -389,9 +389,9 @@ the line reflowing under the emphasis pop. So there is a second suite for the
 picture.
 
 ```bash
-cwi render-scenes                     # the scenes, and the instants to sample
-cwi conform-render                    # drives the reference web renderer
-cwi conform-render --report mine.json # anything else that can draw a manifest
+chorus render-scenes                     # the scenes, and the instants to sample
+chorus conform-render                    # drives the reference web renderer
+chorus conform-render --report mine.json # anything else that can draw a manifest
 ```
 
 An implementation reports what it drew — one record per token per sampled
@@ -436,8 +436,8 @@ this repo is public, and publishing still works if it is ever closed again.
 `release:check` is the part worth keeping: publishing is irreversible, so it
 verifies every cheap thing beforehand — placeholder metadata, missing
 LICENSE/README, dead `bin` links, internal dependency versions, source leaking
-into the tarball, and that `pipeline/` is actually present in `cwi-cli` (without
-it, `cwi analyze` breaks for everyone who installs from the registry, and
+into the tarball, and that `pipeline/` is actually present in `chorus-captions` (without
+it, `chorus analyze` breaks for everyone who installs from the registry, and
 without `conformance/` the conformance runners have no vectors). It caught
 exactly those during setup.
 
@@ -454,7 +454,7 @@ exactly those during setup.
 - f0 uses YIN, accurate to ~0.01% on synthetic tones even when the fundamental is deliberately weaker than its second harmonic. It replaced plain autocorrelation, which measured a 101 Hz voice at 162 Hz because a third of its frames doubled.
 - `centroidRange` is calibrated against 17 real voices (measured 770–1569 Hz), and spends ~80% of the width axis on that population.
 - ASR and diarization are behind adapters and **not exercised by the test suite** — they download multi-GB models.
-- The ASS export is generated to format spec but never executed end to end here (the local ffmpeg lacks `libass`). It is superseded by `cwi render`, which is faithful where ASS cannot be — libass has no variable-font axis support.
+- The ASS export is generated to format spec but never executed end to end here (the local ffmpeg lacks `libass`). It is superseded by `chorus render`, which is faithful where ASS cannot be — libass has no variable-font axis support.
 - `to-vtt` and `to-ass` are lossy by necessity and print exactly what they dropped. ASS cannot carry the variable-font axes at all, so the intonation layer is lost.
 
 ## Licence

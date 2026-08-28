@@ -21,11 +21,11 @@ That line is why the position below holds.
 
 Every line of code in this repository, MIT licensed:
 
-- `cwi-core` — the acoustics-to-typography mapping as *implemented*, the
+- `chorus-core` — the acoustics-to-typography mapping as *implemented*, the
   colour-vision-safe assignment search, validation
-- `cwi-web` — the renderer, including the no-reflow layout approach and the
+- `chorus-web` — the renderer, including the no-reflow layout approach and the
   time-derived pop
-- `cwi-cli`, `cwi-mcp` — the toolchain and the agent interface
+- `chorus-captions`, `chorus-mcp` — the toolchain and the agent interface
 - `pipeline/` — the DSP: the YIN implementation, alignment, segmentation,
   prosody, the provider adapters
 - The **`.cwi` interchange format** and its schema
@@ -65,7 +65,7 @@ Roboto Flex is separately available under the SIL Open Font License.
 
 ## How the code keeps them separate
 
-Profiles. `packages/cwi-core/src/profiles.ts` holds two:
+Profiles. `packages/chorus-core/src/profiles.ts` holds two:
 
 **`cwi-1.0`** reproduces the published design faithfully, defects included,
 because a profile claiming to be that spec must be it. Use it to author
@@ -116,12 +116,28 @@ The design is called **Chorus**. A chorus is many voices that stay individually
 distinguishable — precisely the property this adds over V1.0, where attribution
 rests on a single channel and collapses whenever that channel fails.
 
-The identifier lives in one object in `profiles.ts`, so changing it later is a
-one-line edit plus its references in the docs.
+The packages ship under that name: `chorus-core`, `chorus-web`,
+`chorus-captions` (the CLI, which installs the `chorus` command) and
+`chorus-mcp`. The profile identifier `chorus-1.0` lives in one object in
+`profiles.ts`.
 
-If the project is ever rebranded around it, these npm names were free at the
-time of writing: `chorus-captions`, `choruscaptions`, `@chorus/core`,
-`chorus-core`, `chorus-web`, `chorus-mcp`. Both `chorus` and `chorus-cli` are
-taken. The packages currently ship as `cwi-*`, which describes what they
-implement rather than which design they prefer — defensible either way, and
-worth keeping while `cwi-1.0` is a supported profile.
+Two adjacent names on npm are **not ours and never will be**, which is why the
+CLI package is `chorus-captions` rather than the obvious `chorus-cli`:
+
+- **`chorus`** — a harmony-based music composition toolkit, published by the npm
+  user `adamjmurray` since 2016, last released 2022. Dormant, not abandoned, and
+  not an organisation.
+- **`chorus-cli`** — automated ticket resolution with Teams and Slack
+  integration, first published February 2026 and actively maintained.
+
+The practical consequence is a footgun worth stating plainly: `npx chorus …`
+fetches the music toolkit, because npx resolves a *package* name while `chorus`
+here is a *bin* name. Every doc uses `npx chorus-captions …` for that reason.
+Once installed, the `chorus` command is ours; `cwi` remains as an alias.
+
+The scope `@chorus/*` is a separate namespace from unscoped package names, so
+it may still be free even though `chorus` is taken. Claiming it means creating
+an npm organisation named `chorus`; if that is ever done, moving to
+`@chorus/core`, `@chorus/web`, `@chorus/cli` and `@chorus/mcp` is a rename of
+the same shape as this one, and nothing outside `package.json` names and import
+specifiers changes.

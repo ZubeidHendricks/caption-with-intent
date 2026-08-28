@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 import { PLACEHOLDER_REPO } from './stamp.mjs';
 
 const root = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
-const NAMES = ['cwi-core', 'cwi-web', 'cwi-cli', 'cwi-mcp'];
+const NAMES = ['chorus-core', 'chorus-web', 'chorus-captions', 'chorus-mcp'];
 
 const problems = [];
 const notes = [];
@@ -31,7 +31,7 @@ const versions = new Set(NAMES.map((n) => pkgs[n].json.version));
 if (versions.size !== 1) {
   problems.push(`versions disagree across packages: ${[...versions].join(', ')}`);
 }
-const version = pkgs['cwi-core'].json.version;
+const version = pkgs['chorus-core'].json.version;
 
 for (const name of NAMES) {
   const { dir, json } = pkgs[name];
@@ -96,10 +96,10 @@ for (const name of NAMES) {
   if (files.some((f) => f.startsWith('src/') || f.startsWith('test/'))) {
     fail(name, 'source or tests are leaking into the tarball — check "files"');
   }
-  if (name === 'cwi-cli' && !files.some((f) => f.startsWith('conformance/'))) {
+  if (name === 'chorus-captions' && !files.some((f) => f.startsWith('conformance/'))) {
     fail(name, 'conformance/ is missing — `cwi conform` and `cwi conform-render` have no vectors for anyone installing from npm');
   }
-  if (name === 'cwi-cli' && !files.some((f) => f.startsWith('pipeline/'))) {
+  if (name === 'chorus-captions' && !files.some((f) => f.startsWith('pipeline/'))) {
     fail(name, 'pipeline/ is missing — `cwi analyze` breaks for anyone installing from npm');
   }
   notes.push(`  ${name.padEnd(9)} ${String(files.length).padStart(3)} files  ${(meta.size / 1024).toFixed(0)} kB packed  ${(meta.unpackedSize / 1024).toFixed(0)} kB unpacked`);

@@ -1,0 +1,60 @@
+{
+  "id": "width-direction",
+  "area": "typography",
+  "spec": "2.3.9, 2.3.10",
+  "normative": true,
+  "title": "Voices rich in low harmonics render wider",
+  "why": "2.3.9 prose: a voice rich in lower harmonics feels fuller and warmer, corresponding to a wider typeface; dominant higher harmonics read thinner and are set narrower. NOTE: the chart in 2.3.9 appears to contradict its own prose; this suite follows the prose. See docs/SPEC-NOTES.md.",
+  "fn": "resolveToken",
+  "property": "monotonic-nonincreasing",
+  "cases": [
+    {
+      "input": {
+        "centroid": 400
+      },
+      "field": "wdth"
+    },
+    {
+      "input": {
+        "centroid": 700
+      },
+      "field": "wdth"
+    },
+    {
+      "input": {
+        "centroid": 900
+      },
+      "field": "wdth"
+    },
+    {
+      "input": {
+        "centroid": 1100
+      },
+      "field": "wdth"
+    },
+    {
+      "input": {
+        "centroid": 1300
+      },
+      "field": "wdth"
+    },
+    {
+      "input": {
+        "centroid": 1500
+      },
+      "field": "wdth"
+    },
+    {
+      "input": {
+        "centroid": 1700
+      },
+      "field": "wdth"
+    },
+    {
+      "input": {
+        "centroid": 2200
+      },
+      "field": "wdth"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "suite": "caption-with-intention-conformance",
+  "version": "1.0.0",
+  "specVersion": "Caption with Intention, Design System and Caption Guidelines V1.0 (2025.1)",
+  "description": "Language-agnostic conformance vectors. Normative expectations are fixed by the published spec and cited by section; informative ones record this implementation's choices where the spec is silent.",
+  "normativeVectors": 9,
+  "informativeVectors": 2,
+  "vectors": [
+    {
+      "file": "vectors/01-size-normative.json",
+      "id": "size-normative",
+      "area": "typography",
+      "spec": "2.3.5, 2.3.6",
+      "normative": true,
+      "title": "Type size anchors and bounds",
+      "cases": 4
+    },
+    {
+      "file": "vectors/02-size-monotonic.json",
+      "id": "size-monotonic",
+      "area": "typography",
+      "spec": "2.3.3",
+      "normative": true,
+      "title": "Louder never renders smaller",
+      "cases": 13
+    },
+    {
+      "file": "vectors/03-weight-normative.json",
+      "id": "weight-normative",
+      "area": "typography",
+      "spec": "2.3.8",
+      "normative": true,
+      "title": "The neutral pitch band is Roboto Regular 400",
+      "cases": 5
+    },
+    {
+      "file": "vectors/04-weight-direction.json",
+      "id": "weight-direction",
+      "area": "typography",
+      "spec": "2.3.7, 2.3.9, 2.3.10",
+      "normative": true,
+      "title": "Lower voices render heavier, higher voices lighter",
+      "cases": 9
+    },
+    {
+      "file": "vectors/05-width-direction.json",
+      "id": "width-direction",
+      "area": "typography",
+      "spec": "2.3.9, 2.3.10",
+      "normative": true,
+      "title": "Voices rich in low harmonics render wider",
+      "cases": 8
+    },
+    {
+      "file": "vectors/06-axis-bounds.json",
+      "id": "axis-bounds",
+      "area": "typography",
+      "spec": "2.3.1, 2.3.2",
+      "normative": true,
+      "title": "Axis values stay inside Roboto Flex's range",
+      "cases": 100
+    },
+    {
+      "file": "vectors/07-size-response.json",
+      "id": "size-response",
+      "area": "typography",
+      "spec": null,
+      "normative": false,
+      "title": "dB span and knee (implementation-defined)",
+      "cases": 5
+    },
+    {
+      "file": "vectors/10-palette-normative.json",
+      "id": "palette-normative",
+      "area": "colour",
+      "spec": "2.1.1, 2.1.2, 2.1.4",
+      "normative": true,
+      "title": "The published palettes, exactly",
+      "cases": 1
+    },
+    {
+      "file": "vectors/11-assignment-rules.json",
+      "id": "assignment-rules",
+      "area": "colour",
+      "spec": "2.1.1, 2.1.3",
+      "normative": true,
+      "title": "Assignment rules",
+      "cases": 3
+    },
+    {
+      "file": "vectors/12-cvd-audit.json",
+      "id": "cvd-audit",
+      "area": "colour",
+      "spec": null,
+      "normative": false,
+      "title": "The V1.0 palette is not colour-vision safe (finding, not a rule)",
+      "cases": 1
+    },
+    {
+      "file": "vectors/20-validation-codes.json",
+      "id": "validation-codes",
+      "area": "validation",
+      "spec": "2.1, 2.4.2",
+      "normative": true,
+      "title": "Structural errors a conformant validator must catch",
+      "cases": 4
+    }
+  ]
+}

@@ -44,21 +44,21 @@ const COMMON_KEYWORDS = [
 ];
 
 const PACKAGES = {
-  'cwi-core': {
+  'chorus-core': {
     keywords: [...COMMON_KEYWORDS, 'colour-blindness', 'color-vision-deficiency', 'wcag'],
     sideEffects: false,
     files: ['dist', 'README.md', 'LICENSE'],
   },
-  'cwi-web': {
+  'chorus-web': {
     keywords: [...COMMON_KEYWORDS, 'renderer', 'video', 'roboto-flex'],
     sideEffects: false,
     files: ['dist', 'README.md', 'LICENSE'],
   },
-  'cwi-cli': {
+  'chorus-captions': {
     keywords: [...COMMON_KEYWORDS, 'cli', 'ffmpeg', 'transcription'],
     files: ['dist', 'pipeline', 'conformance', 'README.md', 'LICENSE'],
   },
-  'cwi-mcp': {
+  'chorus-mcp': {
     keywords: [...COMMON_KEYWORDS, 'mcp', 'model-context-protocol', 'ai-agents'],
     files: ['dist', 'README.md', 'LICENSE'],
   },

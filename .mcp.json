@@ -1,8 +1,10 @@
 {
   "mcpServers": {
-    "cwi": {
+    "chorus": {
       "command": "node",
-      "args": ["packages/cwi-mcp/dist/server.js"],
+      "args": [
+        "packages/chorus-mcp/dist/server.js"
+      ],
       "description": "Caption with Intention: analyze media into caption manifests, assign colour-vision-safe speaker colours, validate accessibility, preview, and export."
     }
   }

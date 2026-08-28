@@ -1,5 +1,5 @@
-import { CwiRenderer } from 'cwi-web';
-import { validate, assignColors, speakerStats, type CwiManifest, type Issue, type Character } from 'cwi-core';
+import { CwiRenderer } from 'chorus-web';
+import { validate, assignColors, speakerStats, type CwiManifest, type Issue, type Character } from 'chorus-core';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
