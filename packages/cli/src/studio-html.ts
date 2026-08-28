@@ -262,7 +262,7 @@ async function poll() {
 function mount(manifest) {
   const video = $('video');
   if (!state.renderer) {
-    state.renderer = new CwiRenderer({ container: $('frame') });
+    state.renderer = new CwiRenderer($('frame'));
     state.renderer.bind(video);
   }
   state.renderer.load(manifest);
