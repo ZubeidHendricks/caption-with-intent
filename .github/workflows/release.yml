@@ -70,6 +70,31 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+      # An empty NPM_TOKEN secret fails as ENEEDAUTH *after* the tarballs are
+      # built, which reads like a broken build rather than a missing secret.
+      # `gh secret set` with no stdin stores an empty string silently, so this
+      # is a state a release can genuinely be in.
+      - name: Check the npm token is present
+        if: ${{ github.event_name == 'push' || !inputs.dry-run }}
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN}" ]; then
+            echo "::error::NPM_TOKEN is unset or empty. Set it with a value:"
+            echo "::error::  gh secret set NPM_TOKEN < token.txt   (then delete the file)"
+            exit 1
+          fi
+          echo "npm token present (${#NODE_AUTH_TOKEN} characters)"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Names are checked against the registry before anything is uploaded. A
+      # name taken by someone else fails as a 403 partway through the loop,
+      # which means a half-published release that cannot be undone.
+      - name: Check the package names are publishable
+        if: ${{ github.event_name == 'push' || !inputs.dry-run }}
+        run: node scripts/release/names.mjs --whoami "$(npm whoami)"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       # Order matters: dependents must not publish before their dependencies,
       # or an install between the two publishes resolves nothing.
       - name: Publish
