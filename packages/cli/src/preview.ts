@@ -82,6 +82,16 @@ function sendFile(req: IncomingMessage, res: ServerResponse, path: string): void
   createReadStream(path).pipe(res);
 }
 
+/**
+ * How long to wait for Roboto Flex.
+ *
+ * Overridable because the failure it guards is environmental, not logical: a
+ * cold Google Fonts cache took 13s here and turned a correct render into a
+ * hard error. Self-hosting the font removes the wait entirely and is the right
+ * answer for anything running unattended.
+ */
+const FONT_TIMEOUT_MS = Number(process.env.CWI_FONT_TIMEOUT_MS ?? 45000);
+
 export interface PreviewOptions {
   manifest: string;
   video?: string;
@@ -333,6 +343,7 @@ renderer.seek(0);
 // or blocked network would otherwise hang the page indefinitely — which turns a
 // transient network problem into a render that never finishes and a test suite
 // that silently skips itself. Race the load and report the outcome instead.
+const FONT_TIMEOUT_MS = ${FONT_TIMEOUT_MS};
 const fontsLoaded = await Promise.race([
   (async () => {
     await document.fonts.load("400 100px 'Roboto Flex'");
@@ -340,7 +351,12 @@ const fontsLoaded = await Promise.race([
     await document.fonts.ready;
     return true;
   })(),
-  new Promise((r) => setTimeout(() => r(false), 15000)),
+  // Google Fonts routinely takes over ten seconds on a cold cache or a slow
+  // link. Because the renderer refuses to draw in a fallback face — the
+  // variable axes carry the intonation layer, so a substitute silently
+  // discards it — a timeout here is not a degraded render but a failed one.
+  // 45s matches the readiness timeout the capture path already waits out.
+  new Promise((r) => setTimeout(() => r(false), Number(FONT_TIMEOUT_MS))),
 ]);
 
 window.__cwiFontsLoaded = fontsLoaded;

@@ -87,6 +87,13 @@ interpreter. Playwright enforces its Node 20 floor by exiting the process rather
 than throwing, so the browser-backed commands check the version before importing
 it and report a clear message on Node 18.
 
+`render` and `preview` fetch Roboto Flex from Google Fonts and **refuse to draw
+in a substitute face** — the variable axes carry the intonation layer, so a
+fallback silently discards half the design. That makes a slow font fetch a
+failed render rather than a degraded one, so the wait is 45 seconds and
+`CWI_FONT_TIMEOUT_MS` overrides it. Self-host the font for anything running
+unattended.
+
 ## Working on this repo
 
 ```bash
