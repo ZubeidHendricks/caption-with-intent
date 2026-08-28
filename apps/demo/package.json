@@ -1,5 +1,5 @@
 {
-  "name": "chorus-demo",
+  "name": "@chorus/demo",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -8,6 +8,6 @@
     "dev": "npm run sample && vite",
     "build": "npm run sample && vite build"
   },
-  "dependencies": { "chorus-core": "0.1.0", "chorus-web": "0.1.0" },
+  "dependencies": { "@chorus/core": "0.1.0", "@chorus/web": "0.1.0" },
   "devDependencies": { "vite": "^5.4.0" }
 }

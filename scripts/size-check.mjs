@@ -1,4 +1,4 @@
-import { sizeFromDb, DEFAULT_OPTIONS as O } from 'chorus-core';
+import { sizeFromDb, DEFAULT_OPTIONS as O } from '@chorus/core';
 console.log('dB   -> size%   (baseline 5, knee ±' + O.dbKneeDb + 'dB)');
 for (const db of [-18,-14,-10,-6,-3,0,3,6,9,12,16]) {
   const s = sizeFromDb(db);

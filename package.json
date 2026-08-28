@@ -8,20 +8,20 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build -w chorus-core && npm run build -w chorus-web && npm run build -w chorus-captions && npm run build -w chorus-mcp",
-    "dev": "npm run dev -w chorus-demo",
-    "chorus": "node packages/chorus-captions/dist/cli.js",
-    "cwi": "node packages/chorus-captions/dist/cli.js",
-    "mcp": "node packages/chorus-mcp/dist/server.js",
+    "build": "npm run build -w @chorus/core && npm run build -w @chorus/web && npm run build -w @chorus/cli && npm run build -w @chorus/mcp",
+    "dev": "npm run dev -w @chorus/demo",
+    "chorus": "node packages/cli/dist/cli.js",
+    "cwi": "node packages/cli/dist/cli.js",
+    "mcp": "node packages/mcp/dist/server.js",
     "test": "npm run build && npm run test:node && npm run test:py",
-    "test:node": "node --test packages/chorus-core/test/spec.test.js packages/chorus-captions/test/tools.test.js packages/chorus-captions/test/render-conform.test.js packages/chorus-mcp/test/server.test.js packages/chorus-web/test/renderer.test.js",
+    "test:node": "node --test packages/core/test/spec.test.js packages/cli/test/tools.test.js packages/cli/test/render-conform.test.js packages/mcp/test/server.test.js packages/web/test/renderer.test.js",
     "test:py": "cd pipeline && ../.venv/bin/python -m unittest discover -s test -t .",
     "setup:py": "python3 -m venv .venv && ./.venv/bin/pip install -q -r pipeline/requirements.txt",
     "release:stamp": "node scripts/release/stamp.mjs",
     "release:check": "npm run build && node scripts/release/check.mjs",
     "release:dry": "npm run release:check && npm publish --workspaces --dry-run --access public",
     "version:set": "npm version --workspaces --include-workspace-root --no-git-tag-version",
-    "test:render": "node packages/chorus-captions/dist/cli.js conform-render"
+    "test:render": "node packages/cli/dist/cli.js conform-render"
   },
   "license": "MIT"
 }

@@ -1,0 +1,108 @@
+{
+  "name": "@chorus/cli",
+  "version": "0.1.0",
+  "description": "Command line toolchain for Caption with Intention: scaffold apps, analyze media, assign colours, validate accessibility, preview, and export.",
+  "type": "module",
+  "bin": {
+    "chorus": "./dist/cli.js",
+    "cwi": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "pipeline",
+    "conformance",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node -e \"require('fs').chmodSync('dist/cli.js', 0o755)\"",
+    "prepublishOnly": "npm run build",
+    "prepack": "node scripts/bundle-assets.mjs"
+  },
+  "dependencies": {
+    "@chorus/core": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0",
+    "playwright-core": "^1.48.0"
+  },
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/ops.d.ts",
+      "default": "./dist/ops.js"
+    },
+    "./preview": {
+      "types": "./dist/preview.d.ts",
+      "default": "./dist/preview.js"
+    },
+    "./scaffold": {
+      "types": "./dist/scaffold.d.ts",
+      "default": "./dist/scaffold.js"
+    },
+    "./package.json": "./package.json",
+    "./render": {
+      "types": "./dist/render.d.ts",
+      "default": "./dist/render.js"
+    },
+    "./deliver": {
+      "types": "./dist/deliver.d.ts",
+      "default": "./dist/deliver.js"
+    },
+    "./conform": {
+      "types": "./dist/conform.d.ts",
+      "default": "./dist/conform.js"
+    },
+    "./audit": {
+      "types": "./dist/audit.d.ts",
+      "default": "./dist/audit.js"
+    },
+    "./audit-report": {
+      "types": "./dist/audit-report.d.ts",
+      "default": "./dist/audit-report.js"
+    },
+    "./render-conform": {
+      "types": "./dist/render-conform.d.ts",
+      "default": "./dist/render-conform.js"
+    },
+    "./render-probe": {
+      "types": "./dist/render-probe.d.ts",
+      "default": "./dist/render-probe.js"
+    }
+  },
+  "author": "Zubeid Hendricks",
+  "homepage": "https://github.com/ZubeidHendricks/caption-with-intent#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZubeidHendricks/caption-with-intent.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/ZubeidHendricks/caption-with-intent/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "captions",
+    "subtitles",
+    "accessibility",
+    "a11y",
+    "deaf",
+    "hard-of-hearing",
+    "caption-with-intention",
+    "cwi",
+    "variable-fonts",
+    "webvtt",
+    "cli",
+    "ffmpeg",
+    "transcription"
+  ],
+  "optionalDependencies": {
+    "playwright-core": "^1.48.0"
+  }
+}

@@ -41,10 +41,10 @@ dichromacies at once, under a contrast constraint. See
 spec/cwi-manifest.schema.json   the .cwi interchange format
 conformance/                    language-agnostic vectors + mutants that test them
   render/                       scenes + the report contract for renderers
-packages/chorus-core            spec math: palettes, acoustics→type, assignment, validation (0 deps)
-packages/chorus-web             DOM + variable-font renderer, drives off any <video>
-packages/chorus-captions        the `chorus` command + shared operations layer
-packages/chorus-mcp             MCP server — the same operations, for agents
+packages/core                   @chorus/core — spec math: palettes, acoustics→type, assignment (0 deps)
+packages/web                    @chorus/web — DOM + variable-font renderer, drives off any <video>
+packages/cli                    @chorus/cli — the `chorus` command + shared operations layer
+packages/mcp                    @chorus/mcp — MCP server, the same operations for agents
 pipeline/                       media → .cwi  (numpy DSP, no models required)
   acoustics.py                    per-word loudness, pitch, spectral centroid
   align.py                        known text → word onsets on clean speech
@@ -64,14 +64,14 @@ The packages are published unscoped:
 
 | Package | What it is |
 |---|---|
-| [`chorus-core`](packages/chorus-core) | Spec math: palettes, acoustics→type, assignment, validation. Zero deps. |
-| [`chorus-web`](packages/chorus-web) | DOM + variable-font renderer |
-| [`chorus-captions`](packages/chorus-captions) | The `chorus` command |
-| [`chorus-mcp`](packages/chorus-mcp) | MCP server, for agents |
+| [`@chorus/core`](packages/core) | Spec math: palettes, acoustics→type, assignment, validation. Zero deps. |
+| [`@chorus/web`](packages/web) | DOM + variable-font renderer |
+| [`@chorus/cli`](packages/cli) | The `chorus` command |
+| [`@chorus/mcp`](packages/mcp) | MCP server, for agents |
 
 ```bash
-npm install -g chorus-captions        # the toolchain, as `chorus`
-npm install chorus-core chorus-web    # to build against
+npm install -g @chorus/cli              # the toolchain, as `chorus`
+npm install @chorus/core @chorus/web    # to build against
 ```
 
 Requirements vary by command — run `chorus doctor` to see what this machine has:
@@ -82,7 +82,7 @@ Requirements vary by command — run `chorus doctor` to see what this machine ha
 | `analyze`, `scene` | Python 3 with numpy, and ffmpeg on PATH |
 | `render`, `deliver` | ffmpeg, plus **Node 20+** and a headless browser (`playwright-core`) |
 
-The Python pipeline ships inside `chorus-captions`; set `CWI_PYTHON` to choose an
+The Python pipeline ships inside `@chorus/cli`; set `CWI_PYTHON` to choose an
 interpreter. Playwright enforces its Node 20 floor by exiting the process rather
 than throwing, so the browser-backed commands check the version before importing
 it and report a clear message on Node 18.
@@ -98,7 +98,7 @@ npm run build
 ### Make an app
 
 ```bash
-npx chorus-captions init my-captions     # scaffold a runnable Vite app
+npx @chorus/cli init my-captions     # scaffold a runnable Vite app
 cd my-captions && npm install && npm run dev
 ```
 
@@ -139,7 +139,7 @@ captures every frame where a caption is on screen.
 ### Or just look at a manifest
 
 ```bash
-npx chorus-captions preview captions.cwi.json --video scene.mp4
+npx @chorus/cli preview captions.cwi.json --video scene.mp4
 ```
 
 `preview` needs no scaffolding and no build step. It serves a player with the
@@ -180,7 +180,7 @@ The same operations are exposed over MCP, so an agent gets identical behaviour
 to a person. `.mcp.json` in the repo root registers it; or:
 
 ```bash
-claude mcp add chorus -- node "$PWD/packages/chorus-mcp/dist/server.js"
+claude mcp add chorus -- node "$PWD/packages/mcp/dist/server.js"
 ```
 
 Sixteen tools: `cwi_validate`, `cwi_assign_colors`, `cwi_stats`,
@@ -201,8 +201,8 @@ Analyze a clip you already have word timings for:
 
 ```bash
 ./.venv/bin/python pipeline/analyze.py --media clip.mp4 --transcript words.json --out clip.cwi.json
-node packages/chorus-captions/dist/cli.js assign   clip.cwi.json
-node packages/chorus-captions/dist/cli.js validate clip.cwi.json
+node packages/cli/dist/cli.js assign   clip.cwi.json
+node packages/cli/dist/cli.js validate clip.cwi.json
 ```
 
 Or start from a caption file (word timings are approximated — see `transcript.py`):
@@ -237,7 +237,7 @@ ElevenLabs returns character-level alignment, so onsets are exact and no estimat
 ## Audit the spec's palette
 
 ```bash
-node packages/chorus-captions/dist/cli.js palette
+node packages/cli/dist/cli.js palette
 ```
 
 ```
@@ -263,7 +263,7 @@ Two things are deliberately **not** in this repository:
 The synthetic scene regenerates from source:
 
 ```bash
-npm run sample -w chorus-demo     # rebuilds sample.cwi.json
+npm run sample -w @chorus/demo     # rebuilds sample.cwi.json
 ```
 
 `scene.mp4` and `control-room.mp4` are small enough to be committed, so the
@@ -436,7 +436,7 @@ this repo is public, and publishing still works if it is ever closed again.
 `release:check` is the part worth keeping: publishing is irreversible, so it
 verifies every cheap thing beforehand — placeholder metadata, missing
 LICENSE/README, dead `bin` links, internal dependency versions, source leaking
-into the tarball, and that `pipeline/` is actually present in `chorus-captions` (without
+into the tarball, and that `pipeline/` is actually present in `@chorus/cli` (without
 it, `chorus analyze` breaks for everyone who installs from the registry, and
 without `conformance/` the conformance runners have no vectors). It caught
 exactly those during setup.

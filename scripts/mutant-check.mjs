@@ -1,4 +1,4 @@
-import { conform } from 'chorus-captions/conform';
+import { conform } from '@chorus/cli/conform';
 import * as mutants from '../conformance/mutants/mutants.mjs';
 console.log('mutant'.padEnd(20), 'caught', ' failing vectors');
 let missed = 0;

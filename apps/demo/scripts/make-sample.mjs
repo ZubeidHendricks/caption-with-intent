@@ -2,7 +2,7 @@
  * Generates a sample .cwi manifest with plausible per-word acoustics.
  * Original dialogue — this is a synthetic scene, not a transcription.
  */
-import { assignColors } from 'chorus-core';
+import { assignColors } from '@chorus/core';
 import { writeFileSync } from 'node:fs';
 
 const cast = [

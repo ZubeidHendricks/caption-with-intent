@@ -21,11 +21,11 @@ That line is why the position below holds.
 
 Every line of code in this repository, MIT licensed:
 
-- `chorus-core` — the acoustics-to-typography mapping as *implemented*, the
+- `@chorus/core` — the acoustics-to-typography mapping as *implemented*, the
   colour-vision-safe assignment search, validation
-- `chorus-web` — the renderer, including the no-reflow layout approach and the
+- `@chorus/web` — the renderer, including the no-reflow layout approach and the
   time-derived pop
-- `chorus-captions`, `chorus-mcp` — the toolchain and the agent interface
+- `@chorus/cli`, `@chorus/mcp` — the toolchain and the agent interface
 - `pipeline/` — the DSP: the YIN implementation, alignment, segmentation,
   prosody, the provider adapters
 - The **`.cwi` interchange format** and its schema
@@ -65,7 +65,7 @@ Roboto Flex is separately available under the SIL Open Font License.
 
 ## How the code keeps them separate
 
-Profiles. `packages/chorus-core/src/profiles.ts` holds two:
+Profiles. `packages/core/src/profiles.ts` holds two:
 
 **`cwi-1.0`** reproduces the published design faithfully, defects included,
 because a profile claiming to be that spec must be it. Use it to author
@@ -116,28 +116,28 @@ The design is called **Chorus**. A chorus is many voices that stay individually
 distinguishable — precisely the property this adds over V1.0, where attribution
 rests on a single channel and collapses whenever that channel fails.
 
-The packages ship under that name: `chorus-core`, `chorus-web`,
-`chorus-captions` (the CLI, which installs the `chorus` command) and
-`chorus-mcp`. The profile identifier `chorus-1.0` lives in one object in
-`profiles.ts`.
+The packages ship under the **`@chorus` scope**: `@chorus/core`, `@chorus/web`,
+`@chorus/cli` and `@chorus/mcp`. The profile identifier `chorus-1.0` lives in
+one object in `profiles.ts`.
 
-Two adjacent names on npm are **not ours and never will be**, which is why the
-CLI package is `chorus-captions` rather than the obvious `chorus-cli`:
+The scope is not cosmetic. Three unscoped names were lost to unrelated
+publishers, one of them mid-project:
 
-- **`chorus`** — a harmony-based music composition toolkit, published by the npm
-  user `adamjmurray` since 2016, last released 2022. Dormant, not abandoned, and
-  not an organisation.
+- **`chorus`** — a music composition toolkit, published since 2016 by the npm
+  user `adamjmurray`, last released 2022.
 - **`chorus-cli`** — automated ticket resolution with Teams and Slack
   integration, first published February 2026 and actively maintained.
+- **`chorus-mcp`** — an MCP server for a product called Chorus AIChat,
+  published 2026-08-28 at 00:00 UTC, roughly a day after this project checked
+  the name as free and chose it.
 
-The practical consequence is a footgun worth stating plainly: `npx chorus …`
-fetches the music toolkit, because npx resolves a *package* name while `chorus`
-here is a *bin* name. Every doc uses `npx chorus-captions …` for that reason.
-Once installed, the `chorus` command is ours; `cwi` remains as an alias.
+The last one is the argument. Under a scope, the namespace is owned outright
+and no adjacent name can be taken from underneath a release. `scripts/release/
+names.mjs` checks every name against the registry before the publish step, so
+if this is ever wrong the release stops before uploading rather than halfway
+through it.
 
-The scope `@chorus/*` is a separate namespace from unscoped package names, so
-it may still be free even though `chorus` is taken. Claiming it means creating
-an npm organisation named `chorus`; if that is ever done, moving to
-`@chorus/core`, `@chorus/web`, `@chorus/cli` and `@chorus/mcp` is a rename of
-the same shape as this one, and nothing outside `package.json` names and import
-specifiers changes.
+The `chorus` command name is unaffected — a bin name is a command on PATH, not
+a package name — and `cwi` remains as an alias. Note that `npx chorus …` still
+fetches the unrelated music toolkit; the scoped equivalent is
+`npx @chorus/cli …`.
