@@ -77,15 +77,15 @@ for (const name of NAMES) {
 
   // Binaries must exist and be executable, or the install produces a dead command.
   for (const [bin, target] of Object.entries(json.bin ?? {})) {
-    // npm silently strips any bin whose path starts with "./" — it warns during
-    // publish and then ships the package with no command at all. @corerus/
-    // chorus-cli@0.1.0 went out that way: installable, and with no `chorus`
-    // binary. The warning scrolls past in a wall of tarball listing, so this
-    // has to be caught before the publish rather than read afterwards.
+    // npm reports a leading "./" as an error it "removed" during publish, then
+    // quietly auto-corrects it in the registry metadata — 0.1.0 shipped this
+    // way and installs correctly. So this is hygiene, not a defect: depending
+    // on an undocumented auto-correction is a poor bet, and writing the path
+    // the way npm wants costs nothing. A note rather than a failure, because
+    // blocking a release over something demonstrably working is worse.
     if (target.startsWith('./')) {
-      fail(name, `bin "${bin}" -> "${target}" starts with "./", which npm strips at publish; ` +
-        `write it as "${target.slice(2)}"`);
-      continue;
+      notes.push(`  ${name}: bin "${bin}" -> "${target}" — npm rewrites this to ` +
+        `"${target.slice(2)}" at publish; write it that way and stop relying on that`);
     }
     const t = join(dir, target);
     if (!existsSync(t)) { fail(name, `bin "${bin}" -> ${target} does not exist`); continue; }

@@ -433,11 +433,12 @@ repository's visibility at release time rather than hard-coding the flag, so a
 release cannot fail over it in either direction: provenance is attached while
 this repo is public, and publishing still works if it is ever closed again.
 
-A `bin` path may not start with `./`. npm strips such an entry at publish time
-with a warning that scrolls past inside the tarball listing, and ships a package
-that installs cleanly and provides no command at all — which is how
-`@corerus/chorus-cli@0.1.0` went out with no `chorus` binary. The preflight now
-refuses it.
+A `bin` path should not start with `./`. npm reports it during publish as an
+error it "removed", which reads like the command is gone, and then quietly
+auto-corrects the path in the registry metadata — `@corerus/chorus-cli@0.1.0`
+went out that way and installs a working `chorus` command. The preflight notes
+it rather than failing: relying on an undocumented auto-correction is a poor
+bet, but blocking a release over something that demonstrably works is worse.
 
 `release:check` is the part worth keeping: publishing is irreversible, so it
 verifies every cheap thing beforehand — placeholder metadata, missing
