@@ -44,6 +44,25 @@ film tested so far is discussed in the root README.
 The four translations were written by hand for this demo scene. Nothing here
 went through a translation service.
 
+## Trying the app on this
+
+```bash
+npm run chorus -- studio        # from this repo
+```
+
+It opens a page. Drop in these two:
+
+| | |
+|---|---|
+| `apps/demo/public/control-room.mp4` | the video |
+| `examples/control-room.srt` | the words, **with speaker labels** |
+
+The labels are the part that matters. `DETECTIVE VALE:` at the start of a line
+is what lets the analyser tell four people apart; the same file with the names
+stripped produces one speaker and an attribution layer that conveys nothing.
+That is what most subtitle files in the world look like, which is why the app
+warns about it rather than quietly producing a monochrome result.
+
 ## Regenerating
 
 ```bash
