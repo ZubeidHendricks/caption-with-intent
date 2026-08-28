@@ -429,3 +429,90 @@ test('right-to-left text does not mirror the position cue', async () => {
   assert.match(s.cueClass, /cwi-cue--left/);
   assert.ok(s.lineLeft < FRAME_W / 3, `line at ${s.lineLeft}px`);
 });
+
+// --- switching subtitle language mid-playback ------------------------------
+
+const MULTI = {
+  cwi: '1.0',
+  meta: { title: 'Multilingual', language: 'en', direction: 'ltr', aspectRatio: '16:9' },
+  characters: [{ id: 'v', name: 'Vale', tier: 'main', color: '#17E517', rank: 0 }],
+  cues: [{
+    id: 'c1', start: 0, end: 4, speaker: 'v', kind: 'dialogue', onCamera: true,
+    lines: [{ tokens: [
+      { text: 'The', start: 0.0, end: 0.4, db: 0, f0: 180, centroid: 1200 },
+      { text: 'gate', start: 0.5, end: 0.9, db: 0, f0: 180, centroid: 1200 },
+      { text: 'OPENED', start: 1.0, end: 1.8, db: 11, f0: 200, centroid: 2000 },
+    ] }],
+    tracks: {
+      de: { lines: [{ tokens: [
+        { text: 'Das', start: 0.0, end: 0.35, db: 0, f0: 180, centroid: 1200 },
+        { text: 'Tor', start: 0.35, end: 0.7, db: 0, f0: 180, centroid: 1200 },
+        { text: 'ÖFFNETE', start: 0.7, end: 1.8, db: 11, f0: 200, centroid: 2000 },
+      ] }] },
+      ar: { direction: 'rtl', lines: [{ tokens: [
+        { text: 'البوابة', start: 0.0, end: 0.6, db: 0, f0: 180, centroid: 1200 },
+        { text: 'فتحت', start: 0.6, end: 1.8, db: 11, f0: 200, centroid: 2000 },
+      ] }] },
+    },
+  }],
+};
+
+test('the renderer lists the languages a manifest actually carries', async () => {
+  await page.evaluate((m) => window.__cwiReload(m), MULTI);
+  const langs = await page.evaluate(() => window.__cwiRenderer.languages());
+  assert.deepEqual(langs, ['en', 'de', 'ar']);
+});
+
+test('switching language keeps the playhead and the frame', async () => {
+  // A viewer changing language mid-sentence must see that same moment in the
+  // new language, not a blank frame or a restarted cue.
+  await page.evaluate((m) => window.__cwiReload(m), MULTI);
+  const before = await at(1.2);
+  assert.deepEqual(before.texts, ['The', 'gate', 'OPENED']);
+
+  await page.evaluate(() => window.__cwiRenderer.setLanguage('de'));
+  const after = await at(1.2);
+  assert.deepEqual(after.texts, ['Das', 'Tor', 'ÖFFNETE']);
+  assert.equal(after.speaker, before.speaker, 'the speaker colour is unchanged');
+});
+
+test('typography still describes the original delivery after switching', async () => {
+  // The whole point: the shout is the actor's, not the translator's. A German
+  // viewer must see the same word rendered large at the same instant.
+  await page.evaluate((m) => window.__cwiReload(m), MULTI);
+  const en = await at(1.4);
+  await page.evaluate(() => window.__cwiRenderer.setLanguage('de'));
+  const de = await at(1.4);
+  const enShout = Math.max(...en.sizes);
+  const deShout = Math.max(...de.sizes);
+  assert.ok(Math.abs(enShout - deShout) < 1, `${enShout}px vs ${deShout}px`);
+  assert.ok(enShout > FRAME_H * 0.05 + 2, 'and it is genuinely bigger than normal speech');
+});
+
+test('an RTL subtitle track on an LTR film lays out right to left', async () => {
+  await page.evaluate((m) => window.__cwiReload(m), MULTI);
+  await page.evaluate(() => window.__cwiRenderer.setLanguage('ar'));
+  const dir = await page.evaluate(() =>
+    getComputedStyle(document.querySelector('.cwi-line')).direction);
+  assert.equal(dir, 'rtl', 'the film is LTR; the chosen track is not');
+  const s = await at(1.0);
+  const lefts = s.layout.map((v) => Number(v.split(',')[0]));
+  assert.ok(lefts[0] > lefts[lefts.length - 1], `first ${lefts[0]}, last ${lefts[lefts.length - 1]}`);
+});
+
+test('switching back restores the film language', async () => {
+  await page.evaluate(() => window.__cwiRenderer.setLanguage(undefined));
+  const s = await at(1.2);
+  assert.deepEqual(s.texts, ['The', 'gate', 'OPENED']);
+  const dir = await page.evaluate(() =>
+    getComputedStyle(document.querySelector('.cwi-line')).direction);
+  assert.equal(dir, 'ltr');
+});
+
+test('a language the film does not carry falls back instead of throwing', async () => {
+  // A player with a stale menu must not be able to crash a film.
+  await page.evaluate(() => window.__cwiRenderer.setLanguage('sw'));
+  const s = await at(1.2);
+  assert.deepEqual(s.texts, ['The', 'gate', 'OPENED']);
+  assert.equal(await page.evaluate(() => window.__cwiRenderer.subtitleLanguage ?? null), null);
+});

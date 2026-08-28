@@ -93,6 +93,29 @@ export interface Cue {
   lines: CueLine[];
   /** Spec 2.4.1 exception: sudden loud speech may break the containing box. */
   breakout?: boolean;
+  /**
+   * Additional language tracks for this cue, keyed by BCP 47 tag.
+   *
+   * Only the *text* is per-language. Who spoke, when they spoke, how loud and
+   * at what pitch are properties of the performance on the soundtrack, not of
+   * the language it is read in — so every track shares this cue's speaker,
+   * span and acoustics, and the typography a viewer sees is derived from the
+   * original actor's delivery whichever subtitle language they choose.
+   *
+   * The cue's own `lines` are the track named by `meta.language`.
+   */
+  tracks?: Record<string, CueTrack>;
+}
+
+/** One language's text for a cue. */
+export interface CueTrack {
+  lines: CueLine[];
+  /**
+   * Writing direction for this track, when it differs from the manifest's.
+   * A film in English with Arabic subtitles has an RTL track on an LTR
+   * manifest, and laying it out left to right runs the reveal backwards.
+   */
+  direction?: 'ltr' | 'rtl';
 }
 
 export interface CwiMeta {
@@ -109,6 +132,12 @@ export interface CwiMeta {
   direction?: 'ltr' | 'rtl';
   /** Free-text provenance: analyzer version, operator, review status. */
   generator?: string;
+  /**
+   * Every language this manifest carries, `meta.language` first. Advisory: the
+   * authority is what each cue actually has, but a player needs the menu
+   * before it has walked the cues.
+   */
+  languages?: string[];
 }
 
 export interface CwiManifest {

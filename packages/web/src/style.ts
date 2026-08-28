@@ -19,9 +19,13 @@ export const CWI_CSS = `
    Position is a spatial attribution cue and must not mirror with the script. */
 .cwi-cue--left  > .cwi-line { margin-right: auto; }
 .cwi-cue--right > .cwi-line { margin-left: auto; }
-/* Inline layout follows the root dir attribute, so an RTL track reveals right
-   to left without any per-token handling. */
-.cwi-root[dir='rtl'] .cwi-line { direction: rtl; }
+/* Inline layout follows the dir attribute, so an RTL track reveals right to
+   left without any per-token handling. Set on the cue rather than only the
+   root: with multiple subtitle languages over one film, direction belongs to
+   the track being drawn, not to the manifest. */
+.cwi-root[dir='rtl'] .cwi-line,
+.cwi-cue[dir='rtl'] .cwi-line { direction: rtl; }
+.cwi-cue[dir='ltr'] .cwi-line { direction: ltr; }
 .cwi-line {
   /* Inline layout, not flex: flex items that contain only whitespace collapse
      to zero width, which silently welds the words together. Inline-block

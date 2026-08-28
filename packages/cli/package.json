@@ -69,6 +69,10 @@
     "./render-probe": {
       "types": "./dist/render-probe.d.ts",
       "default": "./dist/render-probe.js"
+    },
+    "./translate": {
+      "types": "./dist/translate.d.ts",
+      "default": "./dist/translate.js"
     }
   },
   "author": "Zubeid Hendricks",

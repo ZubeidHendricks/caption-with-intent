@@ -704,3 +704,86 @@ test('the server rejects an unknown trial', async () => {
     await h.close();
   }
 });
+
+// --- attaching a translation as a subtitle track ---------------------------
+
+import { parseSubtitles, tokenize, detectDirection, matchByTime } from '@corerus/chorus-cli/translate';
+
+const SRT = `1
+00:00:03,750 --> 00:00:06,450
+Du sagtest, der Güterbahnhof
+sei leer.
+
+2
+00:00:06,890 --> 00:00:09,150
+<i>Vor einer Stunde war er leer.</i>
+`;
+
+const film = {
+  cwi: '1.0',
+  meta: { language: 'en' },
+  characters: [{ id: 'v', name: 'Vale', tier: 'main', color: '#17E517', rank: 0 }],
+  cues: [
+    { id: 'a', start: 3.75, end: 6.45, speaker: 'v', kind: 'dialogue',
+      lines: [{ tokens: [{ text: 'You', start: 3.75, end: 4.0, db: 0, f0: 180 },
+                         { text: 'said', start: 4.1, end: 4.5, db: 0, f0: 180 }] }] },
+    { id: 'b', start: 6.89, end: 9.15, speaker: 'v', kind: 'dialogue',
+      lines: [{ tokens: [{ text: 'It', start: 6.89, end: 7.1, db: 0, f0: 180 }] }] },
+  ],
+};
+
+test('SRT parsing joins wrapped lines and strips tag soup', () => {
+  const e = parseSubtitles(SRT);
+  assert.equal(e.length, 2);
+  assert.equal(e[0].text, 'Du sagtest, der Güterbahnhof sei leer.');
+  assert.equal(e[1].text, 'Vor einer Stunde war er leer.', '<i> removed');
+  assert.ok(Math.abs(e[0].start - 3.75) < 0.001);
+});
+
+test('WebVTT parses through the same path', () => {
+  const vtt = 'WEBVTT\n\n00:00:03.750 --> 00:00:06.450\nHallo\n';
+  assert.deepEqual(parseSubtitles(vtt).map((e) => e.text), ['Hallo']);
+});
+
+test('a file with no timing lines is refused, not silently empty', () => {
+  assert.throws(() => parseSubtitles('just some prose\nwith no timings'),
+    /No subtitle entries/);
+});
+
+test('unspaced scripts tokenize per character, spaced ones per word', () => {
+  assert.deepEqual(tokenize('手を見せろ'), ['手', 'を', '見', 'せ', 'ろ']);
+  assert.deepEqual(tokenize('Zeig mir deine'), ['Zeig', 'mir', 'deine']);
+  // Mixed: the Latin word stays whole, the CJK run splits.
+  assert.deepEqual(tokenize('Netflix 大門'), ['Netflix', '大', '門']);
+});
+
+test('direction is detected from the translation itself', () => {
+  assert.equal(detectDirection('Du sagtest'), 'ltr');
+  assert.equal(detectDirection('أرني يديك'), 'rtl');
+  assert.equal(detectDirection('手を見せろ'), 'ltr', 'CJK is LTR');
+});
+
+test('subtitle entries match cues by time overlap', () => {
+  const r = matchByTime(film, parseSubtitles(SRT));
+  assert.equal(r.matched, 2);
+  assert.equal(r.orphans.length, 0);
+  assert.deepEqual(r.perCue[0].flat().slice(0, 2), ['Du', 'sagtest,']);
+});
+
+test('an offset subtitle file matches nothing rather than matching wrongly', () => {
+  // The failure that matters: a file for a different cut. Matching by index
+  // would attach it happily and drift the whole film.
+  const offset = parseSubtitles(SRT).map((e) => ({ ...e, start: e.start + 400, end: e.end + 400 }));
+  const r = matchByTime(film, offset);
+  assert.equal(r.matched, 0);
+  assert.equal(r.orphans.length, 2, 'and it says which entries went nowhere');
+});
+
+test('an entry overhanging the next cue does not duplicate into it', () => {
+  // Subtitle files routinely hold a line half a second past its speech. Without
+  // the overlap threshold that bleed would repeat the text in the next cue.
+  const bleeding = [{ start: 3.75, end: 7.0, text: 'Du sagtest' }];
+  const r = matchByTime(film, bleeding);
+  assert.ok(r.perCue[0], 'matches the cue it belongs to');
+  assert.equal(r.perCue[1], null, 'and not the one it merely overhangs');
+});

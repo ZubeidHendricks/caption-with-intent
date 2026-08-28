@@ -4,5 +4,6 @@ export * from './palette.js';
 export * from './profiles.js';
 export * from './mapping.js';
 export * from './assign.js';
+export * from './languages.js';
 export * from './cvd.js';
 export * from './validate.js';

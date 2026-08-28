@@ -354,6 +354,56 @@ picture, are not decidable from a manifest — those criteria are reported as
 **needs review** rather than quietly passing. A green report that hid an
 unanswerable question would be worse than no report.
 
+## Switching subtitle language while you watch
+
+Loudness, pitch and timbre are properties of the actor's performance. Who spoke
+is a property of the scene. Neither changes because the viewer changed reading
+language — so a manifest carries **one timing-and-acoustics backbone and any
+number of text tracks over it**, and the typography a viewer sees is derived
+from the original delivery in every language.
+
+```bash
+chorus add-language film.cwi.json --lang de --from german.srt
+chorus add-language film.cwi.json --lang ja --from japanese.srt
+chorus add-language film.cwi.json --lang ar --from arabic.srt
+chorus languages film.cwi.json
+```
+
+```
+  en-US  11/11 cues 100%  (the film)
+  de     11/11 cues 100%
+  ja     11/11 cues 100%
+  ar     11/11 cues 100%
+```
+
+In the player it is one call, and it holds the playhead:
+
+```js
+renderer.languages()        // ['en-US', 'de', 'ja', 'ar']
+renderer.setLanguage('ja')  // same instant, same speaker colours, new words
+```
+
+Translation is **not** done here. Every film already has professionally
+translated subtitles, and they are better than anything generated on the spot.
+What those files lack is everything this design conveys: no speaker, no
+acoustics, no word-level timing. So `add-language` takes the words from the
+translation and everything else from the analysed soundtrack. A viewer
+switching to Japanese gets Japanese text revealing per character, laid out for
+its own script, sized and weighted by the original actor's shout.
+
+Cues are matched by **time overlap, not by index**, because subtitle files are
+segmented for reading comfort rather than by utterance — one line becomes two,
+two become one, and index matching drifts the entire film after the first
+disagreement. A file from a different cut therefore matches nothing and says
+so, instead of attaching plausibly and being wrong for two hours.
+
+One honest limit, documented in `languages.ts` rather than buried: a translated
+word has no onset on the soundtrack, because it is not a word anyone spoke.
+Target words are distributed across the *utterance* by display width and
+inherit the acoustics of whatever was being said at that moment. The reveal
+stays in step with the voice phrase by phrase, and no claim is made that word 4
+of the German is word 4 of the English.
+
 ## Conformance
 
 The thesis of this repo is that **the format is the product** — a platform

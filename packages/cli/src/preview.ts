@@ -354,6 +354,9 @@ window.__cwiSeek = (t) => { renderer.seek(t); };
 // mean re-fetching the font on every case.
 window.__cwiManifest = manifest;
 window.__cwiReload = (m) => { renderer.load(m); renderer.seek(0); };
+// The renderer itself, for subtitle-language switching and anything else a
+// host app drives directly.
+window.__cwiRenderer = renderer;
 window.__cwiReady = true;
 </script></body></html>`;
 }

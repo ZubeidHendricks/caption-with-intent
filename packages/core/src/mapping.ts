@@ -186,3 +186,56 @@ export function wordGap(
 export function bakeToken(t: Token, o: CwiOptions = DEFAULT_OPTIONS): Token {
   return { ...t, ...resolveToken(t, o) };
 }
+
+/**
+ * Display width of a string in character cells.
+ *
+ * A CJK or fullwidth glyph occupies about two Latin cells and a combining mark
+ * none, so counting characters makes a Japanese line roughly twice as wide as
+ * the count suggests and a Thai line with marks narrower. Line budgets and the
+ * pacing of a translated reveal both depend on this being width, not count.
+ *
+ * Mirrors `displayWidth` in pipeline/script.py; the two must agree, and the
+ * conformance vectors check that they do.
+ */
+export function displayWidth(s: string): number {
+  let w = 0;
+  for (const ch of s) {
+    const cp = ch.codePointAt(0)!;
+    if (isCombining(cp)) continue;
+    w += isWide(cp) ? 2 : 1;
+  }
+  return w;
+}
+
+/** Unicode combining marks (Mn/Me ranges that matter for captions). */
+function isCombining(cp: number): boolean {
+  return (cp >= 0x0300 && cp <= 0x036f)      // combining diacriticals
+    || (cp >= 0x0483 && cp <= 0x0489)
+    || (cp >= 0x0591 && cp <= 0x05bd)        // Hebrew points
+    || cp === 0x05bf || cp === 0x05c1 || cp === 0x05c2
+    || (cp >= 0x0610 && cp <= 0x061a)        // Arabic marks
+    || (cp >= 0x064b && cp <= 0x065f)
+    || cp === 0x0670
+    || (cp >= 0x06d6 && cp <= 0x06dc)
+    || (cp >= 0x0e31 && cp <= 0x0e3a)        // Thai vowels and tone marks
+    || (cp >= 0x0e47 && cp <= 0x0e4e)
+    || (cp >= 0x20d0 && cp <= 0x20f0);
+}
+
+/** East Asian Wide and Fullwidth. */
+function isWide(cp: number): boolean {
+  return (cp >= 0x1100 && cp <= 0x115f)      // Hangul Jamo
+    || (cp >= 0x2e80 && cp <= 0x303e)        // CJK radicals, Kangxi, punctuation
+    || (cp >= 0x3041 && cp <= 0x33ff)        // kana, Hangul compat, CJK compat
+    || (cp >= 0x3400 && cp <= 0x4dbf)        // CJK ext A
+    || (cp >= 0x4e00 && cp <= 0x9fff)        // CJK unified
+    || (cp >= 0xa000 && cp <= 0xa4cf)        // Yi
+    || (cp >= 0xac00 && cp <= 0xd7a3)        // Hangul syllables
+    || (cp >= 0xf900 && cp <= 0xfaff)        // CJK compat ideographs
+    || (cp >= 0xfe30 && cp <= 0xfe6f)        // CJK compat forms
+    || (cp >= 0xff00 && cp <= 0xff60)        // fullwidth forms
+    || (cp >= 0xffe0 && cp <= 0xffe6)
+    || (cp >= 0x1f300 && cp <= 0x1f64f)      // emoji
+    || (cp >= 0x20000 && cp <= 0x3fffd);     // CJK ext B+
+}

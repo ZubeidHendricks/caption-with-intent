@@ -10,6 +10,8 @@ import { startPreview } from './preview.js';
 import { render, PRESETS, ALPHA_FORMATS } from './render.js';
 import { deliver, TARGETS } from './deliver.js';
 import { conform } from './conform.js';
+import { readSubtitles, matchByTime } from './translate.js';
+import { languagesOf, coverageOf, addTrack, withDefaults } from '@corerus/chorus-core';
 import { checkReport, loadScene, loadScenes,
   type RenderReport, type RenderConformResult } from './render-conform.js';
 import { probeWebRenderer } from './render-probe.js';
@@ -49,7 +51,10 @@ ${bold('Working on a manifest')}
   cwi assign <manifest>               assign character colours (CVD-safe)
   cwi validate <manifest>             structural + accessibility audit
   cwi stats <manifest>                per-character screen time
-  cwi export <manifest> --format vtt  emit a delivery format (vtt | ass)
+  chorus export <manifest> --format vtt  emit a delivery format (vtt | ass)
+  chorus languages <manifest>         subtitle languages, and their coverage
+  chorus add-language <m> --lang de --from de.srt
+                                      attach a translation as a switchable track
 
 ${bold('Validating with viewers')}
   cwi study <a.cwi.json> <b.cwi.json> --video f
@@ -226,6 +231,61 @@ const commands: Record<string, (a: Args) => Promise<void> | void> = {
         console.log(`    ${s.title}`);
         console.log(`    ${dim(s.why)}\n`);
       }
+    });
+  },
+
+  languages(a) {
+    const m = readManifest(a.positional[0]);
+    const langs = languagesOf(m).map((l) => ({ lang: l, ...coverageOf(m, l) }));
+    out(a, langs, () => {
+      const base = m.meta?.language ?? 'und';
+      for (const l of langs) {
+        const pct = l.total ? Math.round((l.present / l.total) * 100) : 0;
+        const tint = pct === 100 ? grn : pct > 0 ? yel : red;
+        console.log(`  ${l.lang.padEnd(6)} ${tint(`${l.present}/${l.total} cues`)}` +
+          dim(` ${pct}%`) + (l.lang === base ? dim('  (the film)') : ''));
+      }
+      if (langs.length === 1) {
+        console.log(dim('\n  One language. Add another with `chorus add-language`.'));
+      }
+    });
+  },
+
+  'add-language'(a) {
+    const path = a.positional[0];
+    const m = readManifest(path);
+    const lang = str(a, 'lang');
+    const from = str(a, 'from');
+    if (!lang || !from) {
+      throw new CwiError('add-language needs --lang and --from.',
+        'chorus add-language film.cwi.json --lang de --from german.srt');
+    }
+    const entries = readSubtitles(from);
+    const report = matchByTime(m, entries, withDefaults(m.options ?? {}).maxLines);
+    if (!report.matched) {
+      throw new CwiError(`None of the ${entries.length} subtitle entries overlap any cue.`,
+        'The subtitle file and the manifest are probably not the same cut, or their ' +
+        'timings are offset. Compare the first entry against the first cue.');
+    }
+    const next = addTrack(m, lang, report.perCue, report.direction);
+    const dest = str(a, 'out') ?? path;
+    writeFileSync(dest, JSON.stringify(next, null, 2) + '\n');
+
+    out(a, { lang, matched: report.matched, total: report.total,
+      direction: report.direction, orphans: report.orphans.length, out: dest }, () => {
+      console.log(`  ${grn(lang)} attached from ${dim(basename(from))}`);
+      console.log(`  ${report.matched}/${report.total} cues` +
+        dim(` · ${report.direction} · ${entries.length} subtitle entries`));
+      if (report.orphans.length) {
+        // Loud: this usually means the wrong file or the wrong cut, and the
+        // result still looks plausible if you do not check.
+        console.log(`  ${yel(String(report.orphans.length))} entries matched no cue` +
+          dim(`, first at ${report.orphans[0].start.toFixed(1)}s: "${report.orphans[0].text.slice(0, 40)}"`));
+      }
+      if (report.matched < report.total) {
+        console.log(dim(`  ${report.total - report.matched} cues keep the original language`));
+      }
+      console.log(`  → ${dest}`);
     });
   },
 

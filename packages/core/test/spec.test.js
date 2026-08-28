@@ -372,3 +372,96 @@ test('isUnspacedText classifies whole strings', () => {
   assert.equal(isUnspacedText('ab'), false);
   assert.equal(isUnspacedText(''), false);
 });
+
+// --- multiple subtitle languages -------------------------------------------
+
+import {
+  languagesOf, coverageOf, linesFor, directionFor, retime, addTrack, displayWidth,
+} from '../dist/index.js';
+
+const tok = (text, start, end, extra = {}) => ({ text, start, end, ...extra });
+
+/** One English cue, spoken loudly, with known acoustics. */
+const enCue = {
+  id: 'c1', start: 1, end: 4, speaker: 'v', kind: 'dialogue', onCamera: true,
+  lines: [{ tokens: [
+    tok('The', 1.0, 1.2, { db: 0, f0: 180, centroid: 1200 }),
+    tok('gate', 1.3, 1.7, { db: 0, f0: 180, centroid: 1200 }),
+    tok('OPENED', 1.8, 2.6, { db: 11, f0: 200, centroid: 2000 }),
+  ] }],
+};
+const base = {
+  cwi: '1.0',
+  meta: { language: 'en', direction: 'ltr' },
+  characters: [{ id: 'v', name: 'Vale', tier: 'main', color: '#17E517', rank: 0 }],
+  cues: [enCue],
+};
+
+test('display width counts CJK as two cells and combining marks as none', () => {
+  assert.equal(displayWidth('abc'), 3);
+  assert.equal(displayWidth('大门'), 4, 'CJK is double width');
+  assert.equal(displayWidth('é'), 1, 'a combining acute adds no width');
+});
+
+test('a manifest with no translations reports only its own language', () => {
+  assert.deepEqual(languagesOf(base), ['en']);
+  assert.deepEqual(linesFor(base, enCue, 'en'), enCue.lines);
+});
+
+test('retiming spreads a translation across the source utterance', () => {
+  const words = ['Das', 'Tor', 'WURDE', 'GEÖFFNET'];
+  const out = retime(enCue, words);
+  assert.equal(out.length, 4);
+  // The translation occupies exactly the span the actor was speaking, no more.
+  assert.equal(out[0].start, 1.0);
+  assert.ok(Math.abs(out[3].end - 2.6) < 0.001, `ends at ${out[3].end}, expected 2.6`);
+  // Monotonic and non-overlapping.
+  for (let i = 1; i < out.length; i++) assert.ok(out[i].start >= out[i - 1].end - 1e-9);
+});
+
+test('a translated word inherits the acoustics of whatever was being said then', () => {
+  // This is the property that makes switching language safe: the typography
+  // still describes the actor's delivery, not the translator's word choice.
+  const out = retime(enCue, ['Das', 'Tor', 'WURDE', 'GEÖFFNET']);
+  const loud = out.filter((k) => k.db === 11);
+  assert.ok(loud.length >= 1, 'the shout must survive translation');
+  assert.ok(out.every((k) => k.f0 !== undefined), 'every token carries pitch');
+});
+
+test('wider scripts get proportionally more of the span', () => {
+  // Weighting by character count would reveal a CJK line at half the rate it
+  // is read, since each glyph is about two Latin cells wide.
+  const out = retime(enCue, ['門', 'a']);
+  const first = out[0].end - out[0].start;
+  const second = out[1].end - out[1].start;
+  assert.ok(first > second * 1.5, `${first} vs ${second}`);
+});
+
+test('adding a track leaves the original untouched and switchable', () => {
+  const two = addTrack(base, 'de', [[['Das', 'Tor', 'wurde', 'geöffnet']]]);
+  assert.deepEqual(languagesOf(two), ['en', 'de']);
+  assert.deepEqual(two.cues[0].lines, enCue.lines, 'the source track is unchanged');
+  assert.deepEqual(linesFor(two, two.cues[0], 'de')[0].tokens.map((t) => t.text),
+    ['Das', 'Tor', 'wurde', 'geöffnet']);
+  assert.deepEqual(linesFor(two, two.cues[0], 'en')[0].tokens.map((t) => t.text),
+    ['The', 'gate', 'OPENED']);
+});
+
+test('an untranslated cue falls back to the original rather than going blank', () => {
+  const m = { ...base, cues: [enCue, { ...enCue, id: 'c2', start: 5, end: 7 }] };
+  const two = addTrack(m, 'de', [[['Das', 'Tor']], null]);
+  assert.deepEqual(linesFor(two, two.cues[1], 'de')[0].tokens.map((t) => t.text),
+    ['The', 'gate', 'OPENED'], 'cue 2 has no German, so English shows');
+  assert.deepEqual(coverageOf(two, 'de'), { total: 2, present: 1 });
+});
+
+test('a right-to-left track on a left-to-right film reports its own direction', () => {
+  const two = addTrack(base, 'ar', [[['البوابة', 'فتحت']]], 'rtl');
+  assert.equal(directionFor(two, two.cues[0], 'ar'), 'rtl');
+  assert.equal(directionFor(two, two.cues[0], 'en'), 'ltr', 'the film itself is unchanged');
+});
+
+test('a translation with the wrong number of cues is refused', () => {
+  // Silently dropping the tail would ship a film subtitled for ten minutes.
+  assert.throws(() => addTrack(base, 'de', [[['a']], [['b']]]), /must correspond one to one/);
+});

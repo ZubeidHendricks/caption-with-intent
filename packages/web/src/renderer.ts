@@ -1,5 +1,5 @@
 import {
-  withDefaults, resolveToken, wordGap, needsWordGap,
+  withDefaults, resolveToken, wordGap, needsWordGap, linesFor, directionFor, languagesOf,
   type CwiManifest, type CwiOptions, type Cue, type Token, type Character,
 } from '@corerus/chorus-core';
 import { injectStyle } from './style.js';
@@ -64,6 +64,8 @@ export class CwiRenderer {
   readonly el: HTMLElement;
   private opts: CwiOptions;
   private manifest: CwiManifest | null = null;
+  /** Subtitle language currently drawn. Undefined means the manifest's own. */
+  private language: string | undefined;
   private chars = new Map<string, Character>();
   private active = new Map<Cue, CueView>();
   private stack: HTMLElement;
@@ -111,7 +113,48 @@ export class CwiRenderer {
     // revealing at all. Position classes stay literal: position is a spatial
     // attribution cue and should not mirror with the text.
     this.el.dir = manifest.meta?.direction ?? 'ltr';
+    if (this.language && !languagesOf(manifest).includes(this.language)) this.language = undefined;
     this.clear();
+  }
+
+  /**
+   * Subtitle languages this manifest can draw, the original first.
+   *
+   * A player builds its language menu from this. It is derived from the cues
+   * rather than trusted from metadata, so a language that is declared but not
+   * actually present never appears in a menu as a dead option.
+   */
+  languages(): string[] {
+    return this.manifest ? languagesOf(this.manifest) : [];
+  }
+
+  /** The language currently drawn. */
+  get subtitleLanguage(): string | undefined {
+    return this.language;
+  }
+
+  /**
+   * Switch subtitle language, live.
+   *
+   * Rebuilds only what is on screen and re-seeks to the same instant, so a
+   * viewer changing language mid-sentence sees the same moment in the new
+   * language rather than a blank frame or a restarted cue. Cheap because the
+   * timing and acoustics are shared: this swaps text and re-lays out at most
+   * two cues.
+   *
+   * Passing a language the manifest does not carry falls back to the original
+   * rather than throwing — a player should not be able to crash a film by
+   * offering a stale menu entry.
+   */
+  setLanguage(lang: string | undefined): void {
+    const next = lang && this.languages().includes(lang) ? lang : undefined;
+    if (next === this.language) return;
+    this.language = next;
+    if (!this.manifest) return;
+    // Drop every built cue: their tokens are the old language's.
+    for (const [, view] of this.active) view.root.remove();
+    this.active.clear();
+    this.seek(this.lastTime);
   }
 
   /**
@@ -218,6 +261,10 @@ export class CwiRenderer {
     const o = this.opts;
     const root = document.createElement('div');
     root.className = 'cwi-cue';
+    // Direction is per cue, not per manifest: an English film with Arabic
+    // subtitles is an RTL track on an LTR manifest, and the reveal has to run
+    // the way the chosen language reads.
+    root.dir = directionFor(this.manifest!, cue, this.language);
     const speaker = cue.speaker ? this.chars.get(cue.speaker) : undefined;
 
     // Horizontal placement carries speaker identity without colour. Profiles
@@ -236,7 +283,7 @@ export class CwiRenderer {
     root.style.setProperty('--cwi-slnt', String(o.offCameraSlant));
 
     const tokens: TokenView[] = [];
-    const lines = cue.lines.slice(0, o.maxLines);
+    const lines = linesFor(this.manifest!, cue, this.language).slice(0, o.maxLines);
     // A per-character mark, where the profile escalated to one. Rendered in the
     // speaker's colour but distinguishable by shape, so it works when the
     // colour does not.
@@ -303,8 +350,9 @@ export class CwiRenderer {
       });
       root.appendChild(lineEl);
     }
-    if (cue.lines.length > o.maxLines) {
-      console.warn(`[cwi] cue ${cue.id ?? cue.start} has ${cue.lines.length} lines; spec 2.4.2 allows ${o.maxLines}. Extra lines dropped.`);
+    const drawn = linesFor(this.manifest!, cue, this.language);
+    if (drawn.length > o.maxLines) {
+      console.warn(`[cwi] cue ${cue.id ?? cue.start} has ${drawn.length} lines; spec 2.4.2 allows ${o.maxLines}. Extra lines dropped.`);
     }
     return { cue, root, tokens };
   }
