@@ -74,6 +74,10 @@
     "./translate": {
       "types": "./dist/translate.d.ts",
       "default": "./dist/translate.js"
+    },
+    "./studio": {
+      "types": "./dist/studio.d.ts",
+      "default": "./dist/studio.js"
     }
   },
   "author": "Zubeid Hendricks",

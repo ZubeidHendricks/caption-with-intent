@@ -108,3 +108,37 @@ class TestCueBounds(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestSentenceEndClosure(unittest.TestCase):
+    """
+    A cue closed by an early sentence end leaves the accumulator empty, and the
+    next word has to open a fresh cue rather than being appended to nothing.
+
+    Found by running a real subtitle file through the studio app: the fixture's
+    lines are all short enough that the "substantial cue ends in a full stop"
+    branch never fired, so the loop never came round again on an empty cue and
+    the crash sat there unreached.
+    """
+
+    def test_a_sentence_end_mid_stream_does_not_crash(self):
+        # Long enough to pass the 55%-of-budget test, then more words after it.
+        words = []
+        t = 0.0
+        for i, text in enumerate(
+                "the freight yard was empty when we checked it twice tonight. "
+                "then someone opened it from the inside afterwards.".split()):
+            words.append({"text": text, "start": round(t, 3), "end": round(t + 0.3, 3),
+                          "speaker": "A"})
+            t += 0.35
+        cues = seg.segment(words)
+        self.assertTrue(cues)
+        # Nothing lost and nothing duplicated.
+        flat = [w["text"] for c in cues for w in c]
+        self.assertEqual(flat, [w["text"] for w in words])
+
+    def test_a_sentence_end_on_the_last_word_still_works(self):
+        words = [{"text": t, "start": i * 0.35, "end": i * 0.35 + 0.3, "speaker": "A"}
+                 for i, t in enumerate("this line simply ends here.".split())]
+        cues = seg.segment(words)
+        self.assertEqual([w["text"] for c in cues for w in c], [w["text"] for w in words])

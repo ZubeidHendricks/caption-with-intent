@@ -456,6 +456,46 @@ cinema in general** — that format is narrow by construction, and a modern
 mix would differ. It is one real data point where there were none.
 
 
+## The app
+
+```bash
+chorus studio
+```
+
+Opens a local page: drop in a video, drop in a subtitle file, get captions,
+export a finished MP4 or a transparent overlay for an editor.
+
+It runs on your own machine, and that is not a limitation dressed up as a
+feature. Media is large, ffmpeg and the headless browser are already local, and
+captioning means handling unreleased footage — which productions are
+contractually forbidden from uploading to somebody's cloud. Nothing leaves the
+machine.
+
+**The words have to come from somewhere.** Captions need a transcript, and a
+transcript needs speech recognition. WhisperX is supported and is the intended
+production path, but it pulls multi-gigabyte models, so the app works without
+it: bring the subtitle file the production already has. The words come from
+there; everything this design contributes — who is speaking, how loudly, at
+what pitch — comes from the soundtrack.
+
+**Label your speakers.** A plain SRT carries no names, and without them every
+line is one speaker, which means colour, position and marks are all conveying
+nothing — the entire attribution layer, idle. The app says so when it happens
+rather than letting you find out in the export. Labels it reads:
+
+```
+<v Detective Vale>You said the freight yard was empty.   ← WebVTT
+VALE: You said the freight yard was empty.               ← SRT or VTT
+```
+
+With labels, the same file produces four speakers, each with its own colour,
+screen position and mark:
+
+```
+DETECTIVE VALE  #9E60FB left ●   KROFT  #E95935 center ■
+ANA             #5793C7 right ▲   RUIZ  #A8F906 left   ◆
+```
+
 ## See it
 
 `examples/` holds rendered video, committed because the argument here is visual

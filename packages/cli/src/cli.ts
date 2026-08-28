@@ -12,6 +12,7 @@ import { render, PRESETS, ALPHA_FORMATS } from './render.js';
 import { deliver, TARGETS } from './deliver.js';
 import { conform } from './conform.js';
 import { readSubtitles, matchByTime } from './translate.js';
+import { startStudio } from './studio.js';
 import { languagesOf, coverageOf, addTrack, withDefaults } from '@corerus/chorus-core';
 import { checkReport, loadScene, loadScenes,
   type RenderReport, type RenderConformResult } from './render-conform.js';
@@ -53,6 +54,7 @@ ${bold('Working on a manifest')}
   cwi validate <manifest>             structural + accessibility audit
   cwi stats <manifest>                per-character screen time
   chorus export <manifest> --format vtt  emit a delivery format (vtt | ass)
+  chorus studio                       drop in a video, get captions, export
   chorus evaluate <media> <manifest>  how far this film's analysis can be trusted
   chorus languages <manifest>         subtitle languages, and their coverage
   chorus add-language <m> --lang de --from de.srt
@@ -338,6 +340,20 @@ const commands: Record<string, (a: Args) => Promise<void> | void> = {
     // A film whose analysis is mostly untrustworthy should fail a pipeline
     // step, not print a warning nobody reads.
     if (r.dialogue_cues && r.suspect / r.dialogue_cues > 0.5) process.exitCode = 1;
+  },
+
+  async studio(a) {
+    const s = await startStudio({ port: num(a, 'port'), host: str(a, 'host'),
+                                  workdir: str(a, 'workdir') });
+    console.log(`\n  ${bold('Chorus Studio')} ${cyan(s.url)}`);
+    console.log(dim('  Nothing leaves this machine. Ctrl-C to stop.\n'));
+    if (!bool(a, 'no-open')) {
+      const opener = process.platform === 'darwin' ? 'open'
+        : process.platform === 'win32' ? 'start' : 'xdg-open';
+      const { spawn } = await import('node:child_process');
+      spawn(opener, [s.url], { stdio: 'ignore', detached: true }).unref();
+    }
+    await new Promise(() => {});           // serve until interrupted
   },
 
   async doctor(a) {

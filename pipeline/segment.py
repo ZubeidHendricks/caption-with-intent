@@ -81,6 +81,12 @@ def segment(
     cur: list[dict] = [words[0]]
 
     for w in words[1:]:
+        # An early sentence end below closes the cue and leaves `cur` empty.
+        # Every test on hand ended a line at the last word, so the loop never
+        # came round again on an empty cue and this read `cur[-1]` of nothing.
+        if not cur:
+            cur = [w]
+            continue
         prev = cur[-1]
         speaker_changed = w.get("speaker") != prev.get("speaker")
         paused = w["start"] - prev["end"] > max_gap
