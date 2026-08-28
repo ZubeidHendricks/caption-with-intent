@@ -456,6 +456,21 @@ cinema in general** — that format is narrow by construction, and a modern
 mix would differ. It is one real data point where there were none.
 
 
+## See it
+
+`examples/` holds rendered video, committed because the argument here is visual
+and prose makes it badly:
+
+| | |
+|---|---|
+| `examples/profiles-side-by-side.mp4` | the same scene under `cwi-1.0` and `chorus-1.0`, left and right |
+| `examples/four-languages.mp4` | one performance, four subtitle tracks, the shout landing at the same instant in all four |
+| `examples/chorus-room.mp4` | the design running, full frame |
+
+`examples/README.md` says what to look for in each, and what the files do *not*
+show — the audio is synthesised, so they demonstrate the renderer rather than
+the analysis surviving a real mix.
+
 ## Switching subtitle language while you watch
 
 Loudness, pitch and timbre are properties of the actor's performance. Who spoke

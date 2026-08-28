@@ -1,0 +1,2909 @@
+{
+  "cwi": "1.0",
+  "meta": {
+    "title": "Freight Yard (synthetic demo scene)",
+    "aspectRatio": "16:9",
+    "frameRate": 24,
+    "language": "en-US",
+    "generator": "cwi make-sample 0.1.0 — synthetic acoustics, original dialogue",
+    "languages": [
+      "en-US",
+      "de",
+      "ja",
+      "ar"
+    ]
+  },
+  "characters": [
+    {
+      "id": "vale",
+      "name": "Detective Vale",
+      "tier": "main",
+      "role": "hero",
+      "rank": 0,
+      "color": "#17E517"
+    },
+    {
+      "id": "kroft",
+      "name": "Kroft",
+      "tier": "main",
+      "role": "villain",
+      "rank": 1,
+      "color": "#E517E5"
+    },
+    {
+      "id": "ana",
+      "name": "Ana",
+      "tier": "main",
+      "rank": 2,
+      "color": "#E51717"
+    },
+    {
+      "id": "dispatch",
+      "name": "Dispatch",
+      "tier": "supporting",
+      "rank": 0,
+      "color": "#47C2EB"
+    },
+    {
+      "id": "bystander",
+      "name": "Bystander",
+      "tier": "minor",
+      "rank": 0,
+      "color": "#E6A1A1"
+    }
+  ],
+  "cues": [
+    {
+      "id": "n60",
+      "start": 0.6,
+      "end": 3.3,
+      "kind": "music",
+      "onCamera": true,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "♪",
+              "start": 0.6,
+              "end": 1.08,
+              "db": -3
+            },
+            {
+              "text": "low",
+              "start": 1.08,
+              "end": 1.56,
+              "db": -3
+            },
+            {
+              "text": "strings,",
+              "start": 1.56,
+              "end": 2.04,
+              "db": -3
+            },
+            {
+              "text": "unresolved",
+              "start": 2.04,
+              "end": 2.52,
+              "db": -3
+            },
+            {
+              "text": "♪",
+              "start": 2.52,
+              "end": 3,
+              "db": -3
+            }
+          ]
+        }
+      ],
+      "tracks": {
+        "de": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "♪",
+                  "start": 0.6,
+                  "end": 0.686,
+                  "db": -3
+                },
+                {
+                  "text": "tiefe",
+                  "start": 0.686,
+                  "end": 1.114,
+                  "db": -3
+                },
+                {
+                  "text": "Streicher,",
+                  "start": 1.114,
+                  "end": 1.971,
+                  "db": -3
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "unaufgelöst",
+                  "start": 1.971,
+                  "end": 2.914,
+                  "db": -3
+                },
+                {
+                  "text": "♪",
+                  "start": 2.914,
+                  "end": 3,
+                  "db": -3
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ja": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "♪",
+                  "start": 0.6,
+                  "end": 0.75,
+                  "db": -3
+                },
+                {
+                  "text": "低",
+                  "start": 0.75,
+                  "end": 1.05,
+                  "db": -3
+                },
+                {
+                  "text": "い",
+                  "start": 1.05,
+                  "end": 1.35,
+                  "db": -3
+                },
+                {
+                  "text": "弦",
+                  "start": 1.35,
+                  "end": 1.65,
+                  "db": -3
+                },
+                {
+                  "text": "、",
+                  "start": 1.65,
+                  "end": 1.95,
+                  "db": -3
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "未",
+                  "start": 1.95,
+                  "end": 2.25,
+                  "db": -3
+                },
+                {
+                  "text": "解",
+                  "start": 2.25,
+                  "end": 2.55,
+                  "db": -3
+                },
+                {
+                  "text": "決",
+                  "start": 2.55,
+                  "end": 2.85,
+                  "db": -3
+                },
+                {
+                  "text": "♪",
+                  "start": 2.85,
+                  "end": 3,
+                  "db": -3
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ar": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "♪",
+                  "start": 0.6,
+                  "end": 0.704,
+                  "db": -3
+                },
+                {
+                  "text": "أوتار",
+                  "start": 0.704,
+                  "end": 1.226,
+                  "db": -3
+                },
+                {
+                  "text": "منخفضة،",
+                  "start": 1.226,
+                  "end": 1.957,
+                  "db": -3
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "غير",
+                  "start": 1.957,
+                  "end": 2.27,
+                  "db": -3
+                },
+                {
+                  "text": "محسومة",
+                  "start": 2.27,
+                  "end": 2.896,
+                  "db": -3
+                },
+                {
+                  "text": "♪",
+                  "start": 2.896,
+                  "end": 3,
+                  "db": -3
+                }
+              ]
+            }
+          ],
+          "direction": "rtl"
+        }
+      }
+    },
+    {
+      "id": "c00375",
+      "start": 3.75,
+      "end": 6.445,
+      "speaker": "vale",
+      "kind": "dialogue",
+      "onCamera": true,
+      "breakout": false,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "You",
+              "start": 3.75,
+              "end": 3.982,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "said",
+              "start": 4.027,
+              "end": 4.282,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "the",
+              "start": 4.327,
+              "end": 4.56,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "freight",
+              "start": 4.605,
+              "end": 4.927,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "yard",
+              "start": 4.972,
+              "end": 5.227,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "was",
+              "start": 5.272,
+              "end": 5.505,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "empty.",
+              "start": 5.55,
+              "end": 5.85,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            }
+          ]
+        }
+      ],
+      "tracks": {
+        "de": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "Du",
+                  "start": 3.75,
+                  "end": 3.877,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "sagtest,",
+                  "start": 3.877,
+                  "end": 4.386,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "der",
+                  "start": 4.386,
+                  "end": 4.577,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "Güterbahnhof",
+                  "start": 4.577,
+                  "end": 5.341,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "sei",
+                  "start": 5.341,
+                  "end": 5.532,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "leer.",
+                  "start": 5.532,
+                  "end": 5.85,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ja": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "貨",
+                  "start": 3.75,
+                  "end": 3.9,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "物",
+                  "start": 3.9,
+                  "end": 4.05,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "置",
+                  "start": 4.05,
+                  "end": 4.2,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "き",
+                  "start": 4.2,
+                  "end": 4.35,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "場",
+                  "start": 4.35,
+                  "end": 4.5,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "は",
+                  "start": 4.5,
+                  "end": 4.65,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "空",
+                  "start": 4.65,
+                  "end": 4.8,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "だ",
+                  "start": 4.8,
+                  "end": 4.95,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "と",
+                  "start": 4.95,
+                  "end": 5.1,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "言",
+                  "start": 5.1,
+                  "end": 5.25,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "っ",
+                  "start": 5.25,
+                  "end": 5.4,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "た",
+                  "start": 5.4,
+                  "end": 5.55,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "な",
+                  "start": 5.55,
+                  "end": 5.7,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "。",
+                  "start": 5.7,
+                  "end": 5.85,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ar": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "قلت",
+                  "start": 3.75,
+                  "end": 4.013,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "إن",
+                  "start": 4.013,
+                  "end": 4.188,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "ساحة",
+                  "start": 4.188,
+                  "end": 4.538,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "الشحن",
+                  "start": 4.538,
+                  "end": 4.975,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "كانت",
+                  "start": 4.975,
+                  "end": 5.325,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "فارغة.",
+                  "start": 5.325,
+                  "end": 5.85,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                }
+              ]
+            }
+          ],
+          "direction": "rtl"
+        }
+      }
+    },
+    {
+      "id": "c00689",
+      "start": 6.895,
+      "end": 9.155,
+      "speaker": "ana",
+      "kind": "dialogue",
+      "onCamera": true,
+      "breakout": false,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "It",
+              "start": 6.895,
+              "end": 7.105,
+              "db": 0,
+              "f0": 215,
+              "centroid": 2300
+            },
+            {
+              "text": "was",
+              "start": 7.15,
+              "end": 7.382,
+              "db": 0,
+              "f0": 215,
+              "centroid": 2300
+            },
+            {
+              "text": "empty",
+              "start": 7.427,
+              "end": 7.705,
+              "db": 0,
+              "f0": 269,
+              "centroid": 2300
+            },
+            {
+              "text": "an",
+              "start": 7.75,
+              "end": 7.96,
+              "db": 0,
+              "f0": 215,
+              "centroid": 2300
+            },
+            {
+              "text": "hour",
+              "start": 8.005,
+              "end": 8.26,
+              "db": 0,
+              "f0": 215,
+              "centroid": 2300
+            },
+            {
+              "text": "ago.",
+              "start": 8.305,
+              "end": 8.56,
+              "db": 0,
+              "f0": 215,
+              "centroid": 2300
+            }
+          ]
+        }
+      ],
+      "tracks": {
+        "de": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "Vor",
+                  "start": 6.895,
+                  "end": 7.103,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "einer",
+                  "start": 7.103,
+                  "end": 7.45,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "Stunde",
+                  "start": 7.45,
+                  "end": 7.866,
+                  "db": 0,
+                  "f0": 269,
+                  "centroid": 2300
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "war",
+                  "start": 7.866,
+                  "end": 8.074,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "er",
+                  "start": 8.074,
+                  "end": 8.213,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "leer.",
+                  "start": 8.213,
+                  "end": 8.56,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ja": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "一",
+                  "start": 6.895,
+                  "end": 7.062,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "時",
+                  "start": 7.062,
+                  "end": 7.228,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "間",
+                  "start": 7.228,
+                  "end": 7.395,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "前",
+                  "start": 7.395,
+                  "end": 7.561,
+                  "db": 0,
+                  "f0": 269,
+                  "centroid": 2300
+                },
+                {
+                  "text": "は",
+                  "start": 7.561,
+                  "end": 7.728,
+                  "db": 0,
+                  "f0": 269,
+                  "centroid": 2300
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "空",
+                  "start": 7.728,
+                  "end": 7.894,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "だ",
+                  "start": 7.894,
+                  "end": 8.061,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "っ",
+                  "start": 8.061,
+                  "end": 8.227,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "た",
+                  "start": 8.227,
+                  "end": 8.394,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "。",
+                  "start": 8.394,
+                  "end": 8.56,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ar": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "كانت",
+                  "start": 6.895,
+                  "end": 7.287,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "فارغة",
+                  "start": 7.287,
+                  "end": 7.776,
+                  "db": 0,
+                  "f0": 269,
+                  "centroid": 2300
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "قبل",
+                  "start": 7.776,
+                  "end": 8.07,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "ساعة.",
+                  "start": 8.07,
+                  "end": 8.56,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                }
+              ]
+            }
+          ],
+          "direction": "rtl"
+        }
+      }
+    },
+    {
+      "id": "c00961",
+      "start": 9.605,
+      "end": 12.435,
+      "speaker": "kroft",
+      "kind": "dialogue",
+      "onCamera": false,
+      "breakout": false,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "Nothing",
+              "start": 9.605,
+              "end": 9.928,
+              "db": 0,
+              "f0": 74,
+              "centroid": 780
+            },
+            {
+              "text": "out",
+              "start": 9.973,
+              "end": 10.205,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            },
+            {
+              "text": "here",
+              "start": 10.25,
+              "end": 10.505,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            },
+            {
+              "text": "is",
+              "start": 10.55,
+              "end": 10.76,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            },
+            {
+              "text": "ever",
+              "start": 10.805,
+              "end": 11.06,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            },
+            {
+              "text": "empty,",
+              "start": 11.105,
+              "end": 11.405,
+              "db": 0,
+              "f0": 74,
+              "centroid": 780
+            },
+            {
+              "text": "Detective.",
+              "start": 11.45,
+              "end": 11.84,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            }
+          ]
+        }
+      ],
+      "tracks": {
+        "de": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "Nichts",
+                  "start": 9.605,
+                  "end": 9.932,
+                  "db": 0,
+                  "f0": 74,
+                  "centroid": 780
+                },
+                {
+                  "text": "hier",
+                  "start": 9.932,
+                  "end": 10.15,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "draußen",
+                  "start": 10.15,
+                  "end": 10.532,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "ist",
+                  "start": 10.532,
+                  "end": 10.695,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "jemals",
+                  "start": 10.695,
+                  "end": 11.022,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "leer,",
+                  "start": 11.022,
+                  "end": 11.295,
+                  "db": 0,
+                  "f0": 74,
+                  "centroid": 780
+                },
+                {
+                  "text": "Detective.",
+                  "start": 11.295,
+                  "end": 11.84,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ja": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "こ",
+                  "start": 9.605,
+                  "end": 9.736,
+                  "db": 0,
+                  "f0": 74,
+                  "centroid": 780
+                },
+                {
+                  "text": "こ",
+                  "start": 9.736,
+                  "end": 9.868,
+                  "db": 0,
+                  "f0": 74,
+                  "centroid": 780
+                },
+                {
+                  "text": "で",
+                  "start": 9.868,
+                  "end": 9.999,
+                  "db": 0,
+                  "f0": 74,
+                  "centroid": 780
+                },
+                {
+                  "text": "は",
+                  "start": 9.999,
+                  "end": 10.131,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "何",
+                  "start": 10.131,
+                  "end": 10.262,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "も",
+                  "start": 10.262,
+                  "end": 10.394,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "空",
+                  "start": 10.394,
+                  "end": 10.525,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "で",
+                  "start": 10.525,
+                  "end": 10.657,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "は",
+                  "start": 10.657,
+                  "end": 10.788,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "な",
+                  "start": 10.788,
+                  "end": 10.92,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "い",
+                  "start": 10.92,
+                  "end": 11.051,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "、",
+                  "start": 11.051,
+                  "end": 11.183,
+                  "db": 0,
+                  "f0": 74,
+                  "centroid": 780
+                },
+                {
+                  "text": "刑",
+                  "start": 11.183,
+                  "end": 11.314,
+                  "db": 0,
+                  "f0": 74,
+                  "centroid": 780
+                },
+                {
+                  "text": "事",
+                  "start": 11.314,
+                  "end": 11.446,
+                  "db": 0,
+                  "f0": 74,
+                  "centroid": 780
+                },
+                {
+                  "text": "さ",
+                  "start": 11.446,
+                  "end": 11.577,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "ん",
+                  "start": 11.577,
+                  "end": 11.709,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "。",
+                  "start": 11.709,
+                  "end": 11.84,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ar": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "لا",
+                  "start": 9.605,
+                  "end": 9.765,
+                  "db": 0,
+                  "f0": 74,
+                  "centroid": 780
+                },
+                {
+                  "text": "شيء",
+                  "start": 9.765,
+                  "end": 10.004,
+                  "db": 0,
+                  "f0": 74,
+                  "centroid": 780
+                },
+                {
+                  "text": "هنا",
+                  "start": 10.004,
+                  "end": 10.244,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "فارغ",
+                  "start": 10.244,
+                  "end": 10.563,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "أبدًا،",
+                  "start": 10.563,
+                  "end": 10.962,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "أيها",
+                  "start": 10.962,
+                  "end": 11.281,
+                  "db": 0,
+                  "f0": 74,
+                  "centroid": 780
+                },
+                {
+                  "text": "المحقق.",
+                  "start": 11.281,
+                  "end": 11.84,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                }
+              ]
+            }
+          ],
+          "direction": "rtl"
+        }
+      }
+    },
+    {
+      "id": "n1264",
+      "start": 12.635,
+      "end": 14.335,
+      "kind": "sfx",
+      "onCamera": true,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "[metal",
+              "start": 12.635,
+              "end": 13.102,
+              "db": 6
+            },
+            {
+              "text": "door",
+              "start": 13.102,
+              "end": 13.568,
+              "db": 6
+            },
+            {
+              "text": "sliding]",
+              "start": 13.568,
+              "end": 14.035,
+              "db": 6
+            }
+          ]
+        }
+      ],
+      "tracks": {
+        "de": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "[Metalltür",
+                  "start": 12.635,
+                  "end": 13.413,
+                  "db": 6
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "gleitet]",
+                  "start": 13.413,
+                  "end": 14.035,
+                  "db": 6
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ja": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "[金属の扉が滑る]",
+                  "start": 12.635,
+                  "end": 14.035,
+                  "db": 6
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ar": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "[باب",
+                  "start": 12.635,
+                  "end": 13.008,
+                  "db": 6
+                },
+                {
+                  "text": "معدني",
+                  "start": 13.008,
+                  "end": 13.475,
+                  "db": 6
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "ينزلق]",
+                  "start": 13.475,
+                  "end": 14.035,
+                  "db": 6
+                }
+              ]
+            }
+          ],
+          "direction": "rtl"
+        }
+      }
+    },
+    {
+      "id": "c01449",
+      "start": 14.485,
+      "end": 16.674,
+      "speaker": "vale",
+      "kind": "dialogue",
+      "onCamera": true,
+      "breakout": true,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "Show",
+              "start": 14.485,
+              "end": 14.74,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "me",
+              "start": 14.785,
+              "end": 14.995,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "your",
+              "start": 15.04,
+              "end": 15.295,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "hands!",
+              "start": 15.34,
+              "end": 15.715,
+              "db": 9,
+              "f0": 129,
+              "centroid": 1438
+            },
+            {
+              "text": "Now!",
+              "start": 15.76,
+              "end": 16.079,
+              "db": 9,
+              "f0": 129,
+              "centroid": 1438
+            }
+          ]
+        }
+      ],
+      "tracks": {
+        "de": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "Zeig",
+                  "start": 14.485,
+                  "end": 14.74,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "mir",
+                  "start": 14.74,
+                  "end": 14.931,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "deine",
+                  "start": 14.931,
+                  "end": 15.25,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "Hände!",
+                  "start": 15.25,
+                  "end": 15.633,
+                  "db": 9,
+                  "f0": 129,
+                  "centroid": 1438
+                },
+                {
+                  "text": "Sofort!",
+                  "start": 15.633,
+                  "end": 16.079,
+                  "db": 9,
+                  "f0": 129,
+                  "centroid": 1438
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ja": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "手",
+                  "start": 14.485,
+                  "end": 14.644,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "を",
+                  "start": 14.644,
+                  "end": 14.804,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "見",
+                  "start": 14.804,
+                  "end": 14.963,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "せ",
+                  "start": 14.963,
+                  "end": 15.123,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "ろ",
+                  "start": 15.123,
+                  "end": 15.282,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "！",
+                  "start": 15.282,
+                  "end": 15.441,
+                  "db": 9,
+                  "f0": 129,
+                  "centroid": 1438
+                },
+                {
+                  "text": "今",
+                  "start": 15.441,
+                  "end": 15.601,
+                  "db": 9,
+                  "f0": 129,
+                  "centroid": 1438
+                },
+                {
+                  "text": "す",
+                  "start": 15.601,
+                  "end": 15.76,
+                  "db": 9,
+                  "f0": 129,
+                  "centroid": 1438
+                },
+                {
+                  "text": "ぐ",
+                  "start": 15.76,
+                  "end": 15.92,
+                  "db": 9,
+                  "f0": 129,
+                  "centroid": 1438
+                },
+                {
+                  "text": "！",
+                  "start": 15.92,
+                  "end": 16.079,
+                  "db": 9,
+                  "f0": 129,
+                  "centroid": 1438
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ar": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "أرني",
+                  "start": 14.485,
+                  "end": 14.94,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "يديك!",
+                  "start": 14.94,
+                  "end": 15.51,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "الآن!",
+                  "start": 15.51,
+                  "end": 16.079,
+                  "db": 9,
+                  "f0": 129,
+                  "centroid": 1438
+                }
+              ]
+            }
+          ],
+          "direction": "rtl"
+        }
+      }
+    },
+    {
+      "id": "c01717",
+      "start": 17.174,
+      "end": 20.169,
+      "speaker": "kroft",
+      "kind": "dialogue",
+      "onCamera": true,
+      "breakout": false,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "You",
+              "start": 17.174,
+              "end": 17.406,
+              "db": -9,
+              "f0": 84,
+              "centroid": 663
+            },
+            {
+              "text": "really",
+              "start": 17.451,
+              "end": 17.751,
+              "db": -9,
+              "f0": 84,
+              "centroid": 663
+            },
+            {
+              "text": "should",
+              "start": 17.796,
+              "end": 18.096,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            },
+            {
+              "text": "have",
+              "start": 18.141,
+              "end": 18.396,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            },
+            {
+              "text": "stayed",
+              "start": 18.441,
+              "end": 18.741,
+              "db": -9,
+              "f0": 84,
+              "centroid": 663
+            },
+            {
+              "text": "in",
+              "start": 18.786,
+              "end": 18.996,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            },
+            {
+              "text": "the",
+              "start": 19.041,
+              "end": 19.274,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            },
+            {
+              "text": "car.",
+              "start": 19.319,
+              "end": 19.574,
+              "db": 0,
+              "f0": 92,
+              "centroid": 780
+            }
+          ]
+        }
+      ],
+      "tracks": {
+        "de": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "Du",
+                  "start": 17.174,
+                  "end": 17.304,
+                  "db": -9,
+                  "f0": 84,
+                  "centroid": 663
+                },
+                {
+                  "text": "hättest",
+                  "start": 17.304,
+                  "end": 17.758,
+                  "db": -9,
+                  "f0": 84,
+                  "centroid": 663
+                },
+                {
+                  "text": "wirklich",
+                  "start": 17.758,
+                  "end": 18.277,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "im",
+                  "start": 18.277,
+                  "end": 18.406,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "Auto",
+                  "start": 18.406,
+                  "end": 18.666,
+                  "db": -9,
+                  "f0": 84,
+                  "centroid": 663
+                },
+                {
+                  "text": "bleiben",
+                  "start": 18.666,
+                  "end": 19.12,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "sollen.",
+                  "start": 19.12,
+                  "end": 19.574,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ja": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "本",
+                  "start": 17.174,
+                  "end": 17.359,
+                  "db": -9,
+                  "f0": 84,
+                  "centroid": 663
+                },
+                {
+                  "text": "当",
+                  "start": 17.359,
+                  "end": 17.543,
+                  "db": -9,
+                  "f0": 84,
+                  "centroid": 663
+                },
+                {
+                  "text": "に",
+                  "start": 17.543,
+                  "end": 17.728,
+                  "db": -9,
+                  "f0": 84,
+                  "centroid": 663
+                },
+                {
+                  "text": "車",
+                  "start": 17.728,
+                  "end": 17.912,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "に",
+                  "start": 17.912,
+                  "end": 18.097,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "い",
+                  "start": 18.097,
+                  "end": 18.282,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "る",
+                  "start": 18.282,
+                  "end": 18.466,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "べ",
+                  "start": 18.466,
+                  "end": 18.651,
+                  "db": -9,
+                  "f0": 84,
+                  "centroid": 663
+                },
+                {
+                  "text": "き",
+                  "start": 18.651,
+                  "end": 18.836,
+                  "db": -9,
+                  "f0": 84,
+                  "centroid": 663
+                },
+                {
+                  "text": "だ",
+                  "start": 18.836,
+                  "end": 19.02,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "っ",
+                  "start": 19.02,
+                  "end": 19.205,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "た",
+                  "start": 19.205,
+                  "end": 19.389,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "。",
+                  "start": 19.389,
+                  "end": 19.574,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ar": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "كان",
+                  "start": 17.174,
+                  "end": 17.451,
+                  "db": -9,
+                  "f0": 84,
+                  "centroid": 663
+                },
+                {
+                  "text": "عليك",
+                  "start": 17.451,
+                  "end": 17.82,
+                  "db": -9,
+                  "f0": 84,
+                  "centroid": 663
+                },
+                {
+                  "text": "حقًا",
+                  "start": 17.82,
+                  "end": 18.097,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                },
+                {
+                  "text": "أن",
+                  "start": 18.097,
+                  "end": 18.282,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "تبقى",
+                  "start": 18.282,
+                  "end": 18.651,
+                  "db": -9,
+                  "f0": 84,
+                  "centroid": 663
+                },
+                {
+                  "text": "في",
+                  "start": 18.651,
+                  "end": 18.836,
+                  "db": -9,
+                  "f0": 84,
+                  "centroid": 663
+                },
+                {
+                  "text": "السيارة.",
+                  "start": 18.836,
+                  "end": 19.574,
+                  "db": 0,
+                  "f0": 92,
+                  "centroid": 780
+                }
+              ]
+            }
+          ],
+          "direction": "rtl"
+        }
+      }
+    },
+    {
+      "id": "c02037",
+      "start": 20.369,
+      "end": 22.235,
+      "speaker": "ana",
+      "kind": "dialogue",
+      "onCamera": true,
+      "breakout": true,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "Vale",
+              "start": 20.369,
+              "end": 20.624,
+              "db": 0,
+              "f0": 215,
+              "centroid": 2300
+            },
+            {
+              "text": "—",
+              "start": 20.669,
+              "end": 20.856,
+              "db": 0,
+              "f0": 215,
+              "centroid": 2300
+            },
+            {
+              "text": "behind",
+              "start": 20.901,
+              "end": 21.276,
+              "db": 9,
+              "f0": 234,
+              "centroid": 2645
+            },
+            {
+              "text": "you!",
+              "start": 21.321,
+              "end": 21.64,
+              "db": 9,
+              "f0": 234,
+              "centroid": 2645
+            }
+          ]
+        }
+      ],
+      "tracks": {
+        "de": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "Vale",
+                  "start": 20.369,
+                  "end": 20.708,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "—",
+                  "start": 20.708,
+                  "end": 20.793,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "hinter",
+                  "start": 20.793,
+                  "end": 21.301,
+                  "db": 9,
+                  "f0": 234,
+                  "centroid": 2645
+                },
+                {
+                  "text": "dir!",
+                  "start": 21.301,
+                  "end": 21.64,
+                  "db": 9,
+                  "f0": 234,
+                  "centroid": 2645
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ja": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "ヴ",
+                  "start": 20.369,
+                  "end": 20.51,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "ェ",
+                  "start": 20.51,
+                  "end": 20.651,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "イ",
+                  "start": 20.651,
+                  "end": 20.793,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "ル",
+                  "start": 20.793,
+                  "end": 20.934,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "、",
+                  "start": 20.934,
+                  "end": 21.075,
+                  "db": 9,
+                  "f0": 234,
+                  "centroid": 2645
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "後",
+                  "start": 21.075,
+                  "end": 21.216,
+                  "db": 9,
+                  "f0": 234,
+                  "centroid": 2645
+                },
+                {
+                  "text": "ろ",
+                  "start": 21.216,
+                  "end": 21.358,
+                  "db": 9,
+                  "f0": 234,
+                  "centroid": 2645
+                },
+                {
+                  "text": "だ",
+                  "start": 21.358,
+                  "end": 21.499,
+                  "db": 9,
+                  "f0": 234,
+                  "centroid": 2645
+                },
+                {
+                  "text": "！",
+                  "start": 21.499,
+                  "end": 21.64,
+                  "db": 9,
+                  "f0": 234,
+                  "centroid": 2645
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ar": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "فيل",
+                  "start": 20.369,
+                  "end": 20.793,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                },
+                {
+                  "text": "—",
+                  "start": 20.793,
+                  "end": 20.934,
+                  "db": 0,
+                  "f0": 215,
+                  "centroid": 2300
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "خلفك!",
+                  "start": 20.934,
+                  "end": 21.64,
+                  "db": 9,
+                  "f0": 234,
+                  "centroid": 2645
+                }
+              ]
+            }
+          ],
+          "direction": "rtl"
+        }
+      }
+    },
+    {
+      "id": "c02269",
+      "start": 22.685,
+      "end": 25.725,
+      "speaker": "dispatch",
+      "kind": "dialogue",
+      "onCamera": false,
+      "breakout": false,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "All",
+              "start": 22.685,
+              "end": 22.918,
+              "db": 0,
+              "f0": 178,
+              "centroid": 1900
+            },
+            {
+              "text": "units,",
+              "start": 22.963,
+              "end": 23.263,
+              "db": 0,
+              "f0": 178,
+              "centroid": 1900
+            },
+            {
+              "text": "shots",
+              "start": 23.308,
+              "end": 23.585,
+              "db": 0,
+              "f0": 178,
+              "centroid": 1900
+            },
+            {
+              "text": "reported",
+              "start": 23.63,
+              "end": 23.975,
+              "db": 0,
+              "f0": 178,
+              "centroid": 1900
+            },
+            {
+              "text": "at",
+              "start": 24.02,
+              "end": 24.23,
+              "db": 0,
+              "f0": 178,
+              "centroid": 1900
+            },
+            {
+              "text": "the",
+              "start": 24.275,
+              "end": 24.508,
+              "db": 0,
+              "f0": 178,
+              "centroid": 1900
+            },
+            {
+              "text": "east",
+              "start": 24.553,
+              "end": 24.808,
+              "db": 0,
+              "f0": 178,
+              "centroid": 1900
+            },
+            {
+              "text": "gate.",
+              "start": 24.853,
+              "end": 25.13,
+              "db": 0,
+              "f0": 178,
+              "centroid": 1900
+            }
+          ]
+        }
+      ],
+      "tracks": {
+        "de": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "An",
+                  "start": 22.685,
+                  "end": 22.807,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "alle",
+                  "start": 22.807,
+                  "end": 23.052,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "Einheiten,",
+                  "start": 23.052,
+                  "end": 23.663,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "Schüsse",
+                  "start": 23.663,
+                  "end": 24.091,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "am",
+                  "start": 24.091,
+                  "end": 24.213,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "Osttor",
+                  "start": 24.213,
+                  "end": 24.58,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "gemeldet.",
+                  "start": 24.58,
+                  "end": 25.13,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ja": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "全",
+                  "start": 22.685,
+                  "end": 22.873,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "部",
+                  "start": 22.873,
+                  "end": 23.061,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "隊",
+                  "start": 23.061,
+                  "end": 23.249,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "、",
+                  "start": 23.249,
+                  "end": 23.437,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "東",
+                  "start": 23.437,
+                  "end": 23.625,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "門",
+                  "start": 23.625,
+                  "end": 23.813,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "で",
+                  "start": 23.813,
+                  "end": 24.002,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "発",
+                  "start": 24.002,
+                  "end": 24.19,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "砲",
+                  "start": 24.19,
+                  "end": 24.378,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "の",
+                  "start": 24.378,
+                  "end": 24.566,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "報",
+                  "start": 24.566,
+                  "end": 24.754,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "告",
+                  "start": 24.754,
+                  "end": 24.942,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "。",
+                  "start": 24.942,
+                  "end": 25.13,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ar": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "إلى",
+                  "start": 22.685,
+                  "end": 22.841,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "جميع",
+                  "start": 22.841,
+                  "end": 23.049,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "الوحدات،",
+                  "start": 23.049,
+                  "end": 23.465,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "بلاغ",
+                  "start": 23.465,
+                  "end": 23.673,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "عن",
+                  "start": 23.673,
+                  "end": 23.777,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "إطلاق",
+                  "start": 23.777,
+                  "end": 24.038,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "نار",
+                  "start": 24.038,
+                  "end": 24.194,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "عند",
+                  "start": 24.194,
+                  "end": 24.35,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "البوابة",
+                  "start": 24.35,
+                  "end": 24.714,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                },
+                {
+                  "text": "الشرقية.",
+                  "start": 24.714,
+                  "end": 25.13,
+                  "db": 0,
+                  "f0": 178,
+                  "centroid": 1900
+                }
+              ]
+            }
+          ],
+          "direction": "rtl"
+        }
+      }
+    },
+    {
+      "id": "c02633",
+      "start": 26.325,
+      "end": 28.143,
+      "speaker": "bystander",
+      "kind": "dialogue",
+      "onCamera": true,
+      "breakout": false,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "I",
+              "start": 26.325,
+              "end": 26.513,
+              "db": 0,
+              "f0": 240,
+              "centroid": 2800
+            },
+            {
+              "text": "didn’t",
+              "start": 26.558,
+              "end": 26.858,
+              "db": -15,
+              "f0": 204,
+              "centroid": 2380
+            },
+            {
+              "text": "see",
+              "start": 26.903,
+              "end": 27.135,
+              "db": 0,
+              "f0": 240,
+              "centroid": 2800
+            },
+            {
+              "text": "anything.",
+              "start": 27.18,
+              "end": 27.548,
+              "db": -15,
+              "f0": 204,
+              "centroid": 2380
+            }
+          ]
+        }
+      ],
+      "tracks": {
+        "de": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "Ich",
+                  "start": 26.325,
+                  "end": 26.5,
+                  "db": 0,
+                  "f0": 240,
+                  "centroid": 2800
+                },
+                {
+                  "text": "habe",
+                  "start": 26.5,
+                  "end": 26.733,
+                  "db": -15,
+                  "f0": 204,
+                  "centroid": 2380
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "nichts",
+                  "start": 26.733,
+                  "end": 27.082,
+                  "db": 0,
+                  "f0": 240,
+                  "centroid": 2800
+                },
+                {
+                  "text": "gesehen.",
+                  "start": 27.082,
+                  "end": 27.548,
+                  "db": -15,
+                  "f0": 204,
+                  "centroid": 2380
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ja": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "何",
+                  "start": 26.325,
+                  "end": 26.478,
+                  "db": 0,
+                  "f0": 240,
+                  "centroid": 2800
+                },
+                {
+                  "text": "も",
+                  "start": 26.478,
+                  "end": 26.631,
+                  "db": -15,
+                  "f0": 204,
+                  "centroid": 2380
+                },
+                {
+                  "text": "見",
+                  "start": 26.631,
+                  "end": 26.784,
+                  "db": -15,
+                  "f0": 204,
+                  "centroid": 2380
+                },
+                {
+                  "text": "て",
+                  "start": 26.784,
+                  "end": 26.937,
+                  "db": -15,
+                  "f0": 204,
+                  "centroid": 2380
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "い",
+                  "start": 26.937,
+                  "end": 27.089,
+                  "db": 0,
+                  "f0": 240,
+                  "centroid": 2800
+                },
+                {
+                  "text": "な",
+                  "start": 27.089,
+                  "end": 27.242,
+                  "db": -15,
+                  "f0": 204,
+                  "centroid": 2380
+                },
+                {
+                  "text": "い",
+                  "start": 27.242,
+                  "end": 27.395,
+                  "db": -15,
+                  "f0": 204,
+                  "centroid": 2380
+                },
+                {
+                  "text": "。",
+                  "start": 27.395,
+                  "end": 27.548,
+                  "db": -15,
+                  "f0": 204,
+                  "centroid": 2380
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ar": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "لم",
+                  "start": 26.325,
+                  "end": 26.597,
+                  "db": 0,
+                  "f0": 240,
+                  "centroid": 2800
+                },
+                {
+                  "text": "أر",
+                  "start": 26.597,
+                  "end": 26.869,
+                  "db": -15,
+                  "f0": 204,
+                  "centroid": 2380
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "شيئًا.",
+                  "start": 26.869,
+                  "end": 27.548,
+                  "db": -15,
+                  "f0": 204,
+                  "centroid": 2380
+                }
+              ]
+            }
+          ],
+          "direction": "rtl"
+        }
+      }
+    },
+    {
+      "id": "c02859",
+      "start": 28.593,
+      "end": 30.245,
+      "speaker": "vale",
+      "kind": "dialogue",
+      "onCamera": true,
+      "breakout": false,
+      "lines": [
+        {
+          "tokens": [
+            {
+              "text": "Then",
+              "start": 28.593,
+              "end": 28.848,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "start",
+              "start": 28.893,
+              "end": 29.17,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            },
+            {
+              "text": "remembering.",
+              "start": 29.215,
+              "end": 29.65,
+              "db": 0,
+              "f0": 118,
+              "centroid": 1250
+            }
+          ]
+        }
+      ],
+      "tracks": {
+        "de": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "Dann",
+                  "start": 28.593,
+                  "end": 28.756,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "fang",
+                  "start": 28.756,
+                  "end": 28.918,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "an,",
+                  "start": 28.918,
+                  "end": 29.04,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "dich",
+                  "start": 29.04,
+                  "end": 29.203,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "zu",
+                  "start": 29.203,
+                  "end": 29.284,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "erinnern.",
+                  "start": 29.284,
+                  "end": 29.65,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ja": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "で",
+                  "start": 28.593,
+                  "end": 28.699,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "は",
+                  "start": 28.699,
+                  "end": 28.804,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "思",
+                  "start": 28.804,
+                  "end": 28.91,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "い",
+                  "start": 28.91,
+                  "end": 29.016,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "出",
+                  "start": 29.016,
+                  "end": 29.121,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "し",
+                  "start": 29.121,
+                  "end": 29.227,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "始",
+                  "start": 29.227,
+                  "end": 29.333,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "め",
+                  "start": 29.333,
+                  "end": 29.439,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "ろ",
+                  "start": 29.439,
+                  "end": 29.544,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "。",
+                  "start": 29.544,
+                  "end": 29.65,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                }
+              ]
+            }
+          ],
+          "direction": "ltr"
+        },
+        "ar": {
+          "lines": [
+            {
+              "tokens": [
+                {
+                  "text": "إذن",
+                  "start": 28.593,
+                  "end": 28.791,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "ابدأ",
+                  "start": 28.791,
+                  "end": 29.055,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                }
+              ]
+            },
+            {
+              "tokens": [
+                {
+                  "text": "في",
+                  "start": 29.055,
+                  "end": 29.188,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                },
+                {
+                  "text": "التذكر.",
+                  "start": 29.188,
+                  "end": 29.65,
+                  "db": 0,
+                  "f0": 118,
+                  "centroid": 1250
+                }
+              ]
+            }
+          ],
+          "direction": "rtl"
+        }
+      }
+    }
+  ]
+}
