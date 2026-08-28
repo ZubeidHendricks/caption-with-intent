@@ -406,6 +406,49 @@ that the harness names the one that broke and stays quiet otherwise.
 This does not make the pipeline work on a real film. It makes the pipeline
 *say* when it doesn't.
 
+### The first real film
+
+Run against four minutes of *Night of the Living Dead* (1968, public domain),
+with no transcript, so cues were segmented from voicing alone. The first thing
+it reported was that it could not be trusted:
+
+```
+! Cues were segmented from the audio because no manifest was given, so these
+  are windows of voiced audio rather than utterances.
+! 88% of the runtime landed inside a provisional cue. Voicing detection is
+  bracketing music and effects as speech, so the per-cue numbers describe the
+  segmenter as much as the film.
+! No usable floor between the cues, so the signal-to-mix check was skipped
+  rather than guessed.
+```
+
+That is the harness working. An earlier version returned a confident
+"unreliable — most cues violate the assumptions", which was a statement about
+its own segmentation, not about the film: it had merged a full minute into one
+"utterance" and computed *negative* signal-to-noise, which is impossible unless
+the floor estimate has nothing to stand on. Both are guarded now.
+
+What survives without a transcript is the dynamic-range question, which needs no
+cues at all:
+
+| | *Night of the Living Dead* | synthetic fixture |
+|---|---|---|
+| middle 90% of voiced speech | **2.06%** of frame height | 7.26% |
+| full range including tails | 3.00–8.34% | 3.00–10.26% |
+| median aperiodicity, voiced | 0.203 | 0.003 |
+
+So on real material, ordinary dialogue moves within about **two percent of
+frame height** — roughly 4% to 6% — and the spec's 3–12% range is reached only
+by the extreme tails. The synthetic fixture exercises three times that spread,
+which is precisely why it never raised the question.
+
+Whether a 2% swing is perceptible to a viewer is not something this repo can
+answer by measurement; it is what the DHH study is for. **One four-minute
+segment of one 1968 mono film with an optical soundtrack is not evidence about
+cinema in general** — that format is narrow by construction, and a modern
+mix would differ. It is one real data point where there were none.
+
+
 ## Switching subtitle language while you watch
 
 Loudness, pitch and timbre are properties of the actor's performance. Who spoke

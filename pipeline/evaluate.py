@@ -63,6 +63,11 @@ READING_RATE_MAX = 21.0
 #: Within one speaker, the ratio between the 90th and 10th percentile f0 that
 #: indicates octave errors rather than expressive range.
 F0_RATIO_MAX = 1.9
+#: Longest provisional cue. Beyond this a span is a scene, not an utterance.
+MAX_PROVISIONAL_S = 8.0
+#: The floor needs something to measure. Below this share of the film outside
+#: any cue, there is no "between the dialogue" left to characterise.
+FLOOR_MIN_SHARE = 0.15
 
 
 def size_from_db(db: float) -> float:
@@ -101,7 +106,7 @@ class CueReport:
     voiced_ratio: float
     aperiodicity: float
     flatness: float
-    snr_db: float
+    snr_db: float | None
     reading_rate: float
     #: 0-1. Not a probability: a blunt statement of how many assumptions held.
     confidence: float
@@ -111,6 +116,9 @@ class CueReport:
 @dataclass
 class FilmReport:
     media: str
+    #: True when cues were segmented from the audio because no manifest was
+    #: given. The acoustic findings hold; anything about text does not.
+    provisional: bool
     manifest: str
     duration_s: float
     cues: int
@@ -144,7 +152,7 @@ def spectral_flatness(x: np.ndarray, sr: int, n: int = 1024) -> float:
     return float(np.median(out)) if out else 1.0
 
 
-def _floor_db(frames: Frames, spans: list[tuple[float, float]]) -> float:
+def _floor_db(frames: Frames, spans: list[tuple[float, float]]) -> float | None:
     """
     Level of everything that is not a cue: room tone, score, effects.
 
@@ -158,9 +166,67 @@ def _floor_db(frames: Frames, spans: list[tuple[float, float]]) -> float:
         i1 = min(len(mask), int(e / frames.hop_s) + 1)
         mask[i0:i1] = False
     off = frames.rms_db[mask]
-    if not len(off):
-        return float(np.percentile(frames.rms_db, 10))
+    # With almost everything inside a cue there is no floor to speak of, and
+    # the median of what little remains can sit *above* the dialogue — which
+    # then reports as negative signal-to-noise and reads like a damning fact
+    # about the film. It is not: it is the measurement having nothing to stand
+    # on. Return None and let the caller drop the check.
+    if len(off) < FLOOR_MIN_SHARE * len(mask):
+        return None
     return float(np.median(off))
+
+
+def provisional_cues(frames: Frames, min_s: float = 0.35, gap_s: float = 0.35) -> list[dict]:
+    """
+    Segment by voicing when there is no transcript yet.
+
+    The point of this harness is to tell you whether a soundtrack is worth
+    transcribing before you pay to transcribe it, and that answer cannot
+    require a transcript. Voiced runs are not cues — they ignore who is
+    speaking and they will happily bracket a sung note — but the acoustic
+    questions being asked here are about windows of audio, not about words.
+
+    Reported as `provisional` so nothing downstream mistakes these for
+    editorial decisions.
+    """
+    voiced = frames.voiced
+    spans, start = [], None
+    for i, v in enumerate(voiced):
+        if v and start is None:
+            start = i
+        elif not v and start is not None:
+            spans.append((start, i))
+            start = None
+    if start is not None:
+        spans.append((start, len(voiced)))
+
+    # Bridge short unvoiced gaps: stops and fricatives inside a word are not
+    # voiced, so raw runs shatter every utterance into syllables.
+    merged: list[list[int]] = []
+    for a, b in spans:
+        if merged and (a - merged[-1][1]) * frames.hop_s < gap_s:
+            merged[-1][1] = b
+        else:
+            merged.append([a, b])
+
+    # Cap the length. Bridging gaps will happily weld a whole scene into one
+    # span, and a 60-second "utterance" measures the segmenter rather than the
+    # film — every statistic over it is an average of speech, score and silence.
+    capped: list[tuple[int, int]] = []
+    max_frames = int(MAX_PROVISIONAL_S / frames.hop_s)
+    for a, b in merged:
+        while b - a > max_frames:
+            capped.append((a, a + max_frames))
+            a += max_frames
+        capped.append((a, b))
+
+    return [
+        {"id": f"p{i:04d}", "start": round(a * frames.hop_s, 3),
+         "end": round(b * frames.hop_s, 3), "kind": "dialogue",
+         "speaker": None, "provisional": True, "lines": []}
+        for i, (a, b) in enumerate(capped)
+        if (b - a) * frames.hop_s >= min_s
+    ]
 
 
 def evaluate(media: Path, manifest: dict, workdir: Path | None = None) -> FilmReport:
@@ -171,6 +237,9 @@ def evaluate(media: Path, manifest: dict, workdir: Path | None = None) -> FilmRe
     duration = len(x) / sr
 
     cues = manifest.get("cues", [])
+    provisional = not cues
+    if provisional:
+        cues = provisional_cues(frames)
     spans = [(c["start"], c["end"]) for c in cues]
     floor = _floor_db(frames, spans)
 
@@ -190,7 +259,7 @@ def evaluate(media: Path, manifest: dict, workdir: Path | None = None) -> FilmRe
                         else float("nan"))
         flatness = spectral_flatness(seg, sr) if len(seg) else 1.0
         level = float(np.percentile(frames.rms_db[i0:i1], 75))
-        snr = level - floor
+        snr = None if floor is None else level - floor
         dur = max(e - s, 1e-6)
         rate = len(text) / dur
 
@@ -201,17 +270,18 @@ def evaluate(media: Path, manifest: dict, workdir: Path | None = None) -> FilmRe
                 flags.append(f"only {voiced_ratio:.0%} voiced — pitch and weight are guesses")
             if flatness > FLATNESS_MAX:
                 flags.append(f"spectrally flat ({flatness:.2f}) — dense mix or noise, not a clear voice")
-            if snr < SNR_MIN_DB:
+            if snr is not None and snr < SNR_MIN_DB:
                 flags.append(f"only {snr:.1f} dB above the surrounding mix — level reflects the bed")
             if not math.isnan(aperiodicity) and aperiodicity > APERIODIC_MAX:
                 flags.append(f"aperiodic ({aperiodicity:.2f}) — f0 unreliable here")
-            if rate > READING_RATE_MAX:
+            if text and rate > READING_RATE_MAX:
                 flags.append(f"{rate:.0f} characters/second — too fast to read")
 
         # Confidence is the share of the checks that a dialogue cue passed. Four
         # acoustic checks; the reading rate is a caption defect, not an analysis
         # one, so it does not reduce trust in the measurement.
-        acoustic = 4
+        # One fewer check to fail when the floor could not be measured.
+        acoustic = 4 if floor is not None else 3
         failed = len([f for f in flags if "characters/second" not in f])
         confidence = 1.0 if kind != "dialogue" else max(0.0, (acoustic - failed) / acoustic)
 
@@ -219,7 +289,8 @@ def evaluate(media: Path, manifest: dict, workdir: Path | None = None) -> FilmRe
             id=str(cue.get("id", i)), start=s, end=e, speaker=cue.get("speaker"),
             kind=kind, text=text[:80], voiced_ratio=round(voiced_ratio, 3),
             aperiodicity=None if math.isnan(aperiodicity) else round(aperiodicity, 3),
-            flatness=round(flatness, 3), snr_db=round(snr, 1),
+            flatness=round(flatness, 3),
+            snr_db=None if snr is None else round(snr, 1),
             reading_rate=round(rate, 1), confidence=round(confidence, 2), flags=flags,
         ))
 
@@ -270,6 +341,23 @@ def evaluate(media: Path, manifest: dict, workdir: Path | None = None) -> FilmRe
             f"{len(overlaps)} places where two speakers overlap. Segmentation assumes one "
             "voice at a time, so both readings there describe the sum of two people.")
 
+    if provisional:
+        findings.insert(0,
+            "Cues were segmented from the audio because no manifest was given, so these "
+            "are windows of voiced audio rather than utterances. The acoustic readings "
+            "are real; anything implying who spoke or what was said is not.")
+        coverage = sum(c.end - c.start for c in per_cue) / duration if duration else 0
+        if coverage > 0.6:
+            findings.append(
+                f"{coverage:.0%} of the runtime landed inside a provisional cue. Voicing "
+                "detection is bracketing music and effects as speech, so the per-cue "
+                "numbers below describe the segmenter as much as the film. Supply a "
+                "manifest for a reading that means anything about the dialogue.")
+    if floor is None:
+        findings.append(
+            "No usable floor between the cues, so the signal-to-mix check was skipped "
+            "rather than guessed. Every cue is scored out of the remaining three checks.")
+
     suspect = [c for c in dialogue if c.confidence < 0.75]
     if dialogue and len(suspect) / len(dialogue) > 0.3:
         findings.append(
@@ -290,7 +378,8 @@ def evaluate(media: Path, manifest: dict, workdir: Path | None = None) -> FilmRe
         verdict = "the assumptions hold across this film"
 
     return FilmReport(
-        media=str(media), manifest=manifest.get("meta", {}).get("title", ""),
+        media=str(media), provisional=provisional,
+        manifest=manifest.get("meta", {}).get("title", ""),
         duration_s=round(duration, 2), cues=len(cues), dialogue_cues=len(dialogue),
         speech_coverage=round(speech / duration, 3) if duration else 0.0,
         trustworthy=trustworthy, suspect=len(suspect),

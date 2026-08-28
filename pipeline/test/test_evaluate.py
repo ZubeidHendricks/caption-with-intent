@@ -193,3 +193,48 @@ class TestDetection(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestHonestyGuards(unittest.TestCase):
+    """
+    The harness must not report its own limitations as facts about the film.
+
+    Both cases here were found by running it on a real 1968 feature, where it
+    produced a confident "unreliable" verdict that was mostly an artifact of
+    segmenting without a transcript.
+    """
+
+    def setUp(self):
+        self.x, self.sr, self.manifest = load()
+
+    def test_provisional_cues_are_capped(self):
+        # Gap bridging welded a whole minute of a real film into one "cue".
+        # Every statistic over such a span averages speech, score and silence.
+        from acoustics import analyze_frames
+        from evaluate import provisional_cues, MAX_PROVISIONAL_S
+        frames = analyze_frames(self.x, self.sr)
+        cues = provisional_cues(frames)
+        self.assertTrue(cues)
+        longest = max(c["end"] - c["start"] for c in cues)
+        self.assertLessEqual(longest, MAX_PROVISIONAL_S + 0.05, "a cue this long is a scene")
+
+    def test_an_unmeasurable_floor_is_skipped_not_guessed(self):
+        # When nearly everything is inside a cue there is no "between the
+        # dialogue" left. The median of the remainder can sit above the
+        # dialogue, reporting negative signal-to-noise — which reads as a
+        # damning fact about the mix and is actually a broken measurement.
+        from acoustics import analyze_frames
+        from evaluate import _floor_db
+        frames = analyze_frames(self.x, self.sr)
+        whole = [(0.0, len(self.x) / self.sr)]
+        self.assertIsNone(_floor_db(frames, whole), "no floor to measure")
+        self.assertIsNotNone(_floor_db(frames, [(0.0, 1.0)]), "plenty of floor")
+
+    def test_a_transcript_free_run_says_so_first(self):
+        r = run_eval(FIXTURE, {}, workdir=HERE)
+        self.assertTrue(r.provisional)
+        self.assertIn("segmented from the audio", r.findings[0],
+                      "the caveat has to come before the numbers, not after")
+        for c in r.per_cue:
+            self.assertFalse(any("characters/second" in f for f in c["flags"]),
+                             "reading rate is meaningless with no text")
