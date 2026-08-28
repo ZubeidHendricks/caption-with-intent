@@ -354,6 +354,58 @@ picture, are not decidable from a manifest — those criteria are reported as
 **needs review** rather than quietly passing. A green report that hid an
 unanswerable question would be worse than no report.
 
+## Whether to trust the analysis of a given film
+
+Everything in the pipeline was validated on synthesised speech: harmonic stacks
+at known pitch, isolated, silent between words, with exact ground truth. That
+is the right way to test a mapping and it says nothing about a real soundtrack,
+where dialogue arrives under a score, cut with effects, compressed by a
+broadcast chain and overlapped by a second actor.
+
+There is no ground truth for a real film, so this does not score accuracy. It
+checks whether the conditions the mapping *assumes* actually hold:
+
+```bash
+chorus evaluate film.mp4 film.cwi.json
+```
+
+```
+  2/6 dialogue cues trustworthy (33%) · 15.2s · 82% speech
+  type size spans 5.33% of frame height
+
+  ! 4 of 6 dialogue cues fail an acoustic assumption. This is a mixed
+    soundtrack, not a dialogue stem. Analyse the stem if you have one; the
+    typography here is partly describing music.
+
+  least trustworthy cues
+  0.25 0.5s MID        You said the yard was empty
+         only 0% voiced — pitch and weight are guesses
+         only 1.1 dB above the surrounding mix — level reflects the bed
+         aperiodic (0.76) — f0 unreliable here
+```
+
+It exits non-zero when most cues are untrustworthy, so it belongs in a pipeline
+step rather than in a warning nobody reads.
+
+What it checks, and why each one matters:
+
+| assumption | what breaks it | consequence if unchecked |
+|---|---|---|
+| the window is voiced speech | a scored scene | size and weight describe the composer's work |
+| there is dynamic range to map | broadcast compression | every word renders the same size; the layer conveys nothing |
+| pitch clusters within a voice | octave errors, music | one character's weight moves at random |
+| one speaker at a time | overlapping dialogue | both readings describe the sum of two people |
+| cues are readable | over-dense subtitling | flagged, but does not reduce trust — a caption defect, not a measurement one |
+
+**A detector only ever run on clean input is not a detector**, so the tests take
+the clean fixture and break one assumption at a time in the way a real mix
+breaks it — a music bed under the dialogue, a flattened dynamic range, an
+octave error in half of one speaker's lines, a genuine overlap — and assert
+that the harness names the one that broke and stays quiet otherwise.
+
+This does not make the pipeline work on a real film. It makes the pipeline
+*say* when it doesn't.
+
 ## Switching subtitle language while you watch
 
 Loudness, pitch and timbre are properties of the actor's performance. Who spoke

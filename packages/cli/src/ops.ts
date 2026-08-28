@@ -280,6 +280,41 @@ export async function checkPipelineEnv(): Promise<{ ok: boolean; python: string;
   return { ok: numpy && ffmpeg, python: py, numpy, ffmpeg, detail };
 }
 
+/**
+ * How far the analysis of this media can be trusted.
+ *
+ * Every other command assumes the acoustics it reads are the actor's voice.
+ * On a real soundtrack that is often untrue — a scored scene measures the
+ * score, a compressed master has no dynamic range left to map — and nothing
+ * downstream can tell, because a confident wrong number looks exactly like a
+ * confident right one. This is the command that says which.
+ */
+export async function evaluateMedia(media: string, manifest: string): Promise<EvaluationReport> {
+  requireFile(media, 'media');
+  requireFile(manifest, 'manifest');
+  const outText = await python('evaluate.py', [abs(media), abs(manifest)]);
+  return JSON.parse(outText) as EvaluationReport;
+}
+
+export interface EvaluationReport {
+  media: string;
+  duration_s: number;
+  cues: number;
+  dialogue_cues: number;
+  speech_coverage: number;
+  trustworthy: number;
+  suspect: number;
+  size_spread_pct: number;
+  overlaps: string[];
+  findings: string[];
+  verdict: string;
+  per_cue: Array<{
+    id: string; start: number; end: number; speaker: string | null; kind: string;
+    text: string; voiced_ratio: number; aperiodicity: number | null; flatness: number;
+    snr_db: number; reading_rate: number; confidence: number; flags: string[];
+  }>;
+}
+
 async function python(script: string, args: string[]): Promise<string> {
   const pipeline = findPipeline();
   const env = await checkPipelineEnv();

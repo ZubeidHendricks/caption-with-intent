@@ -4,6 +4,7 @@ import { basename, resolve } from 'node:path';
 import {
   CwiError, readManifest, writeManifest, assign, validateManifest, stats,
   auditPalette, exportCaptions, resolveTypography, analyzeMedia, buildScene, doctor,
+  evaluateMedia,
   type ExportFormat,
 } from './ops.js';
 import { startPreview } from './preview.js';
@@ -52,6 +53,7 @@ ${bold('Working on a manifest')}
   cwi validate <manifest>             structural + accessibility audit
   cwi stats <manifest>                per-character screen time
   chorus export <manifest> --format vtt  emit a delivery format (vtt | ass)
+  chorus evaluate <media> <manifest>  how far this film's analysis can be trusted
   chorus languages <manifest>         subtitle languages, and their coverage
   chorus add-language <m> --lang de --from de.srt
                                       attach a translation as a switchable track
@@ -74,6 +76,19 @@ ${bold('Common flags')}
   --quiet           errors only
 
 Run ${cyan('cwi <command> --help')} for detail on any command.`;
+
+/** Wrap prose at `width`, indenting continuations. */
+function wrap(text: string, width: number, indent: string): string {
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let line = '';
+  for (const w of words) {
+    if ((line + ' ' + w).trim().length > width) { lines.push(line.trim()); line = w; }
+    else line += ' ' + w;
+  }
+  if (line.trim()) lines.push(line.trim());
+  return lines.join('\n' + indent);
+}
 
 function fail(e: unknown): never {
   if (e instanceof CwiError) {
@@ -287,6 +302,42 @@ const commands: Record<string, (a: Args) => Promise<void> | void> = {
       }
       console.log(`  → ${dest}`);
     });
+  },
+
+  async evaluate(a) {
+    const [media, manifest] = a.positional;
+    if (!media || !manifest) {
+      throw new CwiError('evaluate needs a media file and a manifest.',
+        'chorus evaluate film.mp4 film.cwi.json');
+    }
+    const r = await evaluateMedia(media, manifest);
+    out(a, r, () => {
+      const pct = r.dialogue_cues ? Math.round((r.trustworthy / r.dialogue_cues) * 100) : 0;
+      const tint = pct >= 90 ? grn : pct >= 60 ? yel : red;
+      console.log(`  ${tint(`${r.trustworthy}/${r.dialogue_cues} dialogue cues trustworthy`)}` +
+        dim(` (${pct}%) · ${r.duration_s.toFixed(1)}s · ${Math.round(r.speech_coverage * 100)}% speech`));
+      console.log(`  ${dim('type size spans')} ${r.size_spread_pct.toFixed(2)}% ${dim('of frame height')}\n`);
+
+      for (const f of r.findings) {
+        // Wrapped by hand: these are the sentences someone acts on, and a
+        // terminal that hard-wraps them mid-clause buries the instruction.
+        console.log(`  ${yel('!')} ${wrap(f, 76, '    ')}`);
+      }
+      const worst = r.per_cue.filter((c) => c.flags.length)
+        .sort((x, y) => x.confidence - y.confidence).slice(0, 6);
+      if (worst.length) {
+        console.log(`\n  ${dim('least trustworthy cues')}`);
+        for (const c of worst) {
+          console.log(`  ${red(c.confidence.toFixed(2))} ${dim(`${c.start.toFixed(1)}s`)} ` +
+            `${(c.speaker ?? c.kind).padEnd(10)} ${dim(c.text.slice(0, 40))}`);
+          for (const f of c.flags) console.log(`         ${dim(f)}`);
+        }
+      }
+      console.log(`\n  ${r.suspect === 0 ? grn(r.verdict) : yel(r.verdict)}`);
+    });
+    // A film whose analysis is mostly untrustworthy should fail a pipeline
+    // step, not print a warning nobody reads.
+    if (r.dialogue_cues && r.suspect / r.dialogue_cues > 0.5) process.exitCode = 1;
   },
 
   async doctor(a) {

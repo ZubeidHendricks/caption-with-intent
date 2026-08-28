@@ -17,7 +17,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json && node -e \"require('fs').chmodSync('dist/cli.js', 0o755)\"",
     "prepublishOnly": "npm run build",
-    "prepack": "node scripts/bundle-assets.mjs"
+    "prepack": "node scripts/bundle-assets.mjs",
+    "postpack": "node scripts/clean-assets.mjs"
   },
   "dependencies": {
     "@corerus/chorus-core": "^0.1.1"

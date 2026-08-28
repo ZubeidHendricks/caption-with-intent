@@ -65,6 +65,10 @@ class Frames:
     centroid: np.ndarray    # Hz per frame
     hop_s: float
     voiced: np.ndarray      # bool per frame
+    # YIN's d' at the chosen lag: 0 is perfectly periodic, 1 is noise. Kept
+    # rather than discarded because it is the honest confidence signal for
+    # every reading derived from this frame — see evaluate.py.
+    aperiodicity: np.ndarray | None = None
 
 
 def _frame(x: np.ndarray, n: int, hop: int) -> np.ndarray:
@@ -126,9 +130,8 @@ def analyze_frames(
     gate = max(float(rms_db.max()) - 40.0, -55.0)
     voiced = (aperiodicity < 0.45) & (rms_db > gate) & (f0 >= f0_min) & (f0 <= f0_max)
     f0 = np.where(voiced, f0, 0.0)
-
-    f0 = np.where(voiced, f0, 0.0)
-    return Frames(rms_db=rms_db, f0=f0, centroid=centroid, hop_s=hop_s, voiced=voiced)
+    return Frames(rms_db=rms_db, f0=f0, centroid=centroid, hop_s=hop_s,
+                  voiced=voiced, aperiodicity=aperiodicity)
 
 
 # --------------------------------------------------------------------------
