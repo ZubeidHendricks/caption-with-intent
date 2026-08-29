@@ -126,3 +126,24 @@ test('a manifest posted back is kept for export', async () => {
     { 'Content-Type': 'application/json' });
   assert.ok([200, 500].includes(res.status));
 });
+
+test('the page script is valid JavaScript', async () => {
+  // The page is a string built inside a template literal inside TypeScript.
+  // Three levels of quoting, and an unescaped apostrophe in one of them —
+  // "the frame's fullscreen" — silently broke the entire app: the module failed
+  // to parse, so no dropzones were created and nothing on the page did
+  // anything. Every other test still passed, because they check that the HTML
+  // contains the right text, and text is exactly what a broken script still is.
+  const page = await (await fetch(base + '/')).text();
+  const open = page.lastIndexOf('<script type="module">');
+  assert.ok(open > 0, 'the page has a module script');
+  const body = page.slice(open + '<script type="module">'.length);
+  const source = body.slice(0, body.indexOf('</script>'));
+
+  // Two things a Function body cannot hold but a module legitimately can:
+  // import statements, and top-level await. Strip the first, wrap for the
+  // second. Neither is what breaks; quoting is.
+  const withoutImports = source.replace(/^\s*import\s[^;]+;/gm, '');
+  assert.doesNotThrow(() => new Function(`return (async () => {${withoutImports}})`),
+    'the page script must parse, or the app is inert');
+});

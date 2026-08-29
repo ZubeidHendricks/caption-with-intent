@@ -350,7 +350,7 @@ document.addEventListener('fullscreenchange', async () => {
 // the same way, so tell the truth rather than silently dropping the captions.
 $('video').addEventListener('webkitbeginfullscreen', () => {
   $('hint').innerHTML = '<span class="warn">Safari puts the video into its own '
-    + 'fullscreen, which leaves the captions behind. Use the frame\'s fullscreen '
+    + "fullscreen, which leaves the captions behind. Use the frame's fullscreen "
     + 'or a Chromium browser.</span>';
 });
 </script>
