@@ -516,3 +516,60 @@ test('a language the film does not carry falls back instead of throwing', async 
   assert.deepEqual(s.texts, ['The', 'gate', 'OPENED']);
   assert.equal(await page.evaluate(() => window.__cwiRenderer.subtitleLanguage ?? null), null);
 });
+
+// --- vertical video --------------------------------------------------------
+
+/**
+ * Type size is a percentage of frame *height*, which quietly assumes a
+ * landscape frame. On a portrait video the frame is tall and narrow, so the
+ * spec's own baseline produces type far too wide for the picture, and a line
+ * set `nowrap` simply runs off the side. Vertical video is most of what gets
+ * captioned now, so this is not an edge case.
+ */
+const PORTRAIT_W = 608, PORTRAIT_H = 1080;
+
+const LONG = {
+  cwi: '1.0',
+  meta: { title: 'Portrait', language: 'en', direction: 'ltr' },
+  characters: [{ id: 'a', name: 'Speaker', tier: 'main', color: '#9E60FB', rank: 0 }],
+  cues: [{
+    id: 'c1', start: 0, end: 8, speaker: 'a', kind: 'dialogue', onCamera: true,
+    lines: [{ tokens: 'I have been programmed to think in a certain way'.split(' ')
+      .map((text, i) => ({ text, start: i * 0.3, end: i * 0.3 + 0.25, db: 0, f0: 180, centroid: 1200 })) }],
+  }],
+};
+
+test('a caption too wide for a portrait frame is scaled to fit', async () => {
+  const portrait = await browser.newPage({ viewport: { width: PORTRAIT_W, height: PORTRAIT_H } });
+  try {
+    await portrait.goto(`${preview.url}render?w=${PORTRAIT_W}&h=${PORTRAIT_H}`, { waitUntil: 'load' });
+    await portrait.waitForFunction('window.__cwiReady === true', null, { timeout: 45000 });
+    await portrait.evaluate((m) => window.__cwiReload(m), LONG);
+    const fit = await portrait.evaluate(() => {
+      window.__cwiSeek(1.5);
+      const root = document.querySelector('.cwi-root').getBoundingClientRect();
+      const line = document.querySelector('.cwi-line').getBoundingClientRect();
+      return {
+        overflowRight: Math.round(line.right - root.right),
+        overflowLeft: Math.round(root.left - line.left),
+        fontPx: parseFloat(getComputedStyle(document.querySelector('.cwi-tok')).fontSize),
+      };
+    });
+    assert.ok(fit.overflowRight <= 0, `line runs ${fit.overflowRight}px past the right edge`);
+    assert.ok(fit.overflowLeft <= 0, `line runs ${fit.overflowLeft}px past the left edge`);
+    // Scaled down from the 5% baseline, which would be 54px at this height.
+    assert.ok(fit.fontPx < (PORTRAIT_H * 0.05) - 1,
+      `${fit.fontPx}px was not reduced from the ${PORTRAIT_H * 0.05}px baseline`);
+  } finally {
+    await portrait.close();
+  }
+});
+
+test('a landscape caption that fits is left at exactly the spec size', async () => {
+  // The scaling must not touch material the spec was written against.
+  await page.evaluate((m) => window.__cwiReload(m), MANIFEST);
+  const s = await at(0.6);
+  for (const px of s.sizes) {
+    assert.ok(Math.abs(px - FRAME_H * 0.05) < 1, `${px}px, expected ~${FRAME_H * 0.05}`);
+  }
+});

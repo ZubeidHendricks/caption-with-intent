@@ -60,6 +60,12 @@ export function studioHtml(): string {
     aspect-ratio: 16/9; max-height: 62vh; margin: 0 auto;
   }
   .frame video { width: 100%; height: 100%; display: block; }
+  /* Fullscreen applies to the frame, not the video, so the captions come with
+     it. Without these the frame keeps its 16/9 box and sits in the middle of a
+     black screen. */
+  .frame:fullscreen { aspect-ratio: auto; max-height: none; width: 100vw; height: 100vh;
+    border-radius: 0; display: flex; align-items: center; justify-content: center; }
+  .frame:fullscreen video { width: 100%; height: 100%; object-fit: contain; }
   .note { color: var(--dim); font-size: 13px; margin: 8px 0 0; }
   .bad { color: var(--bad); } .ok { color: var(--ok); } .warn { color: var(--warn); }
   .bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; margin-top: 10px; }
@@ -322,6 +328,31 @@ async function doExport(alpha) {
 }
 $('export').onclick = () => doExport(false);
 $('exportAlpha').onclick = () => doExport(true);
+
+// --- fullscreen -------------------------------------------------------------
+// The browser's own fullscreen button fullscreens the <video> element. Our
+// captions are a sibling of it, not a child, so they are left behind in the
+// hidden page and the viewer gets a full-screen video with no captions at all
+// — the one moment they most want them. Catch it, back out, and fullscreen the
+// frame instead, which contains both.
+document.addEventListener('fullscreenchange', async () => {
+  const video = $('video');
+  if (document.fullscreenElement === video) {
+    await document.exitFullscreen();
+    await $('frame').requestFullscreen();
+  }
+  // The picture box changes size; the renderer re-measures on its own via the
+  // ResizeObserver, but the video element needs a beat to settle first.
+  setTimeout(() => state.renderer?.seek($('video').currentTime), 60);
+});
+
+// Safari fullscreens video through a separate path that cannot be intercepted
+// the same way, so tell the truth rather than silently dropping the captions.
+$('video').addEventListener('webkitbeginfullscreen', () => {
+  $('hint').innerHTML = '<span class="warn">Safari puts the video into its own '
+    + 'fullscreen, which leaves the captions behind. Use the frame\'s fullscreen '
+    + 'or a Chromium browser.</span>';
+});
 </script>
 </body>
 </html>`;

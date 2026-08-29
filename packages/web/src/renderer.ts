@@ -45,6 +45,8 @@ interface CueView {
   cue: Cue;
   root: HTMLElement;
   tokens: TokenView[];
+  /** Whether the fit-to-width pass has run. It needs the element in the DOM. */
+  fitted?: boolean;
 }
 
 /**
@@ -217,6 +219,7 @@ export class CwiRenderer {
       if (this.stack.children[i] !== v.root) this.stack.insertBefore(v.root, this.stack.children[i] ?? null);
     });
 
+
     // Per-token state.
     void rewound;
     for (const view of this.active.values()) {
@@ -227,6 +230,23 @@ export class CwiRenderer {
           tv.el.classList.toggle('cwi-tok--spoken', spoken);
         }
         this.applyPop(tv, t);
+      }
+    }
+
+    // Fit last, and only once the cue is in the document.
+    //
+    // Two orderings matter here and both were learned the hard way. Measuring
+    // in buildCue reads scrollWidth off a detached element, which is always 0,
+    // so nothing was ever found to be too wide. And fitting *before* the state
+    // loop forces a style flush between inserting a cue and setting its spoken
+    // classes — which turns the 60ms colour transition into a real animation
+    // that had never run before, so a word read as white for a frame after its
+    // own onset. Reading geometry has side effects; do it after the frame's
+    // state is settled.
+    for (const v of ordered) {
+      if (!v.fitted) {
+        this.fitToFrame(v.root);
+        v.fitted = true;
       }
     }
   }
@@ -355,6 +375,52 @@ export class CwiRenderer {
       console.warn(`[cwi] cue ${cue.id ?? cue.start} has ${drawn.length} lines; spec 2.4.2 allows ${o.maxLines}. Extra lines dropped.`);
     }
     return { cue, root, tokens };
+  }
+
+  /**
+   * Shrink a cue that is wider than the picture.
+   *
+   * Type size is a percentage of frame *height* (spec 2.3.4), which silently
+   * assumes a landscape frame. On a portrait video the frame is tall and
+   * narrow, so 5% of height is enormous next to the available width, and a
+   * line set `nowrap` runs off the side of the picture and is simply not
+   * readable. Vertical video is most of what gets captioned now, so this is
+   * not an edge case.
+   *
+   * The whole cue is scaled by one factor rather than re-sizing words
+   * individually. The volume mapping is *relative* — a shout is larger than
+   * the speech around it — and a uniform scale preserves every one of those
+   * relationships while making the line fit. Re-fitting word by word would
+   * flatten exactly the differences the design exists to show.
+   *
+   * A line that does not overflow is untouched, so nothing changes for the
+   * landscape material the spec was written against.
+   */
+  private fitToFrame(root: HTMLElement): void {
+    const o = this.opts;
+    const available = this.frame.width
+      * (1 - (o.safeArea.left + o.safeArea.right) / 100);
+    if (available <= 0) return;
+
+    let widest = 0;
+    for (const lineEl of Array.from(root.querySelectorAll<HTMLElement>('.cwi-line'))) {
+      widest = Math.max(widest, lineEl.scrollWidth);
+    }
+    if (widest <= available) return;
+
+    const scale = available / widest;
+    for (const el of Array.from(root.querySelectorAll<HTMLElement>('.cwi-tok, .cwi-sp'))) {
+      const px = parseFloat(el.style.fontSize);
+      if (px) el.style.fontSize = `${px * scale}px`;
+      const w = parseFloat(el.style.width);
+      if (w) el.style.width = `${w * scale}px`;
+    }
+    for (const lineEl of Array.from(root.querySelectorAll<HTMLElement>('.cwi-line'))) {
+      const pad = lineEl.style.padding.split(' ').map((v) => parseFloat(v) * scale);
+      if (pad.length === 2 && pad.every(Number.isFinite)) {
+        lineEl.style.padding = `${pad[0]}px ${pad[1]}px`;
+      }
+    }
   }
 
   /** Measure the video's *content* box, excluding letterbox/pillarbox bars. */

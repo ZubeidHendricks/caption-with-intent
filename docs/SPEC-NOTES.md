@@ -78,6 +78,26 @@ Word gaps are suppressed between two unspaced-script characters. Without that, p
 
 What this does *not* do: correct word segmentation for Thai, Khmer and Lao needs a dictionary, and Japanese needs a morphological analyser. Neither ships here. Reveal units and legal break points are what captions need, and those are handled; where a production needs dictionary-accurate breaks, segment upstream and pass the tokens in.
 
+**Vertical video — the spec assumes a landscape frame without saying so.** Type
+size is defined as a percentage of frame *height* (2.3.4), which is the right
+invariant for a design that must survive being watched on a phone and in a
+cinema. It quietly assumes the frame is wider than it is tall. On a 9:16 video
+the height is the long dimension, so the 5% baseline produces type roughly
+twice as large relative to the available width, and a two-line cue set `nowrap`
+simply runs off the side of the picture.
+
+Since most captioned video today is vertical, this implementation scales an
+overflowing cue down by a single factor until it fits the safe area. One factor
+for the whole cue, not per word: the volume mapping is *relative* — a shout is
+larger than the speech around it — and a uniform scale preserves every one of
+those relationships. Re-fitting word by word would flatten exactly the
+differences the design exists to show. A cue that already fits is untouched, so
+nothing changes for landscape material.
+
+The alternative reading is that type size should be a percentage of the frame's
+*smaller* dimension. That is arguably more faithful to the intent and would
+change every size on every landscape frame, so it is not what this does.
+
 **Colour-vision safety — a gap, not an ambiguity.** See `ARCHITECTURE.md` §4. The V1.0 palette has pairs that collapse under all three dichromacies, and the spec sets no contrast floor. `assignColors()` adds a CVD-safety constraint on top of the spec's rules, using only the spec's own swatches.
 
 **Colour stability across a series.** Not addressed. A character's colour should be identical in every episode. Pin `characters[].color` in a show-level manifest and reuse it rather than re-running assignment per episode.
