@@ -165,10 +165,15 @@ if (!env.ok) {
     + env.detail.join('; ') + '</span>';
 } else if (!env.asr) {
   $('asrNote').innerHTML = 'No speech recognition installed, so a subtitle file is '
-    + 'required. <span class="warn">Install WhisperX</span> to transcribe here instead.';
-} else {
+    + 'required. <code>pip install faster-whisper</code> to transcribe here instead.';
+} else if (env.asr === 'whisperx') {
   $('asrNote').innerHTML = '<span class="ok">WhisperX available</span> &mdash; a subtitle '
-    + 'file is optional; without one the audio will be transcribed.';
+    + 'file is optional. It transcribes and separates speakers.';
+} else {
+  $('asrNote').innerHTML = '<span class="ok">faster-whisper available</span> &mdash; a '
+    + 'subtitle file is optional, and the audio will be transcribed. It does not identify '
+    + '<em>who</em> is speaking, so a transcribed track has one speaker until you label '
+    + 'them or install WhisperX.';
 }
 
 // --- uploads ----------------------------------------------------------------

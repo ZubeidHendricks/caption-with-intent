@@ -132,7 +132,7 @@ async function handle(req: IncomingMessage, res: ServerResponse, work: string): 
       // Stated plainly in the UI rather than discovered at the moment of
       // failure: without ASR the app needs a subtitle file, and that changes
       // what the operator has to bring.
-      asr: await hasWhisperX(),
+      asr: await asrAvailable(),
     });
     return;
   }
@@ -245,7 +245,7 @@ async function analyze(job: Job, work: string, body: Record<string, unknown>): P
   if (!subtitles && !body.asr) {
     throw new CwiError(
       'Captions need the words, and there is no transcript.',
-      'Add a subtitle file, or install WhisperX to transcribe here.');
+      'Add a subtitle file, or install faster-whisper to transcribe here.');
   }
 
   job.message = subtitles ? 'aligning the subtitle file to the soundtrack' : 'transcribing (this is the slow part)';
@@ -255,7 +255,10 @@ async function analyze(job: Job, work: string, body: Record<string, unknown>): P
     out,
     ...(subtitles && subtitles.toLowerCase().endsWith('.vtt') ? { vtt: subtitles } : {}),
     ...(subtitles && !subtitles.toLowerCase().endsWith('.vtt') ? { vtt: await srtToVtt(subtitles, dir) } : {}),
-    ...(!subtitles ? { whisperx: true } : {}),
+    // WhisperX transcribes and diarizes; faster-whisper only transcribes, so a
+    // track from it has one speaker unless the operator labels them.
+    ...(!subtitles && body.asr === 'whisperx' ? { whisperx: true } : {}),
+    ...(!subtitles && body.asr === 'faster-whisper' ? { asr: true } : {}),
   });
 
   job.message = 'assigning colours';
@@ -312,18 +315,24 @@ async function exportVideo(job: Job, alpha: boolean): Promise<void> {
 
 // --- plumbing ---------------------------------------------------------------
 
-async function hasWhisperX(): Promise<boolean> {
+/** Which speech recognition, if any, is installed. */
+async function asrAvailable(): Promise<'whisperx' | 'faster-whisper' | null> {
   try {
-    const { checkPipelineEnv } = await import('./ops.js');
     const env = await checkPipelineEnv();
-    if (!env.ok) return false;
+    if (!env.ok) return null;
     const { execFile } = await import('node:child_process');
     const { promisify } = await import('node:util');
     const { findPython } = await import('./ops.js');
-    await promisify(execFile)(findPython(), ['-c', 'import whisperx']);
-    return true;
+    const run = promisify(execFile);
+    for (const [mod, name] of [['whisperx', 'whisperx'], ['faster_whisper', 'faster-whisper']] as const) {
+      try {
+        await run(findPython(), ['-c', `import ${mod}`]);
+        return name as 'whisperx' | 'faster-whisper';
+      } catch { /* try the next one */ }
+    }
+    return null;
   } catch {
-    return false;
+    return null;
   }
 }
 

@@ -52,7 +52,10 @@ test('serves the page and the renderer it imports', async () => {
 test('reports the environment rather than failing later', async () => {
   const env = await getJson('/api/environment');
   assert.equal(typeof env.ok, 'boolean');
-  assert.equal(typeof env.asr, 'boolean', 'the page needs to know whether it can transcribe');
+  // Which engine, not merely whether one exists: WhisperX separates speakers
+  // and faster-whisper does not, and the page says different things for each.
+  assert.ok(env.asr === null || ['whisperx', 'faster-whisper'].includes(env.asr),
+    `unexpected asr value ${JSON.stringify(env.asr)}`);
 });
 
 test('accepts an upload and serves it back with range support', async () => {

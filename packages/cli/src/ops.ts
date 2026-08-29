@@ -454,6 +454,12 @@ export interface AnalyzeInput {
   transcript?: string;
   vtt?: string;
   whisperx?: boolean;
+  /** Transcribe with faster-whisper here, then separate voices acoustically. */
+  asr?: boolean;
+  asrModel?: string;
+  language?: string;
+  /** Separate speakers acoustically. Approximate; see pipeline/diarize.py. */
+  diarize?: boolean;
   hfToken?: string;
   pitchMode?: 'voice' | 'word' | 'raw';
   maxGap?: number;
@@ -470,7 +476,13 @@ export async function analyzeMedia(input: AnalyzeInput): Promise<{ manifest: Cwi
   if (input.transcript) { requireFile(input.transcript, 'transcript'); a.push('--transcript', abs(input.transcript)); }
   else if (input.vtt) { requireFile(input.vtt, 'WebVTT file'); a.push('--vtt', abs(input.vtt)); }
   else if (input.whisperx) a.push('--whisperx');
-  else throw new CwiError('analyze needs one of --transcript, --vtt or --whisperx.');
+  else if (input.asr) {
+    a.push('--asr');
+    if (input.asrModel) a.push('--asr-model', input.asrModel);
+    if (input.language) a.push('--language', input.language);
+    if (input.diarize) a.push('--diarize');
+  }
+  else throw new CwiError('analyze needs one of --transcript, --vtt, --asr or --whisperx.');
   if (input.hfToken) a.push('--hf-token', input.hfToken);
   if (input.pitchMode) a.push('--pitch-mode', input.pitchMode);
   if (input.maxGap != null) a.push('--max-gap', String(input.maxGap));

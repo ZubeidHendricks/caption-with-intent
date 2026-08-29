@@ -471,12 +471,31 @@ captioning means handling unreleased footage — which productions are
 contractually forbidden from uploading to somebody's cloud. Nothing leaves the
 machine.
 
-**The words have to come from somewhere.** Captions need a transcript, and a
-transcript needs speech recognition. WhisperX is supported and is the intended
-production path, but it pulls multi-gigabyte models, so the app works without
-it: bring the subtitle file the production already has. The words come from
-there; everything this design contributes — who is speaking, how loudly, at
-what pitch — comes from the soundtrack.
+**The words have to come from somewhere.** Install speech recognition and the
+app transcribes for you:
+
+```bash
+.venv/bin/pip install faster-whisper      # ~150 MB, models download on first use
+```
+
+It runs on CPU, needs no token and no gated model. On the demo clip it
+transcribed every word correctly.
+
+**What it does not give is who spoke.** Whisper transcribes; it does not
+diarize. Acoustic speaker separation is implemented in `pipeline/diarize.py` and
+is **off by default**, because it was measured rather than assumed: on the demo
+scene two of the four speakers sit 4% apart in median pitch, which is inside the
+range one person moves through in a single sentence. Nothing built on pitch and
+timbre separates them, and two clustering strategies were tried before that was
+diagnosed. `--diarize` turns it on for material where the voices genuinely
+differ.
+
+So a transcribed track has one speaker until you label them. That is a usable
+caption track. Four speakers coloured as each other is not, and looks identical
+to a correct one at a glance.
+
+For real diarization, install WhisperX — it needs a Hugging Face token and an
+accepted model licence, and the app uses it automatically when present.
 
 **Label your speakers.** A plain SRT carries no names, and without them every
 line is one speaker, which means colour, position and marks are all conveying

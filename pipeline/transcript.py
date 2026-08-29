@@ -26,6 +26,84 @@ def load_json(path: Path) -> dict:
     return data
 
 
+def from_faster_whisper(
+    media: Path,
+    model: str = "small",
+    language: str | None = None,
+    diarize: bool = False,
+) -> dict:
+    """
+    ASR with word-level timestamps, via faster-whisper.
+
+    This is the path that makes "drop in a video and get captions" true without
+    asking the operator for a transcript. It runs on CPU, needs no token and no
+    gated model, and downloads its weights once.
+
+    What it does NOT give is who spoke. Whisper transcribes; it does not
+    diarize, and speaker attribution is the entire point of this design — colour,
+    position and marks all answer "who is talking".
+
+    `diarize=True` clusters voices acoustically, and it is off by default
+    because it was measured and found wanting rather than assumed to work. On
+    the demo scene two of the four speakers sit 4% apart in median pitch, which
+    is inside the range one person moves through in a sentence; nothing built on
+    pitch and timbre can separate them. See diarize.py for what was tried.
+
+    One speaker with a note saying so is a usable caption track. Four speakers
+    coloured as each other is not, and is indistinguishable from a correct one
+    at a glance. So the default is honest rather than impressive.
+
+    `model` trades accuracy for time: tiny, base, small, medium, large-v3.
+    "small" transcribes faster than real time on a laptop and is markedly
+    better than "base" on film dialogue.
+    """
+    from faster_whisper import WhisperModel  # imported lazily; it is optional
+
+    # int8 on CPU is several times faster than float32 and the difference in
+    # word error rate is not visible at caption granularity.
+    asr = WhisperModel(model, device="cpu", compute_type="int8")
+    segments, info = asr.transcribe(
+        str(media),
+        language=language,
+        word_timestamps=True,
+        # Whisper hallucinates fluent text over music and silence. The VAD
+        # filter is the single most effective guard against a caption track
+        # confidently transcribing a score.
+        vad_filter=True,
+        vad_parameters={"min_silence_duration_ms": 400},
+    )
+
+    words: list[dict] = []
+    for seg in segments:
+        for w in seg.words or []:
+            text = w.word.strip()
+            if not text:
+                continue
+            words.append({
+                "text": text,
+                "start": round(float(w.start), 3),
+                "end": round(float(w.end), 3),
+                "speaker": "S0",
+                # Kept for the evaluation layer: a low-probability word is one
+                # the captions should not be confident about either.
+                "confidence": round(float(w.probability), 3),
+            })
+
+    if not words:
+        raise ValueError(
+            "Speech recognition found no words. If this is music or effects only, "
+            "that is the correct answer; otherwise check the audio track."
+        )
+
+    speakers = {"S0": {"name": "Speaker 1"}}
+    if diarize:
+        from diarize import diarize_by_voice
+        speakers = diarize_by_voice(media, words)
+
+    return {"words": words, "speakers": speakers,
+            "language": language or getattr(info, "language", None) or "en"}
+
+
 def from_whisperx(media: Path, hf_token: str | None = None, model: str = "large-v3") -> dict:
     """
     ASR + forced alignment + diarization via WhisperX.

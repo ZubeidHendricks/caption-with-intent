@@ -149,6 +149,13 @@ def main() -> None:
     src.add_argument("--transcript", type=Path, help="word-timed JSON (see transcript.py)")
     src.add_argument("--vtt", type=Path, help="WebVTT; word timings approximated unless inline")
     src.add_argument("--whisperx", action="store_true", help="run WhisperX ASR + diarization")
+    src.add_argument("--asr", action="store_true",
+                     help="transcribe here with faster-whisper, then separate voices acoustically")
+    ap.add_argument("--asr-model", default="small",
+                    help="tiny | base | small | medium | large-v3 (default small)")
+    ap.add_argument("--language", default=None, help="force a language instead of detecting it")
+    ap.add_argument("--diarize", action="store_true",
+                    help="separate speakers acoustically (approximate; see diarize.py)")
     ap.add_argument("--hf-token", default=None, help="HuggingFace token, for diarization")
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--max-gap", type=float, default=seg.MAX_GAP_S)
@@ -166,6 +173,10 @@ def main() -> None:
         data = tr.load_json(args.transcript)
     elif args.vtt:
         data = tr.from_webvtt(args.vtt)
+    elif args.asr:
+        data = tr.from_faster_whisper(
+            args.media, model=args.asr_model, language=args.language,
+            diarize=args.diarize)
     else:
         data = tr.from_whisperx(args.media, args.hf_token)
 
