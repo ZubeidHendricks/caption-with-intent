@@ -21,7 +21,7 @@
  */
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { createReadStream, createWriteStream, existsSync, mkdirSync, mkdtempSync,
-  statSync, writeFileSync } from 'node:fs';
+  readFileSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, extname, join } from 'node:path';
 import { createRequire } from 'node:module';
@@ -30,6 +30,7 @@ import { CwiError, analyzeMedia, checkPipelineEnv } from './ops.js';
 import { render } from './render.js';
 import { readSubtitles, matchByTime } from './translate.js';
 import { studioHtml } from './studio-html.js';
+import { runTeam, type StageReport } from './team.js';
 
 export interface StudioOptions {
   port?: number;
@@ -48,6 +49,9 @@ interface Job {
   id: string;
   stage: 'uploaded' | 'analyzing' | 'ready' | 'rendering' | 'done' | 'failed';
   message: string;
+  /** Live stage-by-stage record from the team, for the page to show. */
+  stages?: StageReport[];
+  open?: string[];
   progress?: number;
   media?: string;
   manifest?: CwiManifest;
@@ -137,6 +141,20 @@ async function handle(req: IncomingMessage, res: ServerResponse, work: string): 
     return;
   }
 
+  if (path === '/api/plan') {
+    // Billing belongs to the hosted service, not to a local install. The local
+    // app has no plan and no limits, and says so with a 404 rather than
+    // inventing a "free tier" that would imply this one has a ceiling.
+    if (!process.env.CHORUS_PLAN) { res.writeHead(404).end('{}'); return; }
+    json(res, 200, {
+      plan: { id: process.env.CHORUS_PLAN, label: process.env.CHORUS_PLAN_LABEL ?? 'Plan',
+              includedMinutes: Number(process.env.CHORUS_PLAN_MINUTES ?? 0) },
+      minutesUsed: Number(process.env.CHORUS_MINUTES_USED ?? 0),
+      upgradeUrl: process.env.CHORUS_UPGRADE_URL,
+    });
+    return;
+  }
+
   if (path === '/api/upload' && req.method === 'POST') {
     const name = safeName(url.searchParams.get('name') ?? 'video.mp4');
     const id = `job${jobs.size + 1}-${Date.now().toString(36)}`;
@@ -183,7 +201,8 @@ async function handle(req: IncomingMessage, res: ServerResponse, work: string): 
     if (!job) throw new CwiError('No such job.');
     json(res, 200, {
       stage: job.stage, message: job.message, progress: job.progress,
-      error: job.error, manifest: job.manifest, output: job.output ? basename(job.output) : undefined,
+      error: job.error, manifest: job.manifest, stages: job.stages, open: job.open,
+      output: job.output ? basename(job.output) : undefined,
     });
     return;
   }
@@ -197,6 +216,26 @@ async function handle(req: IncomingMessage, res: ServerResponse, work: string): 
     job.manifest = body.manifest as CwiManifest;
     writeFileSync(job.manifestPath!, JSON.stringify(job.manifest, null, 2));
     json(res, 200, { ok: true });
+    return;
+  }
+
+  if (path === '/api/cast' && req.method === 'POST') {
+    // Renaming a speaker is the one correction that is always worth making by
+    // hand: no amount of acoustic cleverness knows that Speaker 2 is the
+    // interviewer, and a person watching the video knows instantly.
+    const body = await readJson(req);
+    const job = jobs.get(String(body.id));
+    if (!job?.manifest || !job.manifestPath) throw new CwiError('No analysed job to edit.');
+    const edits = body.characters as Array<{ id: string; name?: string }>;
+    if (!Array.isArray(edits)) throw new CwiError('Expected a characters array.');
+
+    const byId = new Map(edits.map((c) => [c.id, c]));
+    job.manifest.characters = job.manifest.characters.map((c) => {
+      const e = byId.get(c.id);
+      return e?.name ? { ...c, name: e.name } : c;
+    });
+    writeFileSync(job.manifestPath, JSON.stringify(job.manifest, null, 2));
+    json(res, 200, { characters: job.manifest.characters });
     return;
   }
 
@@ -248,30 +287,32 @@ async function analyze(job: Job, work: string, body: Record<string, unknown>): P
       'Add a subtitle file, or install faster-whisper to transcribe here.');
   }
 
-  job.message = subtitles ? 'aligning the subtitle file to the soundtrack' : 'transcribing (this is the slow part)';
-
-  const { manifest } = await analyzeMedia({
+  // The same team the CLI runs, so the page shows the real verdicts rather
+  // than a spinner and a guess. Every stage that can refuse still refuses.
+  job.stages = [];
+  const r = await runTeam({
     media: job.media!,
+    subtitles,
+    asr: !subtitles,
+    diarize: Boolean(body.diarize),
+    profile: String(body.profile ?? 'chorus-1.0'),
     out,
-    ...(subtitles && subtitles.toLowerCase().endsWith('.vtt') ? { vtt: subtitles } : {}),
-    ...(subtitles && !subtitles.toLowerCase().endsWith('.vtt') ? { vtt: await srtToVtt(subtitles, dir) } : {}),
-    // WhisperX transcribes and diarizes; faster-whisper only transcribes, so a
-    // track from it has one speaker unless the operator labels them.
-    ...(!subtitles && body.asr === 'whisperx' ? { whisperx: true } : {}),
-    ...(!subtitles && body.asr === 'faster-whisper' ? { asr: true } : {}),
+    onStage: (s) => {
+      job.stages!.push(s);
+      job.message = `${s.stage}: ${s.summary}`;
+    },
   });
 
-  job.message = 'assigning colours';
-  const profile = getProfile(String(body.profile ?? 'chorus-1.0'));
-  const assigned = assignColors(manifest.characters, { profile });
-  manifest.profile = profile.id;
-  manifest.characters = assigned.characters;
+  job.open = r.open;
+  if (!r.ok) {
+    const stopped = r.reports.find((s) => s.verdict === 'stop');
+    throw new CwiError(stopped?.summary ?? 'the team stopped', stopped?.advice);
+  }
 
-  writeFileSync(out, JSON.stringify(manifest, null, 2));
-  job.manifest = manifest;
+  job.manifest = JSON.parse(readFileSync(out, 'utf8')) as CwiManifest;
   job.manifestPath = out;
   job.stage = 'ready';
-  job.message = `${manifest.cues.length} cues, ${manifest.characters.length} speakers`;
+  job.message = `${job.manifest.cues.length} cues, ${job.manifest.characters.length} speakers`;
 }
 
 /**
