@@ -80,6 +80,20 @@ it('strict turns every warning into a stop', async () => {
   assert.ok(r.open.length > 0);
 });
 
+it('the probe reports no type size, because it runs before there are cues', async () => {
+  // It used to report 0%, which reads as "measured, and it is flat" when it
+  // actually means "there was nothing to measure". The real figure comes from
+  // the measure stage, once transcription has produced cues carrying loudness.
+  const r = await runTeam({ media: VIDEO, subtitles: LABELLED, out: join(work, 'g.cwi.json') });
+  const p = stage(r, 'probe');
+  assert.equal(p.evidence.typeSizeSpreadPct, undefined);
+
+  const m = stage(r, 'measure');
+  assert.ok(m, 'the measure stage runs');
+  assert.equal(typeof m.evidence.typeSizeSpreadPct, 'number');
+  assert.match(m.summary, /type size spans/);
+});
+
 it('labelled subtitles carry through to separated speakers', async () => {
   const r = await runTeam({ media: VIDEO, subtitles: LABELLED, out: join(work, 'e.cwi.json') });
   const a = stage(r, 'attribute');
@@ -103,5 +117,5 @@ it('every stage says what it is answerable for', async () => {
     assert.ok(['ok', 'warn', 'stop'].includes(s.verdict));
   }
   assert.deepEqual(r.reports.map((s) => s.stage),
-    ['probe', 'transcribe', 'attribute', 'design', 'audit', 'validate']);
+    ['probe', 'transcribe', 'measure', 'attribute', 'design', 'audit', 'validate']);
 });

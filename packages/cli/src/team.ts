@@ -80,6 +80,14 @@ export interface TeamResult {
 
 /** Minimum perceptual distance between two speakers, across all dichromacies. */
 const DELTA_E_FLOOR = 20;
+/**
+ * Type-size spread, in percent of frame height, below which the volume layer is
+ * not conveying anything a viewer could notice. Matches SIZE_SPREAD_MIN in
+ * pipeline/evaluate.py. Real material sits far lower than the synthetic
+ * fixtures suggest: a 1968 feature measured 2.06% and a loudness-normalised
+ * social clip 1.14%, against a fixture's 7.26%.
+ */
+const SIZE_SPREAD_FLOOR = 0.8;
 
 export async function runTeam(opts: TeamOptions): Promise<TeamResult> {
   const reports: StageReport[] = [];
@@ -103,10 +111,14 @@ export async function runTeam(opts: TeamOptions): Promise<TeamResult> {
     return {
       verdict: share > 0.5 ? 'warn' : 'ok',
       summary: probe.verdict,
+      // Deliberately no type-size figure here. This runs before transcription,
+      // so there are no cues carrying loudness and the answer would always be
+      // zero — a number that looks like a measurement and is an absence. The
+      // `measure` stage below asks it once there is something to ask about.
       evidence: {
-        dialogueCues: probe.dialogue_cues,
+        cuesFoundByVoicing: probe.dialogue_cues,
         trustworthy: probe.trustworthy,
-        typeSizeSpreadPct: probe.size_spread_pct,
+        speechCoverage: probe.speech_coverage,
       },
       advice: share > 0.5
         ? 'Most of this audio does not meet the assumptions the typography rests on. '
@@ -141,6 +153,42 @@ export async function runTeam(opts: TeamOptions): Promise<TeamResult> {
         verdict: words ? 'ok' : 'stop',
         summary: `${manifest.cues.length} cues, ${words} words`,
         evidence: { cues: manifest.cues.length, words, source: vtt ? 'subtitles' : 'asr' },
+      };
+    });
+  }
+
+  // --- 3. Measure ---------------------------------------------------------
+  // The same evaluation as the probe, now that there are real cues to evaluate.
+  // This is where the question that actually matters gets answered: after
+  // mapping, is there any visible difference in type size across this video at
+  // all? A loudness-normalised social clip routinely answers no, and no other
+  // stage would notice — the captions render, validate and audit perfectly
+  // while the layer that carries how something was said conveys nothing.
+  if (!stopped() && manifest) {
+    await timed(emit, 'measure', 'is there anything left for the typography to say', async () => {
+      const m = await evaluateMedia(opts.media, manifestPath);
+      const flat = m.size_spread_pct < SIZE_SPREAD_FLOOR;
+      const share = m.dialogue_cues ? m.suspect / m.dialogue_cues : 0;
+      return {
+        verdict: flat || share > 0.5 ? 'warn' : 'ok',
+        summary: `type size spans ${m.size_spread_pct.toFixed(2)}% of frame height, `
+          + `${m.trustworthy}/${m.dialogue_cues} cues trustworthy`,
+        evidence: {
+          typeSizeSpreadPct: m.size_spread_pct,
+          floor: SIZE_SPREAD_FLOOR,
+          trustworthy: m.trustworthy,
+          dialogueCues: m.dialogue_cues,
+          findings: m.findings.slice(0, 3),
+        },
+        advice: flat
+          ? `The soundtrack is compressed nearly flat, so every word will render at `
+            + `about the same size and the volume layer conveys nothing. Nothing is `
+            + `broken; there is simply no dynamic range left to map. Colour and `
+            + `position still carry attribution.`
+          : share > 0.5
+            ? 'Most cues do not meet the acoustic assumptions, so the typography is '
+              + 'partly describing the mix rather than the voice.'
+            : undefined,
       };
     });
   }

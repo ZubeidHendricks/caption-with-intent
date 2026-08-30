@@ -465,19 +465,28 @@ chorus team film.mp4 --subtitles film.srt --deliver
 Six stages in one pass, each answerable for one thing:
 
 ```
- ok  probe      usable with caveats — see findings          0.4s
-     is this soundtrack analysable at all
- ok  transcribe 7 cues, 40 words                            0.2s
-     turn the soundtrack into word-timed text
- ok  attribute  4 speakers
-     work out who is speaking
- ok  design     worst-case separation ΔE 70.3
-     assign colours that survive colour blindness
- ok  audit      0 failing, 0 warning, 8 to review
-     find where this fails WCAG, EN 301 549 and the FCC
- ok  validate   no issues
-     check the track is structurally sound
+ ok   probe      usable with caveats — see findings                     0.4s
+      is this soundtrack analysable at all
+ ok   transcribe 17 cues, 171 words                                    15.0s
+      turn the soundtrack into word-timed text
+ ok   measure    type size spans 1.14% of frame height, 14/17 trusted   0.4s
+      is there anything left for the typography to say
+ ok   attribute  2 speakers
+      work out who is speaking
+ ok   design     worst-case separation ΔE 192.3
+      assign colours that survive colour blindness
+ warn audit      0 failing, 1 warning, 8 to review
+      find where this fails WCAG, EN 301 549 and the FCC
+ warn validate   0 errors, 1 warnings
+      check the track is structurally sound
 ```
+
+That run is a real 78-second social clip, transcribed here with no subtitle
+file. The `measure` line is the one worth reading: **1.14%** of frame height
+between the quietest and loudest word across the whole video. The audio is
+loudness-normalised and compressed, so the layer that carries *how* something
+was said has almost nothing left to work with. Nothing is broken and no other
+stage would have noticed — the track validates, audits and renders perfectly.
 
 The shape is borrowed from [Agent Opus](https://www.opus.pro/), which runs eight
 sub-agents — researcher, scriptwriter, storyboard artist, asset manager, hook
