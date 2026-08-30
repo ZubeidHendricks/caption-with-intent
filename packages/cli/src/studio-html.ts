@@ -117,6 +117,14 @@ export function studioHtml(): string {
     </select>
     <p class="note">Chorus separates speakers by more than hue, so no pair depends on
        colour alone. V1.0 is here to author conformant material or to compare.</p>
+    <label class="row" style="margin-top:10px;cursor:pointer">
+      <input type="checkbox" id="diarize" style="width:auto">
+      <span class="note" style="margin:0">Try to tell speakers apart by voice</span>
+    </label>
+    <p class="note" id="diarizeNote" style="display:none">Approximate. It separates
+       voices that differ in pitch and misses two people in a similar range &mdash;
+       including, often, a narrator against someone on camera. Check the cast before
+       exporting. Labelled subtitles are exact; this is a guess.</p>
     <button class="primary" id="go" disabled style="margin-top:12px;width:100%">Add captions</button>
     <div class="bar hidden" id="bar"><i></i></div>
     <p class="note" id="status"></p>
@@ -237,7 +245,8 @@ $('go').onclick = async () => {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: state.job, subtitles: state.subtitles, asr: env.asr,
-                           profile: $('profile').value }),
+                           profile: $('profile').value,
+                           diarize: $('diarize').checked }),
   });
   poll();
 };
@@ -326,6 +335,10 @@ async function doExport(alpha) {
   });
   poll();
 }
+$('diarize').onchange = () => {
+  $('diarizeNote').style.display = $('diarize').checked ? 'block' : 'none';
+};
+
 $('export').onclick = () => doExport(false);
 $('exportAlpha').onclick = () => doExport(true);
 

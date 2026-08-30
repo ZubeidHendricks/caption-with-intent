@@ -42,3 +42,5 @@ packages/cli/conformance/
 
 # macOS Finder metadata, which follows you into every directory
 .DS_Store
+pipeline/test/narration.wav
+pipeline/test/narration.words.json

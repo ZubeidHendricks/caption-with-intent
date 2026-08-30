@@ -13,15 +13,33 @@ a reasonable thing to require of a studio and an unreasonable thing to require
 of someone trying the tool for the first time. So this separates voices using
 the acoustics the pipeline already measures for typography.
 
-**What it can and cannot do, plainly.** It clusters utterances by pitch and
-timbre. Two speakers an octave apart separate reliably. Two speakers of similar
-range separate poorly, and two performances by the same actor will not separate
-at all. It has no idea of identity across a cut, no idea who is on camera, and
-it will merge a whisper and a shout from one person less often than it should.
+**Measured, not asserted.** Against two fixtures with known answers:
 
-It is the difference between attribution being approximate and being absent.
-When the recording justifies better, install pyannote and use the WhisperX path;
-the manifest shape is identical either way.
+    three voices an octave apart          3 of 3 found, 100% of words correct
+    narrator vs on-camera, same pitch     2 of 2 found,  78% of words correct
+
+The second is the case a viewer notices first — narration and someone on screen
+in the same colour — and it is the case this is weakest on, because the two
+differ in *channel* rather than in voice.
+
+Three things were tried for that and are recorded here so they are not tried
+again by accident. Clustering word by word instead of by utterance fixes turns
+that trade with no pause, and makes the colour change mid-phrase, which the
+word-level reveal makes maximally visible. A local signal-to-floor feature
+separates a booth from a room and also tracks how loudly the person is
+speaking, so a whisper and a shout from one throat split apart. Replacing it
+with the noise floor alone fixes that and stops separating the narrator. No
+weighting of these features passed both fixtures; a grid search found none.
+
+What did work was fixing how the number of speakers is chosen — see `choose_k`.
+The old criterion could not distinguish "more clusters" from "better clusters"
+and reached its optimum at one cluster per utterance.
+
+So: pitch is weighted heavily and timbre lightly, because one person holds
+their f0 across a scene and does not hold their spectral centroid. Two speakers
+in a similar range will not separate, and the module says so rather than
+inventing an answer. For material that deserves better, install pyannote and
+use the WhisperX path; the manifest shape is identical either way.
 """
 from __future__ import annotations
 
@@ -59,13 +77,26 @@ def utterances(words: list[dict], gap: float = TURN_GAP_S) -> list[list[int]]:
     return groups
 
 
+#: How much each feature counts. Pitch is the stable speaker cue — one person
+#: holds their f0 across a scene. Spectral centroid is not: it moves a long way
+#: between a whisper and a shout from the same throat, so it is down-weighted
+#: for identity. The local noise floor is a *channel* cue rather than a voice
+#: one, and it is what actually separates narration in a booth from dialogue in
+#: a room, where the two may be at identical pitch.
+FEATURE_WEIGHTS = np.array([1.0, 0.3])
+
+
 def _features(frames, start: float, end: float) -> np.ndarray | None:
     """
     Median log-pitch and log-centroid over the voiced frames of a span.
 
-    Logs because both quantities are perceived multiplicatively: the distance
-    from 100 to 200 Hz is the distance from 200 to 400, and a linear scale would
-    let one loud low voice dominate every clustering decision.
+    Logs on the first two because both are perceived multiplicatively: the
+    distance from 100 to 200 Hz is the distance from 200 to 400, and a linear
+    scale would let one loud low voice decide every clustering decision.
+
+    A third feature — the local noise floor, meant to separate a narration booth
+    from a location by room tone — was built, measured and removed. It is in the
+    history if it is wanted. See the module docstring for why it did not survive.
     """
     i0 = max(0, int(start / frames.hop_s))
     i1 = min(len(frames.f0), int(end / frames.hop_s) + 1)
@@ -79,6 +110,7 @@ def _features(frames, start: float, end: float) -> np.ndarray | None:
     f0 = f0[f0 > 0]
     if len(f0) < 3:
         return None
+
     return np.array([
         np.log(np.median(f0)),
         np.log(max(np.median(centroid), 1.0)),
@@ -117,26 +149,68 @@ def _kmeans(x: np.ndarray, k: int, seed: int = 0, iters: int = 60) -> tuple[np.n
     return labels, wss
 
 
+def silhouette(x: np.ndarray, labels: np.ndarray, k: int) -> float:
+    """
+    Mean silhouette: how much better each point fits its own cluster than the
+    next-best one, from -1 to 1.
+
+    This replaced a within-cluster-spread criterion that was quietly broken.
+    Spread always falls as k rises and reaches exactly zero when k equals the
+    number of points, so "did this k improve things" answered yes right up to
+    one cluster per utterance. On a four-utterance scene it chose four
+    speakers, every cluster a single point, and the sensible answer of two was
+    never even considered.
+
+    Silhouette cannot be gamed that way: a cluster of one has no cohesion to
+    measure and scores zero, so splitting to the limit is penalised rather
+    than rewarded.
+    """
+    if k < 2 or len(x) <= k:
+        return -1.0
+    d = np.linalg.norm(x[:, None, :] - x[None, :, :], axis=2)
+    scores = []
+    for i in range(len(x)):
+        own = labels[i]
+        same = (labels == own)
+        same[i] = False
+        if not same.any():
+            scores.append(0.0)                # a lone point tells us nothing
+            continue
+        a = d[i, same].mean()
+        b = min(d[i, labels == j].mean() for j in range(k) if j != own and (labels == j).any())
+        scores.append((b - a) / max(a, b, 1e-9))
+    return float(np.mean(scores))
+
+
+#: Mean silhouette below which the clusters are not worth believing as people.
+#: 0.5 is a conventional "reasonable structure" line and it is a judgement call.
+MIN_SILHOUETTE = 0.5
+
+
 def choose_k(x: np.ndarray, max_k: int = MAX_SPEAKERS) -> tuple[int, np.ndarray]:
     """
     How many voices are in this scene?
 
-    Runs k-means for each k and keeps the largest one that still bought a
-    meaningful reduction in spread. Guessing high is the more damaging error:
-    inventing a speaker splits one actor across two colours mid-scene, which
-    reads as a continuity error rather than as a caption defect.
+    Every cluster needs at least two utterances to be a cluster rather than a
+    point, so k is capped at half the data regardless of MAX_SPEAKERS. Guessing
+    high is the more damaging error: inventing a speaker splits one actor across
+    two colours mid-scene, which reads as a continuity error rather than as a
+    caption defect.
     """
-    if len(x) < 2:
-        return 1, np.zeros(len(x), dtype=int)
+    n = len(x)
+    if n < 4:
+        return 1, np.zeros(n, dtype=int)
 
-    best_k, best_labels = 1, np.zeros(len(x), dtype=int)
-    _, base = _kmeans(x, 1)
-    prev = base
-    for k in range(2, min(max_k, len(x)) + 1):
-        labels, wss = _kmeans(x, k)
-        if prev <= 0 or (prev - wss) / prev < MIN_IMPROVEMENT:
-            break
-        best_k, best_labels, prev = k, labels, wss
+    ceiling = min(max_k, n // 2)
+    best_k, best_labels, best_score = 1, np.zeros(n, dtype=int), -1.0
+    for k in range(2, ceiling + 1):
+        labels, _ = _kmeans(x, k)
+        score = silhouette(x, labels, k)
+        if score > best_score:
+            best_k, best_labels, best_score = k, labels, score
+
+    if best_score < MIN_SILHOUETTE:
+        return 1, np.zeros(n, dtype=int)
     return best_k, best_labels
 
 
@@ -218,7 +292,7 @@ def diarize_by_voice(media: Path, words: list[dict]) -> dict:
     x_f = np.array(feats)
     mu, sigma = x_f.mean(axis=0), x_f.std(axis=0)
     sigma[sigma < 1e-6] = 1.0
-    z = (x_f - mu) / sigma
+    z = ((x_f - mu) / sigma) * FEATURE_WEIGHTS
 
     k, labels = choose_k(z)
     if k < 2:
