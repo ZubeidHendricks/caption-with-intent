@@ -13,6 +13,7 @@ import { deliver, TARGETS } from './deliver.js';
 import { conform } from './conform.js';
 import { readSubtitles, matchByTime } from './translate.js';
 import { startStudio } from './studio.js';
+import { runTeam } from './team.js';
 import { languagesOf, coverageOf, addTrack, withDefaults } from '@corerus/chorus-core';
 import { checkReport, loadScene, loadScenes,
   type RenderReport, type RenderConformResult } from './render-conform.js';
@@ -54,6 +55,7 @@ ${bold('Working on a manifest')}
   cwi validate <manifest>             structural + accessibility audit
   cwi stats <manifest>                per-character screen time
   chorus export <manifest> --format vtt  emit a delivery format (vtt | ass)
+  chorus team <media> [--subtitles f] one pass: probe, transcribe, design, audit, deliver
   chorus studio                       drop in a video, get captions, export
   chorus evaluate <media> <manifest>  how far this film's analysis can be trusted
   chorus languages <manifest>         subtitle languages, and their coverage
@@ -354,6 +356,46 @@ const commands: Record<string, (a: Args) => Promise<void> | void> = {
       spawn(opener, [s.url], { stdio: 'ignore', detached: true }).unref();
     }
     await new Promise(() => {});           // serve until interrupted
+  },
+
+  async team(a) {
+    const media = a.positional[0];
+    if (!media) throw new CwiError('team needs a media file.', 'chorus team film.mp4 --subtitles film.srt');
+
+    const tint = { ok: grn, warn: yel, stop: red };
+    const mark = { ok: ' ok ', warn: 'warn', stop: 'STOP' };
+    if (!bool(a, 'json')) console.log();
+
+    const r = await runTeam({
+      media,
+      subtitles: str(a, 'subtitles'),
+      profile: str(a, 'profile'),
+      out: str(a, 'out'),
+      deliver: bool(a, 'deliver'),
+      asr: bool(a, 'asr'),
+      diarize: bool(a, 'diarize'),
+      strict: bool(a, 'strict'),
+      onStage: bool(a, 'json') ? undefined : (s) => {
+        console.log(`  ${tint[s.verdict](mark[s.verdict])} ${s.stage.padEnd(10)} ` +
+          `${s.summary}${s.seconds ? dim(`  ${s.seconds.toFixed(1)}s`) : ''}`);
+        console.log(`       ${dim(s.role)}`);
+        if (s.advice) console.log(`       ${wrap(s.advice, 72, '       ')}`);
+      },
+    });
+
+    out(a, r, () => {
+      console.log();
+      if (r.manifest) console.log(`  manifest  ${r.manifest}`);
+      if (r.output) console.log(`  video     ${r.output}`);
+      if (r.open.length) {
+        // Warnings are not failures, and they are also not nothing: each one is
+        // a thing a person still has to answer for before this ships.
+        console.log(`\n  ${yel('still open')}`);
+        for (const o of r.open) console.log(`    ${o}`);
+      }
+      console.log(`\n  ${r.ok ? grn('the team is done') : red('stopped')}\n`);
+    });
+    if (!r.ok) process.exitCode = 1;
   },
 
   async doctor(a) {

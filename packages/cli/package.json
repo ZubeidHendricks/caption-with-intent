@@ -78,6 +78,10 @@
     "./studio": {
       "types": "./dist/studio.d.ts",
       "default": "./dist/studio.js"
+    },
+    "./team": {
+      "types": "./dist/team.d.ts",
+      "default": "./dist/team.js"
     }
   },
   "author": "Zubeid Hendricks",

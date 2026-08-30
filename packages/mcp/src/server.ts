@@ -26,6 +26,7 @@ import { startPreview, type PreviewHandle } from '@corerus/chorus-cli/preview';
 import { render, PRESETS } from '@corerus/chorus-cli/render';
 import { deliver, TARGETS } from '@corerus/chorus-cli/deliver';
 import { conform } from '@corerus/chorus-cli/conform';
+import { runTeam } from '@corerus/chorus-cli/team';
 import { checkReport, loadScene, loadScenes,
   type RenderReport, type RenderConformResult } from '@corerus/chorus-cli/render-conform';
 import { probeWebRenderer } from '@corerus/chorus-cli/render-probe';
@@ -338,6 +339,43 @@ server.registerTool('cwi_conform_render', {
         ? ` — failing ${r.checks.filter((c) => !c.ok).map((c) => c.id).join(', ')}`
         : '')).join('\n') + (worst ? '' : '\n\nLevel A is the floor: attribution or synchronisation is wrong.'),
     results,
+  );
+}));
+
+server.registerTool('cwi_team', {
+  title: 'Run the whole captioning team over a video',
+  description:
+    'One pass from a video to a checked caption track: probe the soundtrack, transcribe, ' +
+    'attribute speakers, assign colour-vision-safe colours, audit against WCAG 2.2 / ' +
+    'EN 301 549 / FCC, and validate. Use this instead of calling the individual tools in ' +
+    'sequence. Unlike a generative pipeline, half these stages exist to find fault and can ' +
+    'STOP the run — a caption track that is confidently wrong about who spoke looks exactly ' +
+    'like a correct one, so the checks are the product. Each stage returns the evidence it ' +
+    'measured, not just a verdict, so you can disagree with it. Warnings do not stop the run ' +
+    'but appear in `open`: those are things a person still has to answer for before it ships. ' +
+    'Needs either `subtitles` or `asr`.',
+  inputSchema: {
+    media: z.string().describe('Path to the video or audio file'),
+    subtitles: z.string().optional().describe('SRT or WebVTT. Label speakers (VALE:) for attribution'),
+    asr: z.boolean().optional().describe('Transcribe here instead, if faster-whisper is installed'),
+    diarize: z.boolean().optional().describe('Guess speakers acoustically. Approximate; verify the cast'),
+    profile: z.string().optional().describe('chorus-1.0 (default) or cwi-1.0'),
+    out: z.string().optional().describe('Where to write the manifest'),
+    deliver: z.boolean().optional().describe('Also burn the captions into the video'),
+    strict: z.boolean().optional().describe('Treat every warning as a stop, for unattended runs'),
+  },
+}, wrap(async (a: {
+  media: string; subtitles?: string; asr?: boolean; diarize?: boolean;
+  profile?: string; out?: string; deliver?: boolean; strict?: boolean;
+}) => {
+  const r = await runTeam(a);
+  const lines = r.reports.map((s) =>
+    `${s.verdict.toUpperCase().padEnd(4)} ${s.stage.padEnd(10)} ${s.summary}`);
+  const tail = r.open.length ? `\n\nStill open, for a person to answer:\n  ${r.open.join('\n  ')}` : '';
+  return result(
+    lines.join('\n') + tail + `\n\n${r.ok ? 'Done' : 'STOPPED'}` +
+      (r.manifest ? ` — ${r.manifest}` : ''),
+    r,
   );
 }));
 

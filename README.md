@@ -190,11 +190,11 @@ to a person. `.mcp.json` in the repo root registers it; or:
 claude mcp add chorus -- node "$PWD/packages/mcp/dist/server.js"
 ```
 
-Sixteen tools: `cwi_validate`, `cwi_assign_colors`, `cwi_stats`,
-`cwi_palette_audit`, `cwi_resolve_typography`, `cwi_export`, `cwi_analyze`,
-`cwi_build_scene`, `cwi_render`, `cwi_deliver`, `cwi_conform`,
-`cwi_conform_render`, `cwi_audit`, `cwi_init_app`, `cwi_preview`,
-`cwi_preview_stop`.
+Seventeen tools: `cwi_team` (the whole pipeline in one call), plus
+`cwi_validate`, `cwi_assign_colors`, `cwi_stats`, `cwi_palette_audit`,
+`cwi_resolve_typography`, `cwi_export`, `cwi_analyze`, `cwi_build_scene`,
+`cwi_render`, `cwi_deliver`, `cwi_conform`, `cwi_conform_render`, `cwi_audit`,
+`cwi_init_app`, `cwi_preview`, `cwi_preview_stop`.
 Each returns a one-line summary plus structured JSON, and lossy exports report
 what they dropped rather than pretending to be complete.
 
@@ -455,6 +455,57 @@ segment of one 1968 mono film with an optical soundtrack is not evidence about
 cinema in general** — that format is narrow by construction, and a modern
 mix would differ. It is one real data point where there were none.
 
+
+## The team
+
+```bash
+chorus team film.mp4 --subtitles film.srt --deliver
+```
+
+Six stages in one pass, each answerable for one thing:
+
+```
+ ok  probe      usable with caveats — see findings          0.4s
+     is this soundtrack analysable at all
+ ok  transcribe 7 cues, 40 words                            0.2s
+     turn the soundtrack into word-timed text
+ ok  attribute  4 speakers
+     work out who is speaking
+ ok  design     worst-case separation ΔE 70.3
+     assign colours that survive colour blindness
+ ok  audit      0 failing, 0 warning, 8 to review
+     find where this fails WCAG, EN 301 549 and the FCC
+ ok  validate   no issues
+     check the track is structurally sound
+```
+
+The shape is borrowed from [Agent Opus](https://www.opus.pro/), which runs eight
+sub-agents — researcher, scriptwriter, storyboard artist, asset manager, hook
+designer, motion designer, voice actor, editor — from one prompt to a
+publish-ready short. **Every one of those agents is generative and there is no
+verification agent in the chain**; the documented workflow is two or three
+passes of a human re-rolling until it looks right.
+
+That is the right trade when the output is a marketing clip and the failure mode
+is "boring". It is the wrong trade here. These captions are an accessibility
+artifact and the failure mode is a deaf viewer being told the wrong person
+spoke — which looks exactly like success unless something measures it.
+
+So half the stages here exist to find fault, and **they can stop the run**:
+
+| | |
+|---|---|
+| **stop** | no source of words; a standards failure; a structurally broken track |
+| **warn** | one speaker found; two speakers under the ΔE floor; a soundtrack whose acoustics cannot be trusted |
+| **ok** | measured, and the measurement is in the log |
+
+A warning is not an error and not nothing: the run finishes, and every warning
+appears under **still open** as something a person has to answer for before it
+ships. `--strict` turns them all into stops, for runs nobody is watching.
+
+Every stage reports the *evidence* it measured rather than only a verdict, so
+you can disagree with it. Agents get the same thing through the `cwi_team` MCP
+tool.
 
 ## The app
 
