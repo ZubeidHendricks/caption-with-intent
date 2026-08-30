@@ -10,6 +10,8 @@
  * subscription on restart.
  */
 import type { Account, Store } from './billing.js';
+import type { AuthStore, SignInLink, TokenRecord } from './auth.js';
+import type { Job, JobStore } from './queue.js';
 
 export class MemoryStore implements Store {
   private accounts = new Map<string, Account>();
@@ -42,5 +44,75 @@ export class MemoryStore implements Store {
   /** Test helper. Not part of the interface on purpose. */
   all(): Account[] {
     return [...this.accounts.values()];
+  }
+}
+
+
+export class MemoryAuthStore implements AuthStore {
+  private tokens = new Map<string, TokenRecord>();
+  private links = new Map<string, SignInLink>();
+  private emails = new Map<string, string>();
+
+  async putToken(t: TokenRecord): Promise<void> { this.tokens.set(t.hash, { ...t }); }
+  async getToken(hash: string): Promise<TokenRecord | undefined> {
+    const t = this.tokens.get(hash);
+    return t ? { ...t } : undefined;
+  }
+  async listTokens(accountId: string): Promise<TokenRecord[]> {
+    return [...this.tokens.values()].filter((t) => t.accountId === accountId).map((t) => ({ ...t }));
+  }
+  async putLink(l: SignInLink): Promise<void> { this.links.set(l.hash, { ...l }); }
+  async getLink(hash: string): Promise<SignInLink | undefined> {
+    const l = this.links.get(hash);
+    return l ? { ...l } : undefined;
+  }
+  async accountForEmail(email: string): Promise<string> {
+    const key = email.trim().toLowerCase();
+    let id = this.emails.get(key);
+    if (!id) {
+      id = 'acct_' + Buffer.from(key).toString('hex').slice(0, 16);
+      this.emails.set(key, id);
+    }
+    return id;
+  }
+}
+
+export class MemoryJobStore implements JobStore {
+  private jobs = new Map<string, Job>();
+
+  async put(job: Job): Promise<void> { this.jobs.set(job.id, { ...job }); }
+  async get(id: string): Promise<Job | undefined> {
+    const j = this.jobs.get(id);
+    return j ? { ...j } : undefined;
+  }
+
+  /**
+   * Oldest job that is either queued or whose lease has lapsed.
+   *
+   * The lapsed case is what makes a dead worker recoverable: its job looks
+   * running, nobody is renewing the lease, and once it passes the job is fair
+   * game again.
+   */
+  async claimable(now: string): Promise<Job | undefined> {
+    const candidates = [...this.jobs.values()].filter((j) =>
+      j.state === 'queued' || (j.state === 'running' && (j.leaseUntil ?? '') < now));
+    candidates.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    const j = candidates[0];
+    return j ? { ...j } : undefined;
+  }
+
+  async byIdempotencyKey(accountId: string, key: string): Promise<Job | undefined> {
+    for (const j of this.jobs.values()) {
+      if (j.accountId === accountId && j.idempotencyKey === key) return { ...j };
+    }
+    return undefined;
+  }
+
+  async listForAccount(accountId: string, limit = 50): Promise<Job[]> {
+    return [...this.jobs.values()]
+      .filter((j) => j.accountId === accountId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, limit)
+      .map((j) => ({ ...j }));
   }
 }

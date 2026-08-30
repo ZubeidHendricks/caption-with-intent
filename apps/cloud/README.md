@@ -1,11 +1,16 @@
-# Billing for the hosted service
+# The hosted service
 
-The payment layer only. Hosting, storage, auth and the job queue are a separate
-project; this package is the part where a mistake costs somebody money, so it is
-self-contained and tested without a network, a database or a Stripe key.
+Billing, auth, the job queue, object storage and the API that ties them
+together. All of it self-contained and tested without a network, a database or
+a Stripe key — 60 tests that run offline in under a second.
 
-Not published. `private: true`, and it should stay that way — nothing here
-belongs in a package anyone installs.
+Not published. `private: true`, and it should stay that way.
+
+**What is still missing is infrastructure, not code**: somewhere to run this, a
+real database behind the store interfaces, an object store, a domain, and a
+worker fleet. Those cost money and are decisions to make deliberately. The
+interfaces exist so that choosing them is a configuration change rather than a
+rewrite.
 
 ## What it decides
 
@@ -76,3 +81,56 @@ Storage is an interface with an in-memory implementation for tests. The real one
 is Postgres or whatever the service settles on. `MemoryStore` says it is for
 tests and local runs, because an in-memory store that reaches production loses
 every subscription on restart.
+
+
+## Auth
+
+**No passwords.** Not a simplification — a decision. A password store is a
+liability that must be defended for as long as the service exists, and the two
+things it buys are worth less than the breach it eventually becomes. An emailed
+sign-in link for people, API keys for machines.
+
+What is stored is a SHA-256 of a token, never the token, so a dump of that table
+lets an attacker impersonate nobody. Comparisons are constant time. Sign-in
+links are single use and expire in 15 minutes — a link that still works after
+use is a permanent account takeover sitting in an inbox and every mail archive
+that touched it. Every rejection returns the same message, because
+distinguishing "no such token" from "expired" tells someone enumerating tokens
+which guesses were close.
+
+Keys carry a `chk_` prefix so a secret scanner can find one leaked into a public
+repository before somebody else does.
+
+## The queue
+
+Captioning a feature takes minutes, so the work cannot happen in a request. A
+queue means confronting the fact that workers are killed mid-job — a deploy, an
+out-of-memory kill, a reclaimed spot instance — none of which give the worker a
+chance to tidy up.
+
+So a claimed job is **leased**, not removed. A worker renews its lease; if it
+stops, the lease lapses and the job returns to the queue. Nothing is lost when a
+worker dies, and nothing is stuck for ever because a worker died quietly.
+
+The consequence is at-least-once delivery. A job can run twice, and that cannot
+be designed away — only handled, which is why usage is recorded against a job id
+and a repeat is a no-op. **A queue that claims to be exactly-once is a queue
+that bills twice.**
+
+Attempts count *claims*, not reported failures: a worker that dies never reports
+anything, so counting failures would let a job that reliably kills workers cycle
+for ever.
+
+## Tenancy
+
+The API adds no rules; it decides the order the rules apply in, and that order
+is where multi-tenant services leak. Being signed in is not permission to read
+*this* job. Every ownership check answers 404 rather than 403, because the
+difference tells someone enumerating ids which ones exist.
+
+Tested directly: one account reading another's job, downloading another's
+output, starting a job against another's upload, cancelling another's work. Each
+is refused and each refusal is indistinguishable from "no such thing".
+
+A job is billed **on completion, never on acceptance** — a job that dies in
+transcription costs the customer nothing.

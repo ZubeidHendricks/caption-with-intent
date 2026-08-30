@@ -14,7 +14,7 @@
     "cwi": "node packages/cli/dist/cli.js",
     "mcp": "node packages/mcp/dist/server.js",
     "test": "npm run build && npm run test:node && npm run test:py",
-    "test:node": "node --test packages/core/test/spec.test.js packages/cli/test/tools.test.js packages/cli/test/render-conform.test.js packages/cli/test/studio.test.js packages/cli/test/team.test.js packages/mcp/test/server.test.js packages/web/test/renderer.test.js apps/cloud/test/billing.test.js",
+    "test:node": "node --test packages/core/test/spec.test.js packages/cli/test/tools.test.js packages/cli/test/render-conform.test.js packages/cli/test/studio.test.js packages/cli/test/team.test.js packages/mcp/test/server.test.js packages/web/test/renderer.test.js apps/cloud/test/billing.test.js apps/cloud/test/service.test.js apps/cloud/test/api.test.js",
     "test:py": "cd pipeline && ../.venv/bin/python -m unittest discover -s test -t .",
     "setup:py": "python3 -m venv .venv && ./.venv/bin/pip install -q -r pipeline/requirements.txt",
     "release:stamp": "node scripts/release/stamp.mjs",
